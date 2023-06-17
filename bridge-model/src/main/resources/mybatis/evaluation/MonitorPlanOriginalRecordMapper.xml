@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.evaluation.MonitorPlanOriginalRecordDao">
+
+    <resultMap type="com.iware.bridge.model.entity.evaluation.MonitorPlanOriginalRecord" id="monitorPlanOriginalRecordMap">
+        <result property="id" column="id"/>
+        <result property="monitorPlanStructureRelId" column="monitor_plan_structure_rel_id"/>
+        <result property="instrumentation" column="instrumentation"/>
+        <result property="projectLocation" column="project_location"/>
+        <result property="testBasis" column="test_basis"/>
+        <result property="recordNumber" column="record_number"/>
+        <result property="createUserId" column="create_user_id"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       monitor_plan_structure_rel_id,
+       instrumentation,
+       project_location,
+       test_basis,
+       record_number,
+       create_user_id,
+       status,
+       create_time,
+       modify_time
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.evaluation.MonitorPlanOriginalRecord">
+        insert into tb_monitor_plan_original_record
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                monitor_plan_structure_rel_id,
+                instrumentation,
+                project_location,
+                test_basis,
+                record_number,
+                create_user_id,
+                status,
+            </trim>
+        )
+        values
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{monitorPlanStructureRelId},
+                #{instrumentation},
+                #{projectLocation},
+                #{testBasis},
+                #{recordNumber},
+                #{createUserId},
+                #{status},
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询MonitorPlanOriginalRecord -->
+    <select id="findById" parameterType="Integer" resultMap="monitorPlanOriginalRecordMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_monitor_plan_original_record
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.evaluation.MonitorPlanOriginalRecord">
+        UPDATE
+            tb_monitor_plan_original_record
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="monitorPlanStructureRelId != null">
+                    monitor_plan_structure_rel_id = #{monitorPlanStructureRelId},
+                </if>
+                <if test="instrumentation != null and instrumentation != ''">
+                    instrumentation = #{instrumentation},
+                </if>
+                <if test="projectLocation != null and projectLocation != ''">
+                    project_location = #{projectLocation},
+                </if>
+                <if test="testBasis != null and testBasis != ''">
+                    test_basis = #{testBasis},
+                </if>
+                <if test="recordNumber != null and recordNumber != ''">
+                    record_number = #{recordNumber},
+                </if>
+                <if test="createUserId != null">
+                    create_user_id = #{createUserId},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_monitor_plan_original_record
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_monitor_plan_original_record
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                monitor_plan_structure_rel_id,
+                instrumentation,
+                project_location,
+                test_basis,
+                record_number,
+                create_user_id,
+                status,
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.monitorPlanStructureRelId},
+                #{it.instrumentation},
+                #{it.projectLocation},
+                #{it.testBasis},
+                #{it.recordNumber},
+                #{it.createUserId},
+                #{it.status},
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_monitor_plan_original_record
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="monitorPlanOriginalRecordMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_monitor_plan_original_record
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询MonitorPlanOriginalRecord -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.evaluation.MonitorPlanOriginalRecord" resultMap="monitorPlanOriginalRecordMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_monitor_plan_original_record
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="monitorPlanStructureRelId != null">
+                AND monitor_plan_structure_rel_id = #{monitorPlanStructureRelId}
+            </if>
+            <if test="instrumentation != null and instrumentation != ''">
+                AND instrumentation = #{instrumentation}
+            </if>
+            <if test="projectLocation != null and projectLocation != ''">
+                AND project_location = #{projectLocation}
+            </if>
+            <if test="testBasis != null and testBasis != ''">
+                AND test_basis = #{testBasis}
+            </if>
+            <if test="recordNumber != null and recordNumber != ''">
+                AND record_number = #{recordNumber}
+            </if>
+            <if test="createUserId != null">
+                AND create_user_id = #{createUserId}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询MonitorPlanOriginalRecord -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.evaluation.MonitorPlanOriginalRecord" resultMap="monitorPlanOriginalRecordMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_monitor_plan_original_record
+        <where>
+            <if test="monitorPlanStructureRelId != null">
+                AND monitor_plan_structure_rel_id = #{monitorPlanStructureRelId}
+            </if>
+            <if test="instrumentation != null and instrumentation != ''">
+                AND instrumentation LIKE CONCAT ('%', #{instrumentation}, '%')
+            </if>
+            <if test="projectLocation != null and projectLocation != ''">
+                AND project_location LIKE CONCAT ('%', #{projectLocation}, '%')
+            </if>
+            <if test="testBasis != null and testBasis != ''">
+                AND test_basis LIKE CONCAT ('%', #{testBasis}, '%')
+            </if>
+            <if test="recordNumber != null and recordNumber != ''">
+                AND record_number LIKE CONCAT ('%', #{recordNumber}, '%')
+            </if>
+            <if test="createUserId != null">
+                AND create_user_id = #{createUserId}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

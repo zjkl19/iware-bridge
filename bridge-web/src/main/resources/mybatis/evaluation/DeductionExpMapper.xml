@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.iware.bridge.evaluation.dao.DeductionExpDao">
+
+
+    <select id="selectDeductByInteger" resultType="java.lang.Integer">
+        SELECT value FROM tb_deduction
+        where  disease_id = #{diseaseId} and  component_id = #{partType}
+        and (( cast (#{degree} as Float) &lt; lower and  upper is null)
+        or ( cast (#{degree} as Float) &gt; upper and lower is null)
+        or ( cast (#{degree} as Float) &gt;= lower and cast (#{degree} as Float) &lt;= upper ))
+
+    </select>
+    <select id="selectDeductByString" resultType="java.lang.Integer">
+        SELECT value FROM tb_deduction
+        where  disease_id = #{diseaseId}
+        and   degress = #{degree} and  component_id = #{partType}
+    </select>
+</mapper>

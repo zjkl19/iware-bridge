@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.evaluation.BridgeDeckSystemDao">
+
+    <resultMap type="com.iware.bridge.model.entity.evaluation.BridgeDeckSystem" id="bridgeDeckSystemMap">
+        <result property="id" column="id"/>
+        <result property="bridgeSpanId" column="bridge_span_id"/>
+        <result property="direction" column="direction"/>
+        <result property="tiltAngle" column="tilt_angle"/>
+        <result property="sidewalk" column="sidewalk"/>
+        <result property="sidewalkWidth" column="sidewalk_width"/>
+        <result property="leftSidewalkWidth" column="left_sidewalk_width"/>
+        <result property="rightSidewalkWidth" column="right_sidewalk_width"/>
+        <result property="laneWidth" column="lane_width"/>
+        <result property="midleBarrierWidth" column="midle_barrier_width"/>
+        <result property="leftRailWidth" column="left_rail_width"/>
+        <result property="rightRailWidth" column="right_rail_width"/>
+        <result property="stairway" column="stairway"/>
+        <result property="stairwayShadowLength" column="stairway_shadow_length"/>
+        <result property="stairwayLength" column="stairway_length"/>
+        <result property="stairwayWidth" column="stairway_width"/>
+        <result property="platformNumber" column="platform_number"/>
+        <result property="expansionJoint" column="expansion_joint"/>
+        <result property="bridgeHeadBoardLength" column="bridge_head_board_length"/>
+        <result property="monitorDiagram" column="monitor_diagram"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+        <result property="creator" column="creator"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       bridge_span_id,
+       direction,
+       tilt_angle,
+       sidewalk,
+       sidewalk_width,
+       left_sidewalk_width,
+       right_sidewalk_width,
+       lane_width,
+       midle_barrier_width,
+       left_rail_width,
+       right_rail_width,
+       stairway,
+       stairway_shadow_length,
+       stairway_length,
+       stairway_width,
+       platform_number,
+       expansion_joint,
+       bridge_head_board_length,
+       monitor_diagram,
+       create_time,
+       modify_time,
+       creator,
+       status
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.evaluation.BridgeDeckSystem">
+        insert into tb_bridge_deck_system
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                bridge_span_id,
+                direction,
+                tilt_angle,
+                sidewalk,
+                sidewalk_width,
+                left_sidewalk_width,
+                right_sidewalk_width,
+                lane_width,
+                midle_barrier_width,
+                left_rail_width,
+                right_rail_width,
+                stairway,
+                stairway_shadow_length,
+                stairway_length,
+                stairway_width,
+                platform_number,
+                expansion_joint,
+                bridge_head_board_length,
+                monitor_diagram,
+                creator,
+                status
+            </trim>
+        )
+        values
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{bridgeSpanId},
+                #{direction},
+                #{tiltAngle},
+                #{sidewalk},
+                #{sidewalkWidth},
+                #{leftSidewalkWidth},
+                #{rightSidewalkWidth},
+                #{laneWidth},
+                #{midleBarrierWidth},
+                #{leftRailWidth},
+                #{rightRailWidth},
+                #{stairway},
+                #{stairwayShadowLength},
+                #{stairwayLength},
+                #{stairwayWidth},
+                #{platformNumber},
+                #{expansionJoint},
+                #{bridgeHeadBoardLength},
+                #{monitorDiagram},
+                #{creator},
+                #{status}
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询BridgeDeckSystem -->
+    <select id="findById" parameterType="Integer" resultMap="bridgeDeckSystemMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_deck_system
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.evaluation.BridgeDeckSystem">
+        UPDATE
+            tb_bridge_deck_system
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="bridgeSpanId != null">
+                    bridge_span_id = #{bridgeSpanId},
+                </if>
+                <if test="direction != null and direction != ''">
+                    direction = #{direction},
+                </if>
+                <if test="tiltAngle != null and tiltAngle != ''">
+                    tilt_angle = #{tiltAngle},
+                </if>
+                <if test="sidewalk != null">
+                    sidewalk = #{sidewalk},
+                </if>
+                <if test="sidewalkWidth != null and sidewalkWidth != ''">
+                    sidewalk_width = #{sidewalkWidth},
+                </if>
+                <if test="leftSidewalkWidth != null and leftSidewalkWidth != ''">
+                    left_sidewalk_width = #{leftSidewalkWidth},
+                </if>
+                <if test="rightSidewalkWidth != null and rightSidewalkWidth != ''">
+                    right_sidewalk_width = #{rightSidewalkWidth},
+                </if>
+                <if test="laneWidth != null and laneWidth != ''">
+                    lane_width = #{laneWidth},
+                </if>
+                <if test="midleBarrierWidth != null and midleBarrierWidth != ''">
+                    midle_barrier_width = #{midleBarrierWidth},
+                </if>
+                <if test="leftRailWidth != null and leftRailWidth != ''">
+                    left_rail_width = #{leftRailWidth},
+                </if>
+                <if test="rightRailWidth != null and rightRailWidth != ''">
+                    right_rail_width = #{rightRailWidth},
+                </if>
+                <if test="stairway != null and stairway != ''">
+                    stairway = #{stairway},
+                </if>
+                <if test="stairwayShadowLength != null and stairwayShadowLength != ''">
+                    stairway_shadow_length = #{stairwayShadowLength},
+                </if>
+                <if test="stairwayLength != null and stairwayLength != ''">
+                    stairway_length = #{stairwayLength},
+                </if>
+                <if test="stairwayWidth != null and stairwayWidth != ''">
+                    stairway_width = #{stairwayWidth},
+                </if>
+                <if test="platformNumber != null">
+                    platform_number = #{platformNumber},
+                </if>
+                <if test="expansionJoint != null">
+                    expansion_joint = #{expansionJoint},
+                </if>
+                <if test="bridgeHeadBoardLength != null and bridgeHeadBoardLength != ''">
+                    bridge_head_board_length = #{bridgeHeadBoardLength},
+                </if>
+                <if test="monitorDiagram != null and monitorDiagram != ''">
+                    monitor_diagram = #{monitorDiagram},
+                </if>
+                <if test="creator != null and creator != ''">
+                    creator = #{creator},
+                </if>
+                <if test="status != null">
+                    status = #{status}
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_bridge_deck_system
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_bridge_deck_system
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                bridge_span_id,
+                direction,
+                tilt_angle,
+                sidewalk,
+                sidewalk_width,
+                left_sidewalk_width,
+                right_sidewalk_width,
+                lane_width,
+                midle_barrier_width,
+                left_rail_width,
+                right_rail_width,
+                stairway,
+                stairway_shadow_length,
+                stairway_length,
+                stairway_width,
+                platform_number,
+                expansion_joint,
+                bridge_head_board_length,
+                monitor_diagram,
+                creator,
+                status
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.bridgeSpanId},
+                #{it.direction},
+                #{it.tiltAngle},
+                #{it.sidewalk},
+                #{it.sidewalkWidth},
+                #{it.leftSidewalkWidth},
+                #{it.rightSidewalkWidth},
+                #{it.laneWidth},
+                #{it.midleBarrierWidth},
+                #{it.leftRailWidth},
+                #{it.rightRailWidth},
+                #{it.stairway},
+                #{it.stairwayShadowLength},
+                #{it.stairwayLength},
+                #{it.stairwayWidth},
+                #{it.platformNumber},
+                #{it.expansionJoint},
+                #{it.bridgeHeadBoardLength},
+                #{it.monitorDiagram},
+                #{it.creator},
+                #{it.status}
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_bridge_deck_system
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="bridgeDeckSystemMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_deck_system
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询BridgeDeckSystem -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.evaluation.BridgeDeckSystem" resultMap="bridgeDeckSystemMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_deck_system
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="bridgeSpanId != null">
+                AND bridge_span_id = #{bridgeSpanId}
+            </if>
+            <if test="direction != null and direction != ''">
+                AND direction = #{direction}
+            </if>
+            <if test="tiltAngle != null and tiltAngle != ''">
+                AND tilt_angle = #{tiltAngle}
+            </if>
+            <if test="sidewalk != null">
+                AND sidewalk = #{sidewalk}
+            </if>
+            <if test="sidewalkWidth != null and sidewalkWidth != ''">
+                AND sidewalk_width = #{sidewalkWidth}
+            </if>
+            <if test="leftSidewalkWidth != null and leftSidewalkWidth != ''">
+                AND left_sidewalk_width = #{leftSidewalkWidth}
+            </if>
+            <if test="rightSidewalkWidth != null and rightSidewalkWidth != ''">
+                AND right_sidewalk_width = #{rightSidewalkWidth}
+            </if>
+            <if test="laneWidth != null and laneWidth != ''">
+                AND lane_width = #{laneWidth}
+            </if>
+            <if test="midleBarrierWidth != null and midleBarrierWidth != ''">
+                AND midle_barrier_width = #{midleBarrierWidth}
+            </if>
+            <if test="leftRailWidth != null and leftRailWidth != ''">
+                AND left_rail_width = #{leftRailWidth}
+            </if>
+            <if test="rightRailWidth != null and rightRailWidth != ''">
+                AND right_rail_width = #{rightRailWidth}
+            </if>
+            <if test="stairway != null and stairway != ''">
+                AND stairway = #{stairway}
+            </if>
+            <if test="stairwayShadowLength != null and stairwayShadowLength != ''">
+                AND stairway_shadow_length = #{stairwayShadowLength}
+            </if>
+            <if test="stairwayLength != null and stairwayLength != ''">
+                AND stairway_length = #{stairwayLength}
+            </if>
+            <if test="stairwayWidth != null and stairwayWidth != ''">
+                AND stairway_width = #{stairwayWidth}
+            </if>
+            <if test="platformNumber != null">
+                AND platform_number = #{platformNumber}
+            </if>
+            <if test="expansionJoint != null">
+                AND expansion_joint = #{expansionJoint}
+            </if>
+            <if test="bridgeHeadBoardLength != null and bridgeHeadBoardLength != ''">
+                AND bridge_head_board_length = #{bridgeHeadBoardLength}
+            </if>
+            <if test="monitorDiagram != null and monitorDiagram != ''">
+                AND monitor_diagram = #{monitorDiagram}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+            <if test="creator != null and creator != ''">
+                AND creator = #{creator}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询BridgeDeckSystem -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.evaluation.BridgeDeckSystem" resultMap="bridgeDeckSystemMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_deck_system
+        <where>
+            <if test="bridgeSpanId != null">
+                AND bridge_span_id = #{bridgeSpanId}
+            </if>
+            <if test="direction != null and direction != ''">
+                AND direction LIKE CONCAT ('%', #{direction}, '%')
+            </if>
+            <if test="tiltAngle != null and tiltAngle != ''">
+                AND tilt_angle LIKE CONCAT ('%', #{tiltAngle}, '%')
+            </if>
+            <if test="sidewalk != null">
+                AND sidewalk = #{sidewalk}
+            </if>
+            <if test="sidewalkWidth != null and sidewalkWidth != ''">
+                AND sidewalk_width LIKE CONCAT ('%', #{sidewalkWidth}, '%')
+            </if>
+            <if test="leftSidewalkWidth != null and leftSidewalkWidth != ''">
+                AND left_sidewalk_width LIKE CONCAT ('%', #{leftSidewalkWidth}, '%')
+            </if>
+            <if test="rightSidewalkWidth != null and rightSidewalkWidth != ''">
+                AND right_sidewalk_width LIKE CONCAT ('%', #{rightSidewalkWidth}, '%')
+            </if>
+            <if test="laneWidth != null and laneWidth != ''">
+                AND lane_width LIKE CONCAT ('%', #{laneWidth}, '%')
+            </if>
+            <if test="midleBarrierWidth != null and midleBarrierWidth != ''">
+                AND midle_barrier_width LIKE CONCAT ('%', #{midleBarrierWidth}, '%')
+            </if>
+            <if test="leftRailWidth != null and leftRailWidth != ''">
+                AND left_rail_width LIKE CONCAT ('%', #{leftRailWidth}, '%')
+            </if>
+            <if test="rightRailWidth != null and rightRailWidth != ''">
+                AND right_rail_width LIKE CONCAT ('%', #{rightRailWidth}, '%')
+            </if>
+            <if test="stairway != null and stairway != ''">
+                AND stairway LIKE CONCAT ('%', #{stairway}, '%')
+            </if>
+            <if test="stairwayShadowLength != null and stairwayShadowLength != ''">
+                AND stairway_shadow_length LIKE CONCAT ('%', #{stairwayShadowLength}, '%')
+            </if>
+            <if test="stairwayLength != null and stairwayLength != ''">
+                AND stairway_length LIKE CONCAT ('%', #{stairwayLength}, '%')
+            </if>
+            <if test="stairwayWidth != null and stairwayWidth != ''">
+                AND stairway_width LIKE CONCAT ('%', #{stairwayWidth}, '%')
+            </if>
+            <if test="platformNumber != null">
+                AND platform_number = #{platformNumber}
+            </if>
+            <if test="expansionJoint != null">
+                AND expansion_joint = #{expansionJoint}
+            </if>
+            <if test="bridgeHeadBoardLength != null and bridgeHeadBoardLength != ''">
+                AND bridge_head_board_length LIKE CONCAT ('%', #{bridgeHeadBoardLength}, '%')
+            </if>
+            <if test="monitorDiagram != null and monitorDiagram != ''">
+                AND monitor_diagram LIKE CONCAT ('%', #{monitorDiagram}, '%')
+            </if>
+            <if test="creator != null and creator != ''">
+                AND creator LIKE CONCAT ('%', #{creator}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

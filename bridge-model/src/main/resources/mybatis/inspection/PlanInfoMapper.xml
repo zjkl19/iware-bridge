@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.inspection.PlanInfoDao">
+
+    <resultMap type="com.iware.bridge.model.entity.inspection.PlanInfo" id="planInfoMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="projectId" column="project_id"/>
+        <result property="planTime" column="plan_time"/>
+        <result property="budget" column="budget"/>
+        <result property="expenditure" column="expenditure"/>
+        <result property="type" column="type"/>
+        <result property="userId" column="user_id"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       name,
+       project_id,
+       plan_time,
+       budget,
+       expenditure,
+       type,
+       user_id,
+       status,
+       create_time,
+       modify_time
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.inspection.PlanInfo">
+        insert into tb_plan_info
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                name,
+                project_id,
+                plan_time,
+                budget,
+                expenditure,
+                type,
+                user_id,
+                status,
+            </trim>
+        )
+        values
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{name},
+                #{projectId},
+                #{planTime},
+                #{budget},
+                #{expenditure},
+                #{type},
+                #{userId},
+                #{status},
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询PlanInfo -->
+    <select id="findById" parameterType="Integer" resultMap="planInfoMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_plan_info
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.inspection.PlanInfo">
+        UPDATE
+            tb_plan_info
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="name != null and name != ''">
+                    name = #{name},
+                </if>
+                <if test="projectId != null">
+                    project_id = #{projectId},
+                </if>
+                <if test="planTime != null">
+                    plan_time = #{planTime},
+                </if>
+                <if test="budget != null">
+                    budget = #{budget},
+                </if>
+                <if test="expenditure != null">
+                    expenditure = #{expenditure},
+                </if>
+                <if test="type != null">
+                    type = #{type},
+                </if>
+                <if test="userId != null">
+                    user_id = #{userId},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_plan_info
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_plan_info
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                name,
+                project_id,
+                plan_time,
+                budget,
+                expenditure,
+                type,
+                user_id,
+                status,
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.name},
+                #{it.projectId},
+                #{it.planTime},
+                #{it.budget},
+                #{it.expenditure},
+                #{it.type},
+                #{it.userId},
+                #{it.status},
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_plan_info
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="planInfoMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_plan_info
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询PlanInfo -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.inspection.PlanInfo" resultMap="planInfoMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_plan_info
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="name != null and name != ''">
+                AND name = #{name}
+            </if>
+            <if test="projectId != null">
+                AND project_id = #{projectId}
+            </if>
+            <if test="planTime != null">
+                AND plan_time = #{planTime}
+            </if>
+            <if test="budget != null">
+                AND budget = #{budget}
+            </if>
+            <if test="expenditure != null">
+                AND expenditure = #{expenditure}
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询PlanInfo -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.inspection.PlanInfo" resultMap="planInfoMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_plan_info
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT ('%', #{name}, '%')
+            </if>
+            <if test="projectId != null">
+                AND project_id = #{projectId}
+            </if>
+            <if test="planTime != null">
+                AND plan_time LIKE CONCAT ('%', #{planTime}, '%')
+            </if>
+            <if test="budget != null">
+                AND budget = #{budget}
+            </if>
+            <if test="expenditure != null">
+                AND expenditure = #{expenditure}
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

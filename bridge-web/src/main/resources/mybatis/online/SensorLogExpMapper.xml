@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.online.dao.SensorLogExpDao">
+
+    <select id="listSensorLog"
+            resultType="com.iware.bridge.online.vo.SensorLogVO">
+        SELECT
+            tsl.*,
+            tp.name AS project_name
+        FROM tb_sensor_log tsl
+        LEFT JOIN tb_project tp ON tp.id = tsl.project_id
+        <if test="roleId == 0 or roleId == 1">
+            INNER JOIN tb_project_appoint tpa ON tpa.project_id = tp.id
+            INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.id
+        </if>
+        <where>
+            <if test="roleId == 2">
+                AND tp.unit_id = #{unitId}
+            </if>
+            <if test="roleId == 0 or roleId == 1">
+                AND tpa.receive_unit_id = #{unitId}
+                AND papr.power_id = #{powerId}
+            </if>
+            <if test="filter.projectId != null">
+                AND tp.id = #{filter.projectId}
+            </if>
+            <if test="filter.keyword != null and filter.keyword != ''">
+                AND (
+                describe LIKE CONCAT ('%', #{filter.keyword}, '%') OR
+                solution LIKE CONCAT ('%', #{filter.keyword}, '%')
+                )
+            </if>
+            <if test="filter.startTime != null">
+                AND maintain_time >= #{filter.startTime}
+            </if>
+            <if test="filter.endTime != null">
+                AND maintain_time &lt;= #{filter.endTime}
+            </if>
+        </where>
+        ORDER BY tsl.create_time DESC
+    </select>
+
+    <select id="listSensorRecord"
+            resultType="com.iware.bridge.model.entity.online.SensorRecord">
+        SELECT * FROM tb_sensor_record
+        <where>
+            means_point_id = #{meansPointId}
+            <if test="filter.startTime != null">
+                AND operate_time > #{filter.startTime} AND operate_time &lt; #{filter.endTime}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+</mapper>

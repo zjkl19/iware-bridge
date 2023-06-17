@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+        namespace="com.iware.bridge.evaluation.dao.BridgeScoreExpDao">
+
+    <select id="listAssessRank" resultType="com.iware.bridge.evaluation.vo.BridgeLevelRankVO">
+        SELECT
+        monitor.project_info_id AS project_id,
+        plan.id AS monitor_structure_id,
+        plan.structure_info_id AS structure_id,
+        plan.structure_name AS structure_name,
+        monitor.end_time AS end_time,
+        road.name AS road_name,
+        to_char(score.evaluation_time,'yyyy-mm-dd') as evaluation_time ,
+        ROUND(CAST(score.bridge_condition_index as numeric), 2) as bridge_condition_index,
+        road.id AS road_id,
+        score.rating_level
+        FROM
+        tb_monitor_plan AS monitor
+        INNER JOIN tb_monitor_plan_structure_rel AS plan ON plan.monitor_plan_id = monitor.id
+        INNER JOIN tb_bridge_road AS road ON road.monitor_plan_structure_rel_id = plan.id
+        INNER JOIN tb_bridge_score AS score ON score.target_id = road.id and score.type = 2
+        where
+        score.bridge_condition_index IS NOT NULL
+        and monitor.upload = 1 and road.status = 1
+        and (plan.is_delete = 0 or plan.is_delete IS null)
+        <if test="list != null and list.size > 0">
+            AND plan.structure_info_id IN
+            <foreach collection="list" item="item" separator="," open="(" close=")">
+                #{item.structureId}
+            </foreach>
+        </if>
+        <if test="list == null or list.size &lt; 1">
+            AND plan.structure_info_id = -1
+        </if>
+        <if test="year != null and !''.equals(year)">
+            AND to_char(score.evaluation_time, 'yyyy') = #{year}
+        </if>
+        <if test="bridgeLevel != null and !''.equals(bridgeLevel)">
+            AND score.rating_level = #{bridgeLevel}
+        </if>
+        ORDER BY
+        score.evaluation_time DESC,
+        <if test="bciSortType == null">
+            score.bridge_condition_index ASC
+        </if>
+        <if test="bciSortType != null">
+            score.bridge_condition_index ${bciSortType}
+        </if>
+        <if test="bsiSortType != null">
+            , score.bridge_structure_index ${bsiSortType}
+        </if>
+    </select>
+    <select id="selectRoadBciBsiLimit1" resultType="com.iware.bridge.model.entity.evaluation.BridgeScore">
+        SELECT
+        ROUND( CAST( score.bridge_condition_index AS NUMERIC ), 2 ) AS bridge_condition_index,
+        ROUND( CAST( score.bridge_structure_index AS NUMERIC ), 2 ) AS bridge_structure_index
+        FROM
+        tb_bridge_score AS score
+        WHERE
+        score.type = #{typeId}
+        AND score.target_id = (
+        SELECT
+        road.id
+        FROM
+        tb_bridge_score AS score
+        JOIN tb_bridge_road AS road ON road.id = score.target_id
+        JOIN tb_monitor_plan_structure_rel AS plan ON road.monitor_plan_structure_rel_id = plan.id
+        <if test="roleId == 1 or roleId == 0">
+            JOIN tb_monitor_plan as plan2 on plan.monitor_plan_id = plan2.id
+            join tb_project_appoint as appoint on appoint.project_id = plan2.project_info_id
+        </if>
+        WHERE
+        plan.structure_info_id = #{structureId}
+        AND score.type = 2
+        <if test="roleId == 1 or roleId == 0">
+            AND appoint.receive_unit_id = #{unitId}
+            AND score.evaluation_time &gt;= appoint.start_time
+            AND score.evaluation_time &lt;= appoint.end_time
+        </if>
+        ORDER BY
+        score.bridge_condition_index
+        )
+        ORDER BY score.evaluation_time
+    </select>
+    <select id="selectRoadBciBsiYear" resultType="com.iware.bridge.evaluation.vo.ScoreVO">
+        SELECT distinct
+        scoreA.id,
+        to_char ( scoreA.evaluation_time, 'yyyy' ) as evaluation_time,
+        ROUND(CAST(scoreA.bridge_condition_index as numeric), 2) AS bridge_condition_index,
+        ROUND(CAST(scoreA.bridge_structure_index as numeric), 2) AS bridge_structure_index
+        FROM
+        tb_bridge_score AS scoreA
+        JOIN (
+        SELECT
+        max( score.evaluation_time )
+        FROM
+        tb_bridge_score AS score
+        JOIN tb_bridge_road AS road ON road.id = score.target_id
+        JOIN tb_monitor_plan_structure_rel AS plan ON road.monitor_plan_structure_rel_id = plan.id
+        <if test="roleId == 1 or roleId == 0">
+            join tb_monitor_plan as plan2 on plan.monitor_plan_id = plan2.id
+            join tb_project_appoint as appoint on appoint.project_id = plan2.project_info_id
+        </if>
+        WHERE plan.structure_info_id = #{structureId}
+        and score.type = #{typeId}
+        <if test="roleId == 1 or roleId == 0">
+            AND appoint.receive_unit_id = #{unitId}
+            AND score.evaluation_time &gt;= appoint.start_time
+            AND score.evaluation_time &lt;= appoint.end_time
+        </if>
+        GROUP BY
+        to_char ( score.evaluation_time, 'yyyy' )
+        ORDER BY
+        to_char ( score.evaluation_time, 'yyyy' ) ASC
+        ) AS scoreB ON scoreA.evaluation_time = scoreB.max
+        and scoreA.target_id in
+        (SELECT road.id FROM tb_bridge_road as road
+        join tb_monitor_plan_structure_rel as plan on plan.id = road.monitor_plan_structure_rel_id
+        WHERE plan.structure_info_id = #{structureId}
+        )AND scoreA.type = #{typeId}
+    </select>
+    <select id="selectBciBsi" resultType="com.iware.bridge.evaluation.vo.ScoreComparison">
+                SELECT DISTINCT
+        to_char(scoreC.evaluation_time,'yyyy-mm-dd') AS time,
+        ROUND(CAST(scoreC.bridge_condition_index as numeric), 2) AS dkScoreBCI,
+        ROUND(CAST(scoreC.bridge_structure_index as numeric), 2) AS dkScoreBSI,
+        ROUND(CAST(scoreD.bridge_condition_index as numeric), 2) AS supScoreBCI,
+        ROUND(CAST(scoreD.bridge_structure_index as numeric), 2) AS supScoreBSI,
+        ROUND(CAST(scoreE.bridge_condition_index as numeric), 2) AS subScoreBCI,
+        ROUND(CAST(scoreE.bridge_structure_index as numeric), 2) AS subScoreBSI
+        FROM
+        (
+        SELECT
+        score.target_id
+        FROM
+        tb_bridge_score AS score
+        JOIN tb_bridge_road AS road ON road.id = score.target_id
+        JOIN tb_monitor_plan_structure_rel AS plan ON road.monitor_plan_structure_rel_id = plan.id
+        JOIN tb_monitor_plan AS plan2 ON plan.monitor_plan_id = plan2.id
+        WHERE
+        plan.structure_info_id = #{structureId} and plan2.project_info_id= #{projectId}
+        AND score.type = 2
+        AND score.bridge_condition_index IN (
+        SELECT
+        min( score.bridge_condition_index )
+        FROM
+        tb_bridge_score AS score
+        JOIN tb_bridge_road AS road ON road.id = score.target_id
+        JOIN tb_monitor_plan_structure_rel AS plan ON road.monitor_plan_structure_rel_id = plan.id
+        WHERE
+        plan.structure_info_id = #{structureId}
+        AND score.type = 2
+        GROUP BY
+        plan.id
+        )
+        ) AS scoreA
+        join tb_bridge_score as scoreC on scoreA.target_id = scoreC.target_id and scoreC.type = 3
+
+        join tb_bridge_score as scoreD on scoreA.target_id = scoreD.target_id and scoreD.type = 4
+
+        join tb_bridge_score as scoreE on scoreA.target_id = scoreE.target_id and scoreE.type = 5
+
+
+    </select>
+    <!--    and to_char(score.evaluation_time,'yyyy') >= #{time}-->
+    <select id="selectTestingSituation" resultType="com.iware.bridge.evaluation.vo.OverviewVO">
+        select * from (
+        SELECT DISTINCT
+        ROUND(CAST(scoreB.bridge_condition_index as numeric), 2) AS bridgeConditionIndex,
+        ROUND(CAST(scoreC.bridge_structure_index as numeric), 2) AS deckSystemBSIm,
+        ROUND(CAST(scoreD.bridge_structure_index as numeric), 2) AS upperStructureBSIs,
+        ROUND(CAST(scoreE.bridge_structure_index as numeric), 2) AS lowerStructureBSIx,
+        scoreB.evaluation_unit as evaluationUnit,
+        scoreF.rating_level as ratingLevel,
+        to_char(scoreB.evaluation_time,'yyyy-mm') as evaluationTime,
+        case plan.type
+        when '1' then '定期检测'
+        when '2' then '特殊检测'
+        when '3' then '静载实验'
+        else '' end as type,
+        structureRel.id as monitor_structure_id,
+        to_char(plan.modify_time,'yyyy-mm-dd hh24:mi:ss') as end_time,
+        plan.project_info_id as project_id
+        FROM
+        (
+        SELECT
+        score.target_id
+        FROM
+        tb_bridge_score AS score
+        JOIN tb_bridge_road AS road ON road.id = score.target_id
+        JOIN tb_monitor_plan_structure_rel AS plan ON road.monitor_plan_structure_rel_id = plan.id
+        JOIN (
+        SELECT
+        min( score.bridge_condition_index ),plan.id
+        FROM
+        tb_bridge_score AS score
+        JOIN tb_bridge_road AS road ON road.id = score.target_id
+        JOIN tb_monitor_plan_structure_rel AS plan ON road.monitor_plan_structure_rel_id = plan.id
+        <if test="roleId == 1 or roleId == 0">
+            join tb_monitor_plan as plan2 on plan.monitor_plan_id = plan2.id
+            join tb_project_appoint as appoint on appoint.project_id = plan2.project_info_id
+        </if>
+        WHERE
+        plan.structure_info_id = #{structureId}
+        AND score.type = 2
+        <if test="roleId == 1 or roleId == 0">
+            AND appoint.receive_unit_id = #{unitId}
+            AND score.evaluation_time &gt;= appoint.start_time
+            AND score.evaluation_time &lt;= appoint.end_time
+        </if>
+        GROUP BY
+        plan.id
+        ) as scorePlan on  score.bridge_condition_index  = scorePlan.min and  plan.id = scorePlan.id
+        WHERE
+        plan.structure_info_id = #{structureId}
+        AND score.type = 2
+
+        ) AS scoreA
+        join tb_bridge_score as scoreB on scoreA.target_id = scoreB.target_id and scoreB.type = 2
+
+        join tb_bridge_score as scoreC on scoreA.target_id = scoreC.target_id and scoreC.type = 3
+
+        join tb_bridge_score as scoreD on scoreA.target_id = scoreD.target_id and scoreD.type = 4
+
+        join tb_bridge_score as scoreE on scoreA.target_id = scoreE.target_id and scoreE.type = 5
+
+        join tb_bridge_road as road on road.id = scoreB.target_id
+        join tb_monitor_plan_structure_rel as structureRel on structureRel.id = road.monitor_plan_structure_rel_id
+        join tb_monitor_plan as plan on plan.id = structureRel.monitor_plan_id
+        join tb_bridge_score as scoreF on scoreF.target_id = structureRel.id and scoreF.type = 1
+        ) as plan
+        ORDER BY plan.end_time desc
+    </select>
+    <select id="getMinRatingLevel" resultType="java.lang.String">
+        select rating_level
+        from tb_bridge_score
+        where bridge_condition_index IS NOT NULL
+        <if test="list != null and list.size > 0">
+            and id in
+            <foreach collection="list" item="item" separator="," open="(" close=")">
+                #{item.id}
+            </foreach>
+        </if>
+        <if test="list == null or list.size &lt; 1">
+            and id = -1
+        </if>
+        order by bridge_condition_index ASC
+        limit 1
+    </select>
+    <select id="getBCIEvaluationList" resultType="com.iware.bridge.evaluation.vo.BCIEvaluation">
+        SELECT
+            tbs.id AS id,
+            tb."name" AS road_name,
+            ROUND(CAST(tbs.bridge_condition_index as numeric), 2) AS BCIScore,
+            tb."id" AS bridge_road_id,
+            "count" ( * ) AS bridge_span_num,
+				to_char(tbs.evaluation_time,'yyyy-mm-dd hh24:mi:ss') as evaluation_time
+        FROM
+            tb_bridge_road tb
+            LEFT JOIN tb_bridge_score tbs ON tb."id" = tbs.target_id
+            AND tbs."type" = 2
+            LEFT JOIN tb_bridge_span bs ON tb."id" = bs.bridge_road_id
+        WHERE
+            tb.monitor_plan_structure_rel_id = #{structureInfoId} and tb.status = 1
+        GROUP BY
+            tb."name",
+            tbs.bridge_condition_index,
+            tb."id",
+            tbs."id"
+    </select>
+    <select id="getAllScoreByStructures" resultType="com.iware.bridge.evaluation.vo.ScoreSearchVO">
+        select
+        tbs.id,
+        tmpsr.structure_info_id as structureId,
+        tbs.evaluation_time as evaluationTime
+        from tb_bridge_score as tbs
+        left join tb_bridge_road as tbr on tbr.id = tbs.target_id
+        left join tb_monitor_plan_structure_rel as tmpsr on tmpsr.id = tbr.monitor_plan_structure_rel_id
+        where tmpsr.structure_info_id in
+        <if test="list != null and list.size > 0">
+            <foreach collection="list" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="list == null or list.size &lt; 1">
+            (-1)
+        </if>
+        ORDER BY tbs.evaluation_time desc;
+    </select>
+    <select id="selectScoreByRoadId" resultType="com.iware.bridge.evaluation.vo.ScoreComparison">
+        SELECT bridge_condition_index as bci,rating_level as level FROM tb_bridge_score WHERE type = 2 and target_id = #{id}
+    </select>
+    <select id="selectRelBci" resultType="com.iware.bridge.evaluation.vo.ScoreVO">
+        SELECT distinct score.id,to_char(score.evaluation_time,'yyyy') as evaluation_time,
+        ROUND(CAST(score.score as numeric), 2) AS bridge_condition_index
+        FROM
+        tb_bridge_score as score
+        join tb_monitor_plan_structure_rel as rel on score.target_id = rel.id and score.type = 1
+        <if test="roleId == 1 or roleId == 0">
+            join tb_monitor_plan as plan on rel.monitor_plan_id = plan.id
+            join tb_project_appoint as appoint on appoint.project_id = plan.project_info_id
+        </if>
+        WHERE rel.structure_info_id = #{structureId}
+        <if test="roleId == 1 or roleId == 0">
+            AND appoint.receive_unit_id = #{unitId}
+            AND score.evaluation_time &gt;= appoint.start_time
+            AND score.evaluation_time &lt;= appoint.end_time
+        </if>
+
+    </select>
+
+</mapper>

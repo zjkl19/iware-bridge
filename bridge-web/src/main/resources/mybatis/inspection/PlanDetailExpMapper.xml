@@ -1,0 +1,699 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.inspection.dao.PlanDetailExpDao">
+
+    <resultMap id="inspectionDiseaseInstanceMap" type="com.iware.bridge.inspection.vo.DiseaseInstanceExpVo">
+        <id property="id" column="id"/>
+        <result property="planDetailId" column="plan_detail_id"/>
+        <result property="inspectionDiseaseId" column="inspection_disease_id"/>
+        <result property="quantity" column="quantity"/>
+        <result property="strategy" column="strategy"/>
+        <result property="remarks" column="remarks"/>
+        <result property="status" column="status"/>
+        <result property="exceptionPart" column="exception_part"/>
+        <result property="exceptionType" column="exception_type"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+        <collection property="optionIds" ofType="integer">
+            <id column="option_id"/>
+        </collection>
+    </resultMap>
+
+    <!--查询维养细项-->
+    <select id="listMaintainItem" parameterType="com.iware.bridge.inspection.vo.PlanDetailFilter"
+            resultType="com.iware.bridge.inspection.vo.MaintainItemVO">
+        SELECT
+            tmi.*, tid.damage_type AS damageType,
+            tidi.quantity AS quantity,
+            tidi.remarks AS diseaseRemark,
+            tidi.exception_part AS exceptionPart,
+            tid.unit AS unit,
+            tid.id AS inspectionDiseaseId,
+            array_to_string(
+                ARRAY (
+                    SELECT
+                        tido. NAME
+                    FROM
+                        tb_disease_instance_option_rel tdior
+                    LEFT JOIN tb_inspection_disease_option tido ON tido. ID = tdior.inspection_disease_option_id
+                    WHERE
+                    tdior.inspection_disease_instance_id = tidi. ID
+                ),
+            ','
+            ) AS optionName
+        FROM
+            tb_maintain_item tmi
+        LEFT JOIN tb_inspection_disease_instance tidi ON tidi. ID = tmi.disease_instance_id
+        LEFT JOIN tb_inspection_disease tid ON tid. ID = tidi.inspection_disease_id
+        <if test="roleId != 3">
+            LEFT JOIN tb_plan_info AS tpi ON tpi.id=tmi.plan_id
+            LEFT JOIN tb_project AS tp ON tpi.project_id = tp.id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+            LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+        </if>
+        where 1=1
+        <if test="roleId == 1 or roleId == 0">
+            AND tpa.receive_unit_id = #{unitId}
+            AND tpi.create_time BETWEEN tpa.start_time AND tpa.end_time
+            AND papr.power_id = #{powerId}
+        </if>
+        <if test="roleId == 2">
+            AND tp.unit_id = #{unitId}
+        </if>
+        <if test="condition.status!=null">
+            and tmi.status = #{condition.status}
+        </if>
+        <if test="condition.structureId!=null">
+            and tmi.structure_id = #{condition.structureId}
+        </if>
+        <if test="condition.planId!=null">
+            and tmi.plan_id = #{condition.planId}
+        </if>
+        <if test="condition.words!=null">
+            and
+            (tmi.name LIKE CONCAT ('%', #{condition.words}, '%'))
+        </if>
+        <if test="condition.startTime!=null and condition.endTime!=null">
+            and
+                tmi.proposed_time &gt;= #{condition.startTime}
+                and tmi.proposed_time &lt;= #{condition.endTime}
+        </if>
+        order by tmi.proposed_time ASC
+    </select>
+
+    <!--查询计划详情-->
+    <select id="listPlanDetail" parameterType="com.iware.bridge.inspection.vo.PlanDetailFilter"
+            resultType="com.iware.bridge.inspection.vo.PlanDetailVO">
+        select tb_plan_detail.*,tb_structure.name as structureName from tb_plan_detail
+        INNER join tb_structure on tb_structure.id=tb_plan_detail.structure_id
+        <if test="roleId != 3">
+            LEFT JOIN tb_plan_info AS tpi ON tpi.id=tb_plan_detail.plan_id
+            LEFT JOIN tb_project AS tp ON tpi.project_id = tp.id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+            LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+        </if>
+        where 1=1
+        <if test="roleId == 1 or roleId == 0">
+            AND tpa.receive_unit_id = #{unitId}
+            AND tb_plan_detail.inspection_time BETWEEN tpa.start_time AND tpa.end_time
+            AND papr.power_id = #{powerId}
+        </if>
+        <if test="roleId == 2">
+            AND tp.unit_id = #{unitId}
+        </if>
+        <if test="condition.status!=null">
+            and tb_plan_detail.status = #{condition.status}
+        </if>
+        <if test="condition.structureId!=null">
+            and tb_plan_detail.structure_id = #{condition.structureId}
+        </if>
+        <if test="condition.planId!=null">
+            and tb_plan_detail.plan_id = #{condition.planId}
+        </if>
+        <if test="condition.startTime!=null and condition.endTime!=null">
+            and
+            to_char(tb_plan_detail.inspection_time,'yyyy-MM-dd') &gt;= to_char(#{condition.startTime}::date,'yyyy-MM-dd')
+            and to_char(tb_plan_detail.inspection_time,'yyyy-MM-dd') &lt;= to_char(#{condition.endTime}::date,'yyyy-MM-dd')
+        </if>
+        <if test="condition.words!=null and condition.words!=''">
+            and
+            (tb_structure.name LIKE CONCAT ('%', #{condition.words}, '%'))
+        </if>
+--         order by (case tb_plan_detail.status when -1 then 2 else tb_plan_detail.status end)ASC,tb_plan_detail.inspection_time ASC
+        order by tb_plan_detail.inspection_time ASC
+    </select>
+
+    <!--查询巡查记录-->
+    <select id="listInspectionRecord" parameterType="com.iware.bridge.inspection.vo.PlanRecordFilter"
+            resultType="com.iware.bridge.inspection.vo.PlanDetailVO">
+        SELECT
+            ti.*, COALESCE((
+                SELECT
+                    sum (td. quantity)
+                FROM
+                    tb_inspection_disease_instance td
+                WHERE
+                    td.plan_detail_id = ti. ID and td.inspection_disease_id!=26 and td.inspection_disease_id!=64
+                ),0) AS disease_count,
+               (
+                select
+                    ts.name
+                from
+                    tb_structure ts
+                where
+                    ts.id=ti.structure_id
+                ) as structure_name,
+               (
+                    select
+                    ts.structure_type
+                    from
+                    tb_structure ts
+                    where
+                    ts.id=ti.structure_id
+                    ) as structureType,
+                case tpi.type
+                    when 1 then '日常巡查'
+                    when 2 then '经常检查'
+                    when 3 then '特殊检查'
+                end as inspection_plan_type
+        FROM
+        tb_plan_detail ti
+        INNER JOIN tb_plan_info tpi ON ti.plan_id=tpi.id
+        <if test="roleId != 3">
+            LEFT JOIN tb_project AS tp ON tpi.project_id = tp.id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+            LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+        </if>
+        where ti.status = 1
+        <if test="roleId == 1 or roleId == 0">
+            AND tpa.receive_unit_id = #{unitId}
+            AND ti.inspection_time BETWEEN tpa.start_time AND tpa.end_time
+            AND papr.power_id = #{powerId}
+        </if>
+        <if test="roleId == 2">
+            AND tp.unit_id = #{unitId}
+        </if>
+        <if test="condition.username != null and condition.username != ''">
+            and ti.inspector = #{condition.username}
+        </if>
+        <if test="condition.type!=null">
+            and ti.plan_id=tpi.id
+                  and tpi.type = #{condition.type}
+        </if>
+        <if test="condition.projectId!=null">
+            and tpi.project_id = #{condition.projectId}
+        </if>
+        <if test="condition.startTime!=null and condition.endTime!=null">
+            and
+            to_char(ti.inspection_time,'yyyy-MM-dd') &gt;= to_char(#{condition.startTime}::date,'yyyy-MM-dd')
+            and to_char(ti.inspection_time,'yyyy-MM-dd') &lt;= to_char(#{condition.endTime}::date,'yyyy-MM-dd')
+        </if>
+        <if test="condition.structureId!=null">
+            and ti.structure_id = #{condition.structureId}
+        </if>
+        order by ti.inspection_time desc
+    </select>
+
+    <!--桥梁详情页查询巡查记录-->
+    <select id="listInspectionRecordByStructure" resultType="com.iware.bridge.inspection.vo.PlanDetailVO">
+        SELECT
+        ti.*,  COALESCE((
+        SELECT
+        sum (td. quantity)
+        FROM
+        tb_inspection_disease_instance td
+        WHERE
+        td.plan_detail_id = ti. ID and td.inspection_disease_id!=26
+        ),0)  AS disease_count,
+        ts.name AS structure_name,
+        CASE tpi.type
+            WHEN 1 THEN '日常巡查'
+            WHEN 2 THEN '经常检查'
+            WHEN 3 THEN '特殊检查'
+        END AS inspection_plan_type,
+        tpi.project_id
+        FROM
+        tb_plan_detail ti
+        INNER JOIN tb_plan_info tpi ON ti.plan_id=tpi.id
+        INNER JOIN tb_structure ts ON ts.id = ti.structure_id
+        <if test="roleId != 3">
+            LEFT JOIN tb_project AS tp ON tpi.project_id = tp.id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+            LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+        </if>
+        <where>
+            ti.status = 1
+            <if test="roleId == 1 or roleId == 0">
+                AND tpa.receive_unit_id = #{unitId}
+                AND ti.inspection_time BETWEEN tpa.start_time AND tpa.end_time
+                AND papr.power_id = #{powerId}
+            </if>
+            <if test="roleId == 2">
+                AND tp.unit_id = #{unitId}
+            </if>
+            <if test="structureId != null">
+                AND ts.id = #{structureId}
+            </if>
+        </where>
+        ORDER BY ti.inspection_time DESC
+    </select>
+
+    <select id="listInspectionRecordByTime"
+            resultType="com.iware.bridge.inspection.vo.PlanDetailVO">
+        SELECT
+        DISTINCT
+        tpd.*, (
+        SELECT
+        sum (td. quantity)
+        FROM
+        tb_inspection_disease_instance td
+        WHERE
+        td.plan_detail_id = tpd. ID and td.inspection_disease_id!=26
+        ) AS disease_count,
+        (
+        select
+        ts.name
+        from
+        tb_structure ts
+        where
+        ts.id=tpd.structure_id
+        ) as structure_name,
+        (
+        select
+        ts.structure_type
+        from
+        tb_structure ts
+        where
+        ts.id=tpd.structure_id
+        ) as structureType,
+        case tpi.type
+        when 1 then '日常巡查'
+        when 2 then '经常检查'
+        when 3 then '特殊检查'
+        end as inspection_plan_type
+        FROM
+        tb_plan_detail tpd
+        INNER JOIN tb_plan_info tpi ON tpd.plan_id=tpi.id
+        <if test="roleId != 3">
+            LEFT JOIN tb_project AS tp ON tpi.project_id = tp.id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+            LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+        </if>
+            where tpd.status = 1 and to_char(tpd.inspection_time,'yyyy-MM-dd') = #{inspectionTime}
+              <if test="roleId == 1 or roleId == 0">
+                AND tpa.receive_unit_id = #{unitId}
+                AND tpd.inspection_time BETWEEN tpa.start_time AND tpa.end_time
+                AND papr.power_id = #{powerId}
+            </if>
+            <if test="roleId == 2">
+                AND tp.unit_id = #{unitId}
+            </if>
+    </select>
+
+    <select id="listMaintainRecord" resultType="com.iware.bridge.inspection.vo.MaintainItemVO"
+            parameterType="com.iware.bridge.inspection.vo.PlanRecordFilter">
+        SELECT
+        DISTINCT
+            tm.creator as creator,tm.*,
+            ts.name AS structure_name,
+            ts.maintain_department AS maintainDepartment,
+            ts.supervision_department AS manageDepartment,
+            tpi.name AS maintainPlanName,
+            CASE tm.type
+                WHEN 0 THEN '日常保养'
+                WHEN 1 THEN '小修'
+                WHEN 2 THEN '中修'
+                WHEN 3 THEN '大修'
+            END AS maintain_type_name
+        FROM
+            tb_maintain_item tm
+            INNER JOIN tb_structure ts ON tm.structure_id = ts. id
+            INNER JOIN tb_plan_info tpi ON tm.plan_id = tpi. ID
+        <if test="roleId != 3">
+            LEFT JOIN tb_project AS tp ON tpi.project_id = tp.id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+            LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+        </if>
+        <where>
+            tm.status = 1
+            <if test="condition.structureId!=null">
+                and ts.id = #{condition.structureId}
+            </if>
+            <if test="condition.projectId!=null">
+                AND tpi.project_id=#{condition.projectId}
+            </if>
+            <if test="condition.username != null and condition.username != ''">
+                AND tm.creator=#{condition.username}
+            </if>
+            <if test="condition.type!=null">
+                AND tm.type=#{condition.type}
+            </if>
+            <if test="condition.startTime!=null and condition.endTime!=null">
+                AND
+                tm.proposed_time &gt;= #{condition.startTime}
+                AND tm.proposed_time &lt;= #{condition.endTime}
+            </if>
+            <if test="condition.structureId != null">
+                AND ts.id = #{condition.structureId}
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                AND tpa.receive_unit_id = #{unitId}
+                AND tm.proposed_time BETWEEN tpa.start_time AND tpa.end_time
+                AND papr.power_id = #{powerId}
+            </if>
+            <if test="roleId == 2">
+                AND tp.unit_id = #{unitId}
+            </if>
+        </where>
+    ORDER BY tm.maintain_time DESC
+    </select>
+
+    <select id="listMaintainRecordByTime"
+            resultType="com.iware.bridge.inspection.vo.MaintainItemVO">
+        SELECT
+        DISTINCT
+        tm.*,
+        ts.name AS structure_name,
+        ts.structure_type AS structureType,
+        ts.maintain_department AS maintainDepartment,
+        ts.supervision_department AS manageDepartment,
+        tpi.name AS maintainPlanName,
+        CASE tm.type
+        WHEN 0 THEN '日常保养'
+        WHEN 1 THEN '小修'
+        WHEN 2 THEN '中修'
+        WHEN 3 THEN '大修'
+        END AS maintain_type_name
+        FROM
+        tb_maintain_item tm
+        INNER JOIN tb_structure ts ON tm.structure_id = ts. id
+        INNER JOIN tb_plan_info tpi ON tm.plan_id=tpi.id
+        <if test="roleId != 3">
+            LEFT JOIN tb_project AS tp ON tpi.project_id = tp.id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+            LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+            AND papr.power_id = #{powerId}
+        </if>
+        where tm.status = 1 AND to_char(tm.maintain_time,'yyyy-MM-dd') = #{maintainTime}
+        <if test="roleId == 1 or roleId == 0">
+            AND tpa.receive_unit_id = #{unitId}
+            AND tm.proposed_time BETWEEN tpa.start_time AND tpa.end_time
+        </if>
+        <if test="roleId == 2">
+            AND tp.unit_id = #{unitId}
+        </if>
+    </select>
+
+    <select id="selPlanDetail" resultType="com.iware.bridge.inspection.vo.PlanDetailVO">
+        SELECT
+            tpd.*, ts. NAME AS structureName,
+            tpi.type as inspectionPlanType
+        FROM
+            tb_plan_detail tpd
+                LEFT JOIN tb_structure ts ON ts. ID = tpd.structure_id
+            LEFT JOIN  tb_plan_info tpi on tpi.id=tpd.plan_id
+        WHERE
+            tpd. ID = #{planDetailId}
+    </select>
+
+    <select id="selMaintainItem" resultType="com.iware.bridge.inspection.vo.MaintainItemVO">
+            SELECT
+            tu.real_name as creator,tm.*,
+            ts.name AS structure_name,
+            ts.maintain_department AS maintainDepartment,
+            tun.name AS manageDepartment,
+        tp.name as projectName,
+            tpi.name AS maintainPlanName,
+            tid.damage_type AS diseaseName,
+            tidi.remarks AS diseaseRemark,
+        tu.phone as phone
+            FROM
+            tb_maintain_item tm
+            LEFT JOIN tb_structure ts ON tm.structure_id = ts. id
+            LEFT JOIN tb_plan_info tpi ON tm.plan_id = tpi. ID
+                LEFT JOIN tb_project tp ON tp.id= tpi.project_id
+                LEFT join tb_user tu on tu.real_name=tm.creator
+                LEFT JOIN tb_unit tun on tun.id=ts.unit_id
+            LEFT JOIN tb_inspection_disease_instance tidi ON tidi.id=tm.disease_instance_id
+            LEFT JOIN tb_inspection_disease tid ON tid.id=tidi.inspection_disease_id
+            <where>
+                tm.id=#{maintainItemId}
+            </where>
+    </select>
+
+    <select id="listMaintainRecordByIds" resultType="com.iware.bridge.inspection.vo.MaintainItemVO">
+        SELECT
+        tu.real_name as creator,tm.*,
+        ts.name AS structure_name,
+        ts.maintain_department AS maintainDepartment,
+        ts.supervision_department AS manageDepartment,
+        tpi.name AS maintainPlanName,
+        CASE tm.type
+            WHEN 0 THEN '日常保养'
+            WHEN 1 THEN '小修'
+            WHEN 2 THEN '中修'
+            WHEN 3 THEN '大修'
+        END AS maintain_type_name
+        FROM
+        tb_maintain_item tm
+        INNER JOIN tb_structure ts ON tm.structure_id = ts. id
+        INNER JOIN tb_plan_info tpi ON tm.plan_id = tpi. ID
+        INNER JOIN tb_user tu on tu.username=tm.creator
+        <where>
+            tm.id in
+        <foreach collection="ids" open="(" separator="," close=")" item="item" index="i">
+            #{item}
+        </foreach>
+        </where>
+        order by tm.proposed_time ASC
+    </select>
+
+    <select id="listInspectionRecordByIds" resultType="com.iware.bridge.inspection.vo.PlanDetailVO">
+        SELECT
+        ti.*,
+        COALESCE((SELECT sum (td. quantity)
+        FROM
+        tb_inspection_disease_instance td
+        WHERE
+        td.plan_detail_id = ti. ID and td.inspection_disease_id!=26 and td.inspection_disease_id!=64
+        ),0) AS disease_count,
+        (
+        select
+        ts.name
+        from
+        tb_structure ts
+        where
+        ts.id=ti.structure_id
+        ) as structure_name,
+        (
+            select structure_type
+            from tb_structure
+        where
+        id=ti.structure_id
+        ) as structureType,
+        case tp.type
+            when 1 then '日常巡查'
+            when 2 then '经常检查'
+            when 3 then '特殊检查'
+        end as inspection_plan_type
+        FROM
+        tb_plan_detail ti
+        INNER JOIN tb_plan_info tp ON ti.plan_id=tp.id
+        <where>
+            ti.id in
+            <foreach collection="ids" open="(" separator="," close=")" item="item" index="i">
+                #{item}
+            </foreach>
+        </where>
+        order by ti.inspection_time asc
+    </select>
+
+    <select id="getInspectionDiseaseByStructureId" resultType="com.iware.bridge.inspection.vo.InspectionDiseaseInstanceVO">
+        SELECT
+            tidi.*, tid. NAME AS diseaseName,
+            tido. NAME AS optionName,
+            tid.damage_type AS damageType,
+            ts. ID AS structureId,
+            ts. NAME AS structureName,
+            tid.unit as unit
+        FROM
+            tb_inspection_disease_instance tidi
+        LEFT JOIN tb_inspection_disease tid ON tid. ID = tidi.inspection_disease_id
+        LEFT JOIN tb_disease_instance_option_rel tdior ON tdior.inspection_disease_instance_id=tidi.id
+        LEFT JOIN tb_inspection_disease_option tido ON tdior. inspection_disease_option_id = tido.id
+        LEFT JOIN tb_plan_detail tpd ON tidi.plan_detail_id = tpd. ID
+        LEFT JOIN tb_structure ts ON ts. ID = tpd.structure_id
+        WHERE
+            tidi.plan_detail_id =
+        (
+            SELECT
+                T . ID
+            FROM
+                (
+                SELECT
+                    ROW_NUMBER () OVER (
+                        PARTITION BY td.structure_id
+                        ORDER BY
+                            td.inspection_time DESC
+                    ) rowId,
+        td.*
+        FROM
+        tb_plan_detail td
+        WHERE
+        td.structure_id = #{structureId} and td.status=1
+        ) T
+        WHERE
+        rowid = 1
+        ) and tidi.strategy!=4 and tidi.status=0 and
+        (
+        tid.damage_type LIKE CONCAT ('%', #{words}, '%')
+        or tido. NAME LIKE CONCAT ('%', #{words}, '%')
+        or tidi.remarks LIKE CONCAT ('%', #{words}, '%')
+        ) and tidi.strategy!=7 and tidi.strategy!=9
+    </select>
+
+    <select id="selectPlanDetailOrderByTime" resultType="com.iware.bridge.model.entity.inspection.PlanDetail">
+        SELECT
+            T .*
+        FROM
+            (
+                SELECT
+                    ROW_NUMBER () OVER (
+				PARTITION BY td.structure_id
+				ORDER BY
+					td.inspection_time ASC
+			) rowId,
+                    td.*
+                FROM
+                    tb_plan_detail td
+                WHERE
+                    td.plan_id=#{planId}
+                    AND
+                        td.structure_id IN (
+                        SELECT
+                            tpd.structure_id
+                        FROM
+                            tb_plan_detail tpd
+                        WHERE
+                            tpd.plan_id = #{planId}
+                        GROUP BY
+                            tpd.structure_id
+                    )
+            ) T
+        WHERE
+            rowid = 1
+    </select>
+
+    <select id="planDetailInPlanInfo" resultType="integer">
+        SELECT
+            count(tpd.id)
+        FROM
+            tb_plan_detail tpd
+        WHERE
+            tpd. ID != #{planDetailId}
+            and tpd.plan_id=#{planId}
+            and tpd.status=0
+    </select>
+
+    <select id="selectLastInspection" resultType="com.iware.bridge.inspection.vo.PlanDetailVO">
+        SELECT
+            T .*
+        FROM
+            (
+                SELECT
+                    ROW_NUMBER () OVER (
+
+                        ORDER BY
+                            tpd.inspection_time DESC
+                    ) AS rowid,
+                    tpd.*
+                FROM
+                    tb_plan_detail tpd
+                WHERE
+                    tpd.inspection_time &lt;(
+                        SELECT
+                            td.inspection_time
+                        FROM
+                            tb_plan_detail td
+                        WHERE
+                            td. ID = #{planDetailId}
+                    )
+                AND tpd.plan_id = (
+                    SELECT
+                        td.plan_id
+                    FROM
+                        tb_plan_detail td
+                    WHERE
+                        td. ID = #{planDetailId}
+                )
+                AND tpd.structure_id = (
+                    SELECT
+                        td.structure_id
+                    FROM
+                        tb_plan_detail td
+                    WHERE
+                        td. ID = #{planDetailId}
+                )
+                AND tpd.status=1
+                ORDER BY
+                    inspection_time DESC
+            ) AS T
+        WHERE
+            T .rowid = 1
+    </select>
+
+    <select id="selectDiseaseByDetailId" resultMap="inspectionDiseaseInstanceMap">
+        SELECT
+            tidi.*, tdior.inspection_disease_option_id as option_id
+        FROM
+            tb_inspection_disease_instance tidi
+                LEFT JOIN tb_disease_instance_option_rel tdior ON tdior.inspection_disease_instance_id = tidi. ID
+        WHERE
+            tidi.plan_detail_id = #{planDetailId}
+    </select>
+
+    <select id="planAllComplete" resultType="integer">
+        SELECT
+            (
+                CASE T . COUNT
+                    WHEN 0 THEN
+                        1
+                    ELSE
+                        0
+                    END
+                ) AS all_complete
+        FROM
+            (
+                SELECT
+                    COUNT (*) AS COUNT
+                FROM
+                    tb_maintain_item tmi
+                WHERE
+                    tmi.plan_id = #{planId}
+                  AND tmi.status = 0
+                  AND tmi. ID != #{planDetailId}
+            ) AS T
+    </select>
+
+    <update id="resetPlanDetailStatus" parameterType="String">
+        UPDATE
+            tb_plan_detail tpd
+        set status=-1
+        WHERE
+        to_char(tpd.inspection_time,'yyyy-MM-dd')&lt;#{nowDate} and tpd.status=0
+    </update>
+
+    <update id="resetMaintainItemStatus" parameterType="String">
+        UPDATE
+            tb_maintain_item tmi
+        set status=2
+        WHERE
+            to_char(tmi.proposed_time,'yyyy-MM')&lt;#{nowDate} and tmi.status=0
+    </update>
+
+    <select id="selOtherRemark" resultType="string">
+        select
+            tidi.remarks
+        from
+            tb_inspection_disease_instance tidi
+        where
+            (tidi.inspection_disease_id=26 or tidi.inspection_disease_id = 64)
+            and plan_detail_id=#{planDetailId}
+    </select>
+
+</mapper>

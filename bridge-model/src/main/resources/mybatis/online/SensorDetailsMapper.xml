@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.online.SensorDetailsDao">
+
+    <resultMap type="com.iware.bridge.model.entity.online.SensorDetails" id="sensorDetailsMap">
+        <result property="id" column="id"/>
+        <result property="detailName" column="detail_name"/>
+        <result property="unit" column="unit"/>
+        <result property="precision" column="precision"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       detail_name,
+       unit,
+       precision
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.online.SensorDetails">
+        insert into tb_sensor_details
+        (
+        <trim prefix="" suffix="" suffixOverrides=",">
+            detail_name,
+            unit,
+            precision
+        </trim>
+        )
+        values
+        (
+        <trim prefix="" suffix="" suffixOverrides=",">
+            #{detailName},
+            #{unit},
+            #{precision}
+        </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询SensorDetails -->
+    <select id="findById" parameterType="Integer" resultMap="sensorDetailsMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_sensor_details
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.online.SensorDetails">
+        UPDATE
+        tb_sensor_details
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                <if test="detailName != null and detailName != ''">
+                    detail_name = #{detailName},
+                </if>
+                <if test="unit != null and unit != ''">
+                    unit = #{unit},
+                </if>
+                <if test="precision != null">
+                    precision = #{precision}
+                </if>
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_sensor_details
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_sensor_details
+        (
+        <trim prefix="" suffix="" suffixOverrides=",">
+            detail_name,
+            unit,
+            precision
+        </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+            (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.detailName},
+                #{it.unit},
+                #{it.precision}
+            </trim>
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+        tb_sensor_details
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="sensorDetailsMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_sensor_details
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件查询SensorDetails -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.online.SensorDetails" resultMap="sensorDetailsMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_sensor_details
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="detailName != null and detailName != ''">
+                AND detail_name = #{detailName}
+            </if>
+            <if test="unit != null and unit != ''">
+                AND unit = #{unit}
+            </if>
+            <if test="precision != null">
+                AND precision = #{precision}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件模糊查询SensorDetails -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.online.SensorDetails" resultMap="sensorDetailsMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_sensor_details
+        <where>
+            <if test="detailName != null and detailName != ''">
+                AND detail_name LIKE CONCAT ('%', #{detailName}, '%')
+            </if>
+            <if test="unit != null and unit != ''">
+                AND unit LIKE CONCAT ('%', #{unit}, '%')
+            </if>
+            <if test="precision != null">
+                AND precision = #{precision}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+</mapper>

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.online.SensorMinuteDao">
+
+    <resultMap type="com.iware.bridge.model.entity.online.SensorMinute" id="sensorMinuteMap">
+        <result property="maxValue" column="max_value"/>
+        <result property="minValue" column="min_value"/>
+        <result property="avgValue" column="avg_value"/>
+        <result property="time" column="time"/>
+        <result property="sensorCoding" column="sensor_coding"/>
+        <result property="sensorDetailsId" column="sensor_details_id"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       max_value,
+       min_value,
+       avg_value,
+       time,
+       sensor_coding,
+       sensor_details_id
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" parameterType="com.iware.bridge.model.entity.online.SensorMinute">
+        insert into tb_sensor_minute
+        (
+            time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                max_value,
+                min_value,
+                avg_value,
+                sensor_coding,
+                sensor_details_id,
+            </trim>
+        )
+        values
+        (
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{maxValue},
+                #{minValue},
+                #{avgValue},
+                #{sensorCoding},
+                #{sensorDetailsId},
+            </trim>
+        )
+    </insert>
+
+    <!--批量保存 -->
+    <insert id="batchSave" parameterType="java.util.List">
+        insert into tb_sensor_minute
+        (
+            time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                max_value,
+                min_value,
+                avg_value,
+                sensor_coding,
+                sensor_details_id,
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.maxValue},
+                #{it.minValue},
+                #{it.avgValue},
+                #{it.sensorCoding},
+                #{it.sensorDetailsId},
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="sensorMinuteMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_sensor_minute
+        ORDER BY
+            time DESC
+    </select>
+
+    <!-- 根据条件查询SensorMinute -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.online.SensorMinute" resultMap="sensorMinuteMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_sensor_minute
+        <where>
+            <if test="maxValue != null">
+                AND max_value = #{maxValue}
+            </if>
+            <if test="minValue != null">
+                AND min_value = #{minValue}
+            </if>
+            <if test="avgValue != null">
+                AND avg_value = #{avgValue}
+            </if>
+            <if test="time != null">
+                AND time = #{time}
+            </if>
+            <if test="sensorCoding != null and sensorCoding != ''">
+                AND sensor_coding = #{sensorCoding}
+            </if>
+            <if test="sensorDetailsId != null">
+                AND sensor_details_id = #{sensorDetailsId}
+            </if>
+        </where>
+        ORDER BY
+            time DESC
+    </select>
+
+    <!-- 根据条件模糊查询SensorMinute -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.online.SensorMinute" resultMap="sensorMinuteMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_sensor_minute
+        <where>
+            <if test="maxValue != null">
+                AND max_value = #{maxValue}
+            </if>
+            <if test="minValue != null">
+                AND min_value = #{minValue}
+            </if>
+            <if test="avgValue != null">
+                AND avg_value = #{avgValue}
+            </if>
+            <if test="sensorCoding != null and sensorCoding != ''">
+                AND sensor_coding LIKE CONCAT ('%', #{sensorCoding}, '%')
+            </if>
+            <if test="sensorDetailsId != null">
+                AND sensor_details_id = #{sensorDetailsId}
+            </if>
+        </where>
+        ORDER BY
+            time DESC
+    </select>
+</mapper>

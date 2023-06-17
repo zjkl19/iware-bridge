@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.inspection.InspectionDiseaseInstanceDao">
+
+    <resultMap type="com.iware.bridge.model.entity.inspection.InspectionDiseaseInstance" id="inspectionDiseaseInstanceMap">
+        <result property="id" column="id"/>
+        <result property="planDetailId" column="plan_detail_id"/>
+        <result property="inspectionDiseaseId" column="inspection_disease_id"/>
+        <result property="quantity" column="quantity"/>
+        <result property="strategy" column="strategy"/>
+        <result property="exceptionPart" column="exception_part"/>
+        <result property="exceptionType" column="exception_type"/>
+        <result property="remarks" column="remarks"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,
+       plan_detail_id,
+       inspection_disease_id,
+       quantity,
+       strategy,
+       exception_part,
+       exception_type,
+       remarks,
+       status,
+       create_time,
+       modify_time
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.inspection.InspectionDiseaseInstance">
+        insert into tb_inspection_disease_instance
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            plan_detail_id,
+            inspection_disease_id,
+            quantity,
+            strategy,
+            exception_part,
+            exception_type,
+            remarks,
+            status,
+        </trim>
+        )
+        values
+        (
+        now(),
+        now(),
+        <trim prefix="" suffix="" suffixOverrides=",">
+            #{planDetailId},
+            #{inspectionDiseaseId},
+            #{quantity},
+            #{strategy},
+            #{exceptionPart},
+            #{exceptionType},
+            #{remarks},
+            #{status},
+        </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询InspectionDiseaseInstance -->
+    <select id="findById" parameterType="Integer" resultMap="inspectionDiseaseInstanceMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_inspection_disease_instance
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.inspection.InspectionDiseaseInstance">
+        UPDATE
+        tb_inspection_disease_instance
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="planDetailId != null">
+                    plan_detail_id = #{planDetailId},
+                </if>
+                <if test="inspectionDiseaseId != null">
+                    inspection_disease_id = #{inspectionDiseaseId},
+                </if>
+                <if test="quantity != null">
+                    quantity = #{quantity},
+                </if>
+                <if test="strategy != null">
+                    strategy = #{strategy},
+                </if>
+                <if test="exceptionPart != null and exceptionPart != ''">
+                    exception_part = #{exceptionPart},
+                </if>
+                <if test="exceptionType != null">
+                    exception_type = #{exceptionType},
+                </if>
+                <if test="remarks != null and remarks != ''">
+                    remarks = #{remarks},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_inspection_disease_instance
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_inspection_disease_instance
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            plan_detail_id,
+            inspection_disease_id,
+            quantity,
+            strategy,
+            exception_part,
+            exception_type,
+            remarks,
+            status,
+        </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+            (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.planDetailId},
+                #{it.inspectionDiseaseId},
+                #{it.quantity},
+                #{it.strategy},
+                #{it.exceptionPart},
+                #{it.exceptionType},
+                #{it.remarks},
+                #{it.status},
+            </trim>
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+        tb_inspection_disease_instance
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="inspectionDiseaseInstanceMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_inspection_disease_instance
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件查询InspectionDiseaseInstance -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.inspection.InspectionDiseaseInstance" resultMap="inspectionDiseaseInstanceMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_inspection_disease_instance
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="planDetailId != null">
+                AND plan_detail_id = #{planDetailId}
+            </if>
+            <if test="inspectionDiseaseId != null">
+                AND inspection_disease_id = #{inspectionDiseaseId}
+            </if>
+            <if test="quantity != null">
+                AND quantity = #{quantity}
+            </if>
+            <if test="strategy != null">
+                AND strategy = #{strategy}
+            </if>
+            <if test="exceptionPart != null and exceptionPart != ''">
+                AND exception_part = #{exceptionPart}
+            </if>
+            <if test="exceptionType != null">
+                AND exception_type = #{exceptionType}
+            </if>
+            <if test="remarks != null and remarks != ''">
+                AND remarks = #{remarks}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件模糊查询InspectionDiseaseInstance -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.inspection.InspectionDiseaseInstance" resultMap="inspectionDiseaseInstanceMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_inspection_disease_instance
+        <where>
+            <if test="planDetailId != null">
+                AND plan_detail_id = #{planDetailId}
+            </if>
+            <if test="inspectionDiseaseId != null">
+                AND inspection_disease_id = #{inspectionDiseaseId}
+            </if>
+            <if test="quantity != null">
+                AND quantity = #{quantity}
+            </if>
+            <if test="strategy != null">
+                AND strategy = #{strategy}
+            </if>
+            <if test="exceptionPart != null and exceptionPart != ''">
+                AND exception_part LIKE CONCAT ('%', #{exceptionPart}, '%')
+            </if>
+            <if test="exceptionType != null">
+                AND exception_type = #{exceptionType}
+            </if>
+            <if test="remarks != null and remarks != ''">
+                AND remarks LIKE CONCAT ('%', #{remarks}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+</mapper>

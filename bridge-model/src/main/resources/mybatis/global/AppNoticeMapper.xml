@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.global.AppNoticeDao">
+
+    <resultMap type="com.iware.bridge.model.entity.global.AppNotice" id="appNoticeMap">
+        <result property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,
+       title,
+       content,
+       status,
+       create_time,
+       modify_time
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.global.AppNotice">
+        insert into tb_app_notice
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            title,
+            content,
+            status,
+        </trim>
+        )
+        values
+        (
+        now(),
+        now(),
+        <trim prefix="" suffix="" suffixOverrides=",">
+            #{title},
+            #{content},
+            #{status},
+        </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询AppNotice -->
+    <select id="findById" parameterType="Integer" resultMap="appNoticeMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_app_notice
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.global.AppNotice">
+        UPDATE
+        tb_app_notice
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="title != null and title != ''">
+                    title = #{title},
+                </if>
+                <if test="content != null and content != ''">
+                    content = #{content},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_app_notice
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_app_notice
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            title,
+            content,
+            status,
+        </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+            (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.title},
+                #{it.content},
+                #{it.status},
+            </trim>
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+        tb_app_notice
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="appNoticeMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_app_notice
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件查询AppNotice -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.global.AppNotice" resultMap="appNoticeMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_app_notice
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="title != null and title != ''">
+                AND title = #{title}
+            </if>
+            <if test="content != null and content != ''">
+                AND content = #{content}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件模糊查询AppNotice -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.global.AppNotice" resultMap="appNoticeMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_app_notice
+        <where>
+            <if test="title != null and title != ''">
+                AND title LIKE CONCAT ('%', #{title}, '%')
+            </if>
+            <if test="content != null and content != ''">
+                AND content LIKE CONCAT ('%', #{content}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+</mapper>

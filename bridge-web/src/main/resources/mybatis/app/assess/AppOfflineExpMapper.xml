@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iware.bridge.app.assess.dao.AppOfflineExpDao">
+
+    <update id="updateDiseaseInstanceSortByModifyTime" parameterType="Integer">
+        UPDATE tb_disease_instance
+        SET sort = (
+            SELECT
+                T . ROW_NUMBER
+            FROM
+                (
+                    SELECT
+                        ROW_NUMBER () OVER (
+
+					ORDER BY
+						tdi.modify_time ASC,
+						tdi.sort ASC,
+						tdi. ID ASC
+				) AS ROW_NUMBER,
+                        tdi.*
+                    FROM
+                        tb_disease_instance tdi
+                            LEFT JOIN tb_bridge_deck_component tbdc ON tdi.target_id = tbdc. ID
+                            LEFT JOIN tb_bridge_deck_system tbds ON tbdc.bridge_deck_system_id = tbds. ID
+                            LEFT JOIN tb_bridge_subcomponent tbsubc ON tdi.target_id = tbsubc. ID
+                            LEFT JOIN tb_bridge_substructure tbsub ON tbsubc.bridge_substructure_id = tbsub. ID
+                            LEFT JOIN tb_bridge_supcomponent tbsupc ON tdi.target_id = tbsupc. ID
+                            LEFT JOIN tb_bridge_supstructure tbsup ON tbsupc.supstructure_id = tbsup. ID
+                            LEFT JOIN tb_bridge_other_structure tbos ON tdi.target_id = tbos. ID
+                            LEFT JOIN tb_bridge_span tbs ON (
+                                tbds.bridge_span_id = tbs. ID
+                                OR tbsub.bridge_span_id = tbs. ID
+                                OR tbsup.bridge_span_id = tbs. ID
+                                OR tbos.bridge_span_id = tbs. ID
+                            )
+                            LEFT JOIN tb_bridge_road tbr ON tbs.bridge_road_id = tbr. ID
+                            LEFT JOIN tb_monitor_plan_structure_rel tmpsl ON tbr.monitor_plan_structure_rel_id = tmpsl. ID
+                    WHERE
+                        tmpsl.id = #{monitorPlanStructureRelId}
+                ) AS T
+            WHERE
+                tb_disease_instance. ID = T . ID
+        )
+        WHERE
+                tb_disease_instance. ID IN (
+                SELECT
+                    tdi. ID
+                FROM
+                    tb_disease_instance tdi
+                        LEFT JOIN tb_bridge_deck_component tbdc ON tdi.target_id = tbdc. ID
+                        LEFT JOIN tb_bridge_deck_system tbds ON tbdc.bridge_deck_system_id = tbds. ID
+                        LEFT JOIN tb_bridge_subcomponent tbsubc ON tdi.target_id = tbsubc. ID
+                        LEFT JOIN tb_bridge_substructure tbsub ON tbsubc.bridge_substructure_id = tbsub. ID
+                        LEFT JOIN tb_bridge_supcomponent tbsupc ON tdi.target_id = tbsupc. ID
+                        LEFT JOIN tb_bridge_supstructure tbsup ON tbsupc.supstructure_id = tbsup. ID
+                        LEFT JOIN tb_bridge_other_structure tbos ON tdi.target_id = tbos. ID
+                        LEFT JOIN tb_bridge_span tbs ON (
+                            tbds.bridge_span_id = tbs. ID
+                            OR tbsub.bridge_span_id = tbs. ID
+                            OR tbsup.bridge_span_id = tbs. ID
+                            OR tbos.bridge_span_id = tbs. ID
+                        )
+                        LEFT JOIN tb_bridge_road tbr ON tbs.bridge_road_id = tbr. ID
+                        LEFT JOIN tb_monitor_plan_structure_rel tmpsl ON tbr.monitor_plan_structure_rel_id = tmpsl. ID
+                WHERE
+                    tmpsl.id = #{monitorPlanStructureRelId}
+            )
+    </update>
+
+</mapper>

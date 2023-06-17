@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.iware.bridge.video.dao.VideoExpDao">
+
+	<resultMap id="structureList" type="com.iware.bridge.video.vo.StructureVideoVO">
+		<id column="id" property="structureId"/>
+		<result column="project_id" property="projectId"/>
+		<result column="name" property="name"/>
+		<collection property="videoList" ofType="com.iware.bridge.video.vo.VideoVO">
+			<id column="vid" property="id"/>
+			<result column="pj_id" property="projectId"/>
+			<result column="structure_id" property="structureId"/>
+			<result column="structure_name" property="structureName"/>
+			<result column="monitor_name" property="monitorName"/>
+			<result column="type" property="type"/>
+			<result column="ezopen_url" property="ezopenUrl"/>
+			<result column="x_axis" property="xAxis"/>
+			<result column="y_axis" property="yAxis"/>
+			<result column="z_axis" property="zAxis"/>
+		</collection>
+	</resultMap>
+
+	<!--查询所有结构物及其视频列表-->
+	<select id="getStructureVideoList" resultMap="structureList">
+		SELECT
+			ts.id,
+			psr.project_id,
+			ts.name,
+			ts.name as structure_name,
+			tv.id AS vid,
+			psr.project_id as pj_id,
+			tv.structure_id,
+			tv.type,
+			tv.monitor_name,
+			tv.ezopen_url,
+			tv.x_axis,
+			tv.y_axis,
+			tv.z_axis
+		FROM tb_structure AS ts
+		INNER JOIN tb_project_structure_rel psr ON ts.id = psr.structure_id
+		INNER JOIN tb_video AS tv ON tv.structure_id = ts.id
+		WHERE psr.project_id = #{projectId} AND tv.id IS NOT NULL
+        ORDER BY tv.id DESC
+	</select>
+
+	<!--查询用户摄像头数-->
+	<select id="getUnitVideoCount" resultType="java.lang.Integer">
+		SELECT
+			count(DISTINCT tv.id)
+		FROM tb_project tp
+		INNER JOIN tb_project_structure_rel psr ON psr.project_id = tp.id
+		INNER JOIN tb_structure ts ON ts.id = psr.structure_id
+		INNER JOIN tb_video tv ON tv.structure_id = ts.id
+		<if test="roleId == 0 or roleId == 1">
+			INNER JOIN tb_project_appoint tpa ON tpa.project_id = tp.id
+			INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.id
+		</if>
+		<where>
+			<if test="roleId == 2">
+				tp.unit_id = #{unitId}
+			</if>
+			<if test="roleId == 0 or roleId == 1">
+				tpa.receive_unit_id = #{unitId}
+				<if test="powerId != null">
+					AND papr.power_id = #{powerId}
+				</if>
+			</if>
+		</where>
+
+	</select>
+
+	<!--查询用户结构物摄像头信息-->
+	<select id="getVideoByStructure" resultType="com.iware.bridge.model.entity.global.Video">
+		SELECT
+			tv.*
+		FROM tb_structure AS ts
+		INNER JOIN tb_video AS tv ON tv.structure_id = ts.id AND ts.id = #{structureId}
+		<if test="roleId == 0 or roleId == 1">
+			INNER JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+			INNER JOIN tb_project_appoint tpa ON tpa.project_id = psr.project_id
+			INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.id
+			AND papr.power_id = #{powerId}
+			WHERE tpa.receive_unit_id = #{unitId}
+		</if>
+	</select>
+</mapper>

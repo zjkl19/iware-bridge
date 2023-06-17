@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.inspection.dao.PlanExpDao">
+
+    <resultMap id="planStructureMap" type="com.iware.bridge.inspection.vo.PlanStructureVO" >
+        <result column="plan_id" property="id"></result>
+        <result column="plan_name" property="name"></result>
+        <result column="plan_time" property="planTime"></result>
+        <result column="project_id" property="projectId"></result>
+        <collection property="structureList"
+                    ofType="com.iware.bridge.model.entity.global.Structure">
+            <result column="structure_id" property="id"></result>
+            <result column="structure_name" property="name"></result>
+        </collection>
+    </resultMap>
+
+
+    <!--查询计划-->
+    <select id="selectPlan" parameterType="com.iware.bridge.inspection.vo.PlanFilter"
+        resultType="com.iware.bridge.model.entity.inspection.PlanInfo">
+        select * from tb_plan_info
+        where 1=1
+        <if test="condition.status!=null">
+            and status = #{condition.status}
+        </if>
+        <if test="condition.projectId!=null">
+            and project_id = #{condition.projectId}
+        </if>
+        <if test="condition.type==2">
+            and "type" = 4
+        </if>
+        <if test="condition.type==1">
+          <if test="condition.inspectType!=null">
+              and "type" = #{condition.inspectType}
+          </if>
+          <if test="condition.inspectType==null">
+                and "type" !=4
+          </if>
+        </if>
+        <if test="condition.receiveTime!=null and condition.receiveTime.size()>0">
+            <foreach collection="condition.receiveTime" index="index" item="item"
+                open="and (" separator="or" close=")">
+                <if test="item.beginTime!=null and item.endTime!=null">
+                (
+                    plan_time &gt;= #{item.beginTime}
+                    and plan_time &lt;= #{item.endTime}
+                )
+                </if>
+            </foreach>
+        </if>
+    </select>
+
+    <select id="listPlan" resultType="com.iware.bridge.inspection.vo.PlanVO">
+        SELECT
+            tpi.*,
+            (select tp.name from tb_project tp where tp.id=tpi.project_id) as projectName,
+            (select tu.real_name from tb_user tu where tu.id=tpi.user_id) as realName
+            <if test="filter.type == 1">
+            ,count(tpd.id)
+            </if>
+            <if test="filter.type == 2">
+            ,count(tmi.id)
+            </if>
+        FROM
+        tb_plan_info tpi
+        <if test="roleId != 3">
+            LEFT JOIN tb_project AS tp ON tpi.project_id = tp.id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+            LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+        </if>
+        <if test="filter.type == 1">
+            LEFT JOIN tb_plan_detail tpd ON tpi.id = tpd.plan_id
+        </if>
+        <if test="filter.type == 2">
+            LEFT JOIN tb_maintain_item tmi ON tpi. ID = tmi.plan_id
+        </if>
+        <where>
+            1=1
+            <if test="filter.type == 1">
+                AND tpi.type != 4
+                <if test="filter.inspectType!=null">
+                    AND tpi.type = #{filter.inspectType}
+                </if>
+            </if>
+            <if test="filter.type == 2">
+                AND tpi.type = 4
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                AND tpa.receive_unit_id = #{unitId}
+                <if test="filter.type ==1 ">
+                    AND tpd.inspection_time BETWEEN tpa.start_time AND tpa.end_time
+                </if>
+                <if test="filter.type ==2 ">
+                    AND tmi.proposed_time BETWEEN tpa.start_time AND tpa.end_time
+                </if>
+                AND papr.power_id = #{powerId}
+            </if>
+            <if test="roleId == 2">
+                AND tp.unit_id = #{unitId}
+            </if>
+            <if test="filter.beginTime != null">
+                AND to_char(tpi.plan_time::date, 'yyyy-MM') &gt;= to_char(#{filter.beginTime}::date, 'yyyy-MM')
+                AND to_char(tpi.plan_time::date, 'yyyy-MM') &lt;= to_char(#{filter.endTime}::date,'yyyy-MM')
+            </if>
+            <if test="filter.projectId != null">
+                AND tpi.project_id = #{filter.projectId}
+            </if>
+            <if test="filter.status != null">
+                AND tpi.status = #{filter.status}
+            </if>
+        </where>
+        GROUP BY
+            tpi.id
+        ORDER BY tpi.plan_time DESC,tpi.create_time DESC
+    </select>
+
+    <select id="listPlanStructure" resultMap="planStructureMap">
+        SELECT
+        tpi.id as plan_id,
+               tpi.name as plan_name,
+               tpi.plan_time as plan_time,
+               tpi.project_id as project_id,
+               ts.id as structure_id,
+               ts.name as structure_name
+        FROM
+        tb_plan_detail td
+        LEFT JOIN tb_plan_info tpi ON td.plan_id = tpi. ID
+        LEFT JOIN tb_structure ts ON td.structure_id = ts. ID
+        <if test="roleId != 3">
+            LEFT JOIN tb_project AS tp ON tpi.project_id = tp.id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+            LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+        </if>
+        <where>
+            td.status = 1
+            <if test="roleId == 1 or roleId == 0">
+                AND tpa.receive_unit_id = #{unitId}
+                AND td.inspection_time BETWEEN tpa.start_time AND tpa.end_time
+                AND papr.power_id = #{powerId}
+            </if>
+            <if test="roleId == 2">
+                AND tp.unit_id = #{unitId}
+            </if>
+            <if test="projectId != null">
+                AND tpi.project_id = #{projectId}
+            </if>
+            <if test="year != null">
+                AND to_char(tpi.plan_time, 'yyyy') = #{year}
+            </if>
+        </where>
+        order by tpi.plan_time DESC
+    </select>
+
+    <select id="selPlanLastDate" resultType="date">
+        SELECT
+            T .inspection_time
+        FROM
+            (
+                SELECT
+                    ROW_NUMBER () OVER (
+				PARTITION BY td.structure_id
+				ORDER BY
+					td.inspection_time DESC
+			) rowId,
+                    td.*
+                FROM
+                    tb_plan_detail td
+                WHERE
+                    td.structure_id = #{structureId}
+                    AND to_char(
+                              td.inspection_time + INTERVAL '1 month',
+                              'yyyy-MM'
+                          ) = #{lastMonth}
+            ) T
+        WHERE
+            rowid = 1
+    </select>
+
+    <update id="resetPlanInfoStatus">
+        update
+            tb_plan_info tpi
+        set
+            status=2
+        WHERE
+                tpi. ID NOT IN (
+                SELECT DISTINCT
+                    (tpii. ID)
+                FROM
+                    tb_plan_info tpii
+                        LEFT JOIN tb_plan_detail tpd ON tpd.plan_id = tpii. ID
+                WHERE
+                    tpd.status = 0
+                UNION
+                SELECT DISTINCT
+                    (tpii. ID)
+                FROM
+                    tb_plan_info tpii
+                        LEFT JOIN tb_maintain_item tmi ON tmi.plan_id = tpii. ID
+                WHERE
+                    tmi.status = 0
+            )
+    </update>
+
+</mapper>

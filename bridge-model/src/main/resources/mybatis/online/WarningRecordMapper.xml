@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.online.WarningRecordDao">
+
+    <resultMap type="com.iware.bridge.model.entity.online.WarningRecord" id="warningRecordMap">
+        <result property="id" column="id"/>
+        <result property="structureId" column="structure_id"/>
+        <result property="componentId" column="component_id"/>
+        <result property="warningTime" column="warning_time"/>
+        <result property="level" column="level"/>
+        <result property="handlerUserId" column="handler_user_id"/>
+        <result property="measures" column="measures"/>
+        <result property="handlerTime" column="handler_time"/>
+        <result property="sendMessage" column="send_message"/>
+        <result property="sensorId" column="sensor_id"/>
+        <result property="sensorDetailsId" column="sensor_details_Id"/>
+        <result property="sensorCoding" column="sensor_coding"/>
+        <result property="sensorName" column="sensor_name"/>
+        <result property="value" column="value"/>
+        <result property="machineId" column="machine_id"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       structure_id,
+       component_id,
+       warning_time,
+       level,
+       handler_user_id,
+       measures,
+       handler_time,
+       send_message,
+       sensor_id,
+       sensor_details_Id,
+       sensor_coding,
+       sensor_name,
+       value,
+       machine_id,
+       status,
+       create_time,
+       modify_time
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.online.WarningRecord">
+        insert into tb_warning_record
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            structure_id,
+            component_id,
+            warning_time,
+            level,
+            handler_user_id,
+            measures,
+            handler_time,
+            send_message,
+            sensor_id,
+            sensor_details_Id,
+            sensor_coding,
+            sensor_name,
+            value,
+            machine_id,
+            status,
+        </trim>
+        )
+        values
+        (
+        now(),
+        now(),
+        <trim prefix="" suffix="" suffixOverrides=",">
+            #{structureId},
+            #{componentId},
+            #{warningTime},
+            #{level},
+            #{handlerUserId},
+            #{measures},
+            #{handlerTime},
+            #{sendMessage},
+            #{sensorId},
+            #{sensorDetailsId},
+            #{sensorCoding},
+            #{sensorName},
+            #{value},
+            #{machineId},
+            #{status},
+        </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询WarningRecord -->
+    <select id="findById" parameterType="Integer" resultMap="warningRecordMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_warning_record
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.online.WarningRecord">
+        UPDATE
+        tb_warning_record
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="structureId != null">
+                    structure_id = #{structureId},
+                </if>
+                <if test="componentId != null">
+                    component_id = #{componentId},
+                </if>
+                <if test="warningTime != null">
+                    warning_time = #{warningTime},
+                </if>
+                <if test="level != null">
+                    level = #{level},
+                </if>
+                <if test="handlerUserId != null">
+                    handler_user_id = #{handlerUserId},
+                </if>
+                <if test="measures != null and measures != ''">
+                    measures = #{measures},
+                </if>
+                <if test="handlerTime != null">
+                    handler_time = #{handlerTime},
+                </if>
+                <if test="sendMessage != null">
+                    send_message = #{sendMessage},
+                </if>
+                <if test="sensorId != null">
+                    sensor_id = #{sensorId},
+                </if>
+                <if test="sensorDetailsId != null">
+                    sensor_details_Id = #{sensorDetailsId},
+                </if>
+                <if test="sensorCoding != null and sensorCoding != ''">
+                    sensor_coding = #{sensorCoding},
+                </if>
+                <if test="sensorName != null and sensorName != ''">
+                    sensor_name = #{sensorName},
+                </if>
+                <if test="value != null and value != ''">
+                    value = #{value},
+                </if>
+                <if test="machineId != null">
+                    machine_id = #{machineId},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_warning_record
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_warning_record
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            structure_id,
+            component_id,
+            warning_time,
+            level,
+            handler_user_id,
+            measures,
+            handler_time,
+            send_message,
+            sensor_id,
+            sensor_details_Id,
+            sensor_coding,
+            sensor_name,
+            value,
+            machine_id,
+            status,
+        </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+            (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.structureId},
+                #{it.componentId},
+                #{it.warningTime},
+                #{it.level},
+                #{it.handlerUserId},
+                #{it.measures},
+                #{it.handlerTime},
+                #{it.sendMessage},
+                #{it.sensorId},
+                #{it.sensorDetailsId},
+                #{it.sensorCoding},
+                #{it.sensorName},
+                #{it.value},
+                #{it.machineId},
+                #{it.status},
+            </trim>
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+        tb_warning_record
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="warningRecordMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_warning_record
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件查询WarningRecord -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.online.WarningRecord" resultMap="warningRecordMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_warning_record
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="structureId != null">
+                AND structure_id = #{structureId}
+            </if>
+            <if test="componentId != null">
+                AND component_id = #{componentId}
+            </if>
+            <if test="warningTime != null">
+                AND warning_time = #{warningTime}
+            </if>
+            <if test="level != null">
+                AND level = #{level}
+            </if>
+            <if test="handlerUserId != null">
+                AND handler_user_id = #{handlerUserId}
+            </if>
+            <if test="measures != null and measures != ''">
+                AND measures = #{measures}
+            </if>
+            <if test="handlerTime != null">
+                AND handler_time = #{handlerTime}
+            </if>
+            <if test="sendMessage != null">
+                AND send_message = #{sendMessage}
+            </if>
+            <if test="sensorId != null">
+                AND sensor_id = #{sensorId}
+            </if>
+            <if test="sensorDetailsId != null">
+                AND sensor_details_Id = #{sensorDetailsId}
+            </if>
+            <if test="sensorCoding != null and sensorCoding != ''">
+                AND sensor_coding = #{sensorCoding}
+            </if>
+            <if test="sensorName != null and sensorName != ''">
+                AND sensor_name = #{sensorName}
+            </if>
+            <if test="value != null and value != ''">
+                AND value = #{value}
+            </if>
+            <if test="machineId != null">
+                AND machine_id = #{machineId}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件模糊查询WarningRecord -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.online.WarningRecord" resultMap="warningRecordMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_warning_record
+        <where>
+            <if test="structureId != null">
+                AND structure_id = #{structureId}
+            </if>
+            <if test="componentId != null">
+                AND component_id = #{componentId}
+            </if>
+            <if test="warningTime != null">
+                AND warning_time LIKE CONCAT ('%', #{warningTime}, '%')
+            </if>
+            <if test="level != null">
+                AND level = #{level}
+            </if>
+            <if test="handlerUserId != null">
+                AND handler_user_id = #{handlerUserId}
+            </if>
+            <if test="measures != null and measures != ''">
+                AND measures LIKE CONCAT ('%', #{measures}, '%')
+            </if>
+            <if test="handlerTime != null">
+                AND handler_time LIKE CONCAT ('%', #{handlerTime}, '%')
+            </if>
+            <if test="sendMessage != null">
+                AND send_message = #{sendMessage}
+            </if>
+            <if test="sensorId != null">
+                AND sensor_id = #{sensorId}
+            </if>
+            <if test="sensorDetailsId != null">
+                AND sensor_details_Id = #{sensorDetailsId}
+            </if>
+            <if test="sensorCoding != null and sensorCoding != ''">
+                AND sensor_coding LIKE CONCAT ('%', #{sensorCoding}, '%')
+            </if>
+            <if test="sensorName != null and sensorName != ''">
+                AND sensor_name LIKE CONCAT ('%', #{sensorName}, '%')
+            </if>
+            <if test="value != null and value != ''">
+                AND value LIKE CONCAT ('%', #{value}, '%')
+            </if>
+            <if test="machineId != null">
+                AND machine_id = #{machineId}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+</mapper>

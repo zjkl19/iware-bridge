@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+        namespace="com.iware.bridge.evaluation.dao.MonitorPlanOriginalRecordExpDao">
+    <insert id="insertRecord">
+        INSERT into tb_monitor_plan_original_record(monitor_plan_structure_rel_id,instrumentation,project_location,test_basis,record_number,create_time)
+        VALUES(#{model.monitorPlanStructureRelId},#{model.instrumentation},#{model.projectLocation},#{model.testBasis},#{model.recordNumber},to_timestamp(to_char(now(),'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss'))
+    </insert>
+
+    <select id="selectOriginalRecordByStructure" resultType="java.lang.Integer">
+        SELECT count(id) from tb_monitor_plan_original_record   WHERE monitor_plan_structure_rel_id = #{id}
+    </select>
+    <select id="selectRecordByStructureId" resultType="com.iware.bridge.evaluation.vo.OriginalRecord">
+        SELECT record.id,record.monitor_plan_structure_rel_id,record.instrumentation,record.project_location,record.test_basis,record.record_number,structure.structure_name,
+        project.name as project_name
+        FROM tb_monitor_plan_original_record  as record
+
+		join tb_monitor_plan_structure_rel as structure  on structure.id = record.monitor_plan_structure_rel_id
+
+		join tb_monitor_plan as plan on plan.id = structure.monitor_plan_id
+
+		join tb_project as project on project.id = plan.project_info_id
+
+		WHERE record.monitor_plan_structure_rel_id = #{structureId}
+
+    </select>
+    <select id="existRecordNumber" resultType="java.lang.Integer">
+        SELECT count(id)
+        FROM tb_monitor_plan_original_record
+        WHERE record_number = #{recordNumber}
+    </select>
+    <select id="selectOriginalRecordByRoadId" resultType="com.iware.bridge.evaluation.vo.OriginalRecord">
+        SELECT project_location,test_basis FROM tb_monitor_plan_original_record  as record
+
+        join  tb_monitor_plan_structure_rel  as structure on record.monitor_plan_structure_rel_id = structure.id
+
+        join (SELECT monitor_plan_structure_rel_id FROM tb_bridge_road    WHERE  id = #{id}) as road on  structure.id = road.monitor_plan_structure_rel_id
+
+    </select>
+    <select id="existRecord" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM tb_monitor_plan_original_record AS tmpor
+                 LEFT JOIN tb_bridge_road AS tbr ON tmpor.monitor_plan_structure_rel_id = tbr.monitor_plan_structure_rel_id
+        WHERE tbr.id = #{roadId}
+    </select>
+</mapper>

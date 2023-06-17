@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.user.UnitDao">
+
+    <resultMap type="com.iware.bridge.model.entity.user.Unit" id="unitMap">
+        <result property="id" column="id"/>
+        <result property="phone" column="phone"/>
+        <result property="name" column="name"/>
+        <result property="roleId" column="role_id"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="createUserId" column="create_user_id"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       phone,
+       name,
+       role_id,
+       parent_id,
+       create_user_id,
+       status,
+       create_time,
+       modify_time
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.user.Unit">
+        insert into tb_unit
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            phone,
+            name,
+            role_id,
+            parent_id,
+            create_user_id,
+            status,
+        </trim>
+        )
+        values
+        (
+        now(),
+        now(),
+        <trim prefix="" suffix="" suffixOverrides=",">
+            #{phone},
+            #{name},
+            #{roleId},
+            #{parentId},
+            #{createUserId},
+            #{status},
+        </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询Unit -->
+    <select id="findById" parameterType="Integer" resultMap="unitMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_unit
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.user.Unit">
+        UPDATE
+        tb_unit
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="phone != null and phone != ''">
+                    phone = #{phone},
+                </if>
+                <if test="name != null and name != ''">
+                    name = #{name},
+                </if>
+                <if test="roleId != null">
+                    role_id = #{roleId},
+                </if>
+                <if test="parentId != null">
+                    parent_id = #{parentId},
+                </if>
+                <if test="createUserId != null">
+                    create_user_id = #{createUserId},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_unit
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_unit
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            phone,
+            name,
+            role_id,
+            parent_id,
+            create_user_id,
+            status,
+        </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+            (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.phone},
+                #{it.name},
+                #{it.roleId},
+                #{it.parentId},
+                #{it.createUserId},
+                #{it.status},
+            </trim>
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+        tb_unit
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="unitMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_unit
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件查询Unit -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.user.Unit" resultMap="unitMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_unit
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone = #{phone}
+            </if>
+            <if test="name != null and name != ''">
+                AND name = #{name}
+            </if>
+            <if test="roleId != null">
+                AND role_id = #{roleId}
+            </if>
+            <if test="parentId != null">
+                AND parent_id = #{parentId}
+            </if>
+            <if test="createUserId != null">
+                AND create_user_id = #{createUserId}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件模糊查询Unit -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.user.Unit" resultMap="unitMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_unit
+        <where>
+            <if test="phone != null and phone != ''">
+                AND phone LIKE CONCAT ('%', #{phone}, '%')
+            </if>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT ('%', #{name}, '%')
+            </if>
+            <if test="roleId != null">
+                AND role_id = #{roleId}
+            </if>
+            <if test="parentId != null">
+                AND parent_id = #{parentId}
+            </if>
+            <if test="createUserId != null">
+                AND create_user_id = #{createUserId}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+</mapper>

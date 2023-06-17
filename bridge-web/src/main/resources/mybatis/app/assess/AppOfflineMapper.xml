@@ -1,0 +1,1324 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iware.bridge.app.assess.dao.AppOfflineDao">
+
+    <select id="selectStructureByProjectId" resultType="com.iware.bridge.app.assess.vo.offline.offlineData.StructureVo">
+        select *
+        from tb_structure ts
+            left join tb_project_structure_rel tpsr
+                      on tpsr.structure_id=ts.id
+        where tpsr.project_id = #{projectId}
+    </select>
+
+    <select id="selectStructureByPlanId" resultType="com.iware.bridge.app.assess.vo.offline.offlineData.StructureVo">
+        select structure_info_id id,structure_name
+        from tb_monitor_plan_structure_rel
+        where monitor_plan_id = #{planId}
+    </select>
+
+    <select id="selectStructureInfoById" resultType="com.iware.bridge.app.assess.vo.offline.offlineData.StructureInfoVo">
+        select id,
+               code as structureCode,
+               name as structureName,
+               number as structureNumber,
+               technology,
+               unit_id
+        from tb_structure
+        where id = #{id}
+    </select>
+
+    <select id="selectStructureInfoByProjectId" resultType="com.iware.bridge.app.assess.vo.offline.offlineData.StructureInfoVo">
+        select ts.id,
+               ts.code as structureCode,
+               ts.name as structureName,
+               ts.number as structureNumber,
+               ts.technology,
+               ts.unit_id
+        from tb_structure ts
+        left join tb_project_structure_rel tpsr on tpsr.structure_id=ts.id
+        where tpsr.project_id = #{projectId}
+    </select>
+
+    <insert id="insertOrUpdatePlanStructureRel" parameterType="com.iware.bridge.model.entity.evaluation.MonitorPlanStructureRel" >
+        insert into tb_monitor_plan_structure_rel(
+            id,
+            monitor_plan_id,
+            structure_info_id,
+            structure_name,
+            file_name,
+            file_url,
+            is_delete
+        )values
+            (
+                #{id},
+                #{monitorPlanId},
+                #{structureInfoId},
+                #{structureName},
+                #{fileName},
+                #{fileUrl},
+                0
+            )
+            ON CONFLICT (id) DO UPDATE
+            <set>
+                monitor_plan_id=#{monitorPlanId},
+                structure_info_id=#{structureInfoId},
+                structure_name=#{structureName},
+                file_name=#{fileName},
+                file_url=#{fileUrl},
+                is_delete=0
+            </set>
+    </insert>
+
+    <insert id="insertOrUpdateBridgeRoad" parameterType="com.iware.bridge.model.entity.evaluation.BridgeRoad" >
+        insert into tb_bridge_road(
+        id,
+        name,
+        monitor_plan_structure_rel_id,
+        bridge_type_id,
+        span_number,
+        main_span_number,
+        stairway_number,
+        stairway_span_number,
+        creator,
+        create_time,
+        modify_time,
+        status,
+        report_path
+        )values
+        (
+        #{id},
+        #{name},
+        #{monitorPlanStructureRelId},
+        #{bridgeTypeId},
+        #{spanNumber},
+        #{mainSpanNumber},
+        #{stairwayNumber},
+        #{stairwaySpanNumber},
+        #{creator},
+        #{createTime},
+        #{modifyTime},
+        #{status},
+        #{reportPath}
+        )
+        ON CONFLICT (id) DO UPDATE
+        <set>
+            id=#{id},
+            name=#{name},
+            monitor_plan_structure_rel_id=#{monitorPlanStructureRelId},
+            bridge_type_id=#{bridgeTypeId},
+            span_number=#{spanNumber},
+            main_span_number=#{mainSpanNumber},
+            stairway_number=#{stairwayNumber},
+            stairway_span_number=#{stairwaySpanNumber},
+            creator=#{creator},
+            create_time=#{createTime},
+            modify_time=#{modifyTime},
+            status=#{status},
+            report_path=#{reportPath}
+        </set>
+    </insert>
+
+    <insert id="insertOrUpdateBridgeSpan" parameterType="com.iware.bridge.model.entity.evaluation.BridgeSpan" >
+        insert into tb_bridge_span(
+        id,
+        bridge_road_id,
+        bridge_shape,
+        span_code,
+        length,
+        outer_arc_length,
+        inner_arc_length,
+        convex,
+        creator,
+        create_time,
+        modify_time,
+        status
+        )values
+        (
+        #{id},
+        #{bridgeRoadId},
+        #{bridgeShape},
+        #{spanCode},
+        #{length},
+        #{outerArcLength},
+        #{innerArcLength},
+        #{convex},
+        #{creator},
+        #{createTime},
+        #{modifyTime},
+        #{status}
+        )
+        ON CONFLICT (id) DO UPDATE
+        <set>
+            id=#{id},
+            bridge_road_id=#{bridgeRoadId},
+            bridge_shape=#{bridgeShape},
+            span_code=#{spanCode},
+            length=#{length},
+            outer_arc_length=#{outerArcLength},
+            inner_arc_length=#{innerArcLength},
+            convex=#{convex},
+            creator=#{creator},
+            create_time=#{createTime},
+            modify_time=#{modifyTime},
+            status=#{status}
+        </set>
+    </insert>
+
+    <insert id="insertOrUpdateBridgeDeckSystem" parameterType="com.iware.bridge.model.entity.evaluation.BridgeDeckSystem" >
+        insert into tb_bridge_deck_system(
+        id,
+        bridge_span_id,
+        direction,
+        tilt_angle,
+        sidewalk,
+        sidewalk_width,
+        left_sidewalk_width,
+        right_sidewalk_width,
+        lane_width,
+        midle_barrier_width,
+        left_rail_width,
+        right_rail_width,
+        stairway,
+        stairway_shadow_length,
+        stairway_length,
+        stairway_width,
+        platform_number,
+        expansion_joint,
+        bridge_head_board_length,
+        monitor_diagram,
+        create_time,
+        modify_time,
+        creator,
+        status
+        )values
+        (
+        #{id},
+        #{bridgeSpanId},
+        #{direction},
+        #{tiltAngle},
+        #{sidewalk},
+        #{sidewalkWidth},
+        #{leftSidewalkWidth},
+        #{rightSidewalkWidth},
+        #{laneWidth},
+        #{midleBarrierWidth},
+        #{leftRailWidth},
+        #{rightRailWidth},
+        #{stairway},
+        #{stairwayShadowLength},
+        #{stairwayLength},
+        #{stairwayWidth},
+        #{platformNumber},
+        #{expansionJoint},
+        #{bridgeHeadBoardLength},
+        #{monitorDiagram},
+        #{createTime},
+        #{modifyTime},
+        #{creator},
+        #{status}
+        )
+        ON CONFLICT (id) DO UPDATE
+        <set>
+            id=#{id},
+            bridge_span_id=#{bridgeSpanId},
+            direction=#{direction},
+            tilt_angle=#{tiltAngle},
+            sidewalk=#{sidewalk},
+            sidewalk_width=#{sidewalkWidth},
+            left_sidewalk_width=#{leftSidewalkWidth},
+            right_sidewalk_width=#{rightSidewalkWidth},
+            lane_width=#{laneWidth},
+            midle_barrier_width=#{midleBarrierWidth},
+            left_rail_width=#{leftRailWidth},
+            right_rail_width=#{rightRailWidth},
+            stairway=#{stairway},
+            stairway_shadow_length=#{stairwayShadowLength},
+            stairway_length=#{stairwayLength},
+            stairway_width=#{stairwayWidth},
+            platform_number=#{platformNumber},
+            expansion_joint=#{expansionJoint},
+            bridge_head_board_length=#{bridgeHeadBoardLength},
+            monitor_diagram=#{monitorDiagram},
+            create_time=#{createTime},
+            modify_time=#{modifyTime},
+            creator=#{creator},
+            status=#{status}
+        </set>
+    </insert>
+
+    <insert id="insertOrUpdateBridgeSupstructure" parameterType="com.iware.bridge.model.entity.evaluation.BridgeSupstructure" >
+        insert into tb_bridge_supstructure(
+        id,
+        bridge_span_id,
+        beam_type,
+        beam_number,
+        hanging_beam,
+        hanging_beam_support,
+        anti_falling_beam,
+        truss,
+        primary_node,
+        stringer,
+        cross_beam,
+        connector,
+        arch_ring,
+        horizonta_connection,
+        arch_structure,
+        monitor_diagram,
+        exterior_trim_panel,
+        creator,
+        create_time,
+        modify_time,
+        status
+        )values
+        (
+        #{id},
+        #{bridgeSpanId},
+        #{beamType},
+        #{beamNumber},
+        #{hangingBeam},
+        #{hangingBeamSupport},
+        #{antiFallingBeam},
+        #{truss},
+        #{primaryNode},
+        #{stringer},
+        #{crossBeam},
+        #{connector},
+        #{archRing},
+        #{horizontaConnection},
+        #{archStructure},
+        #{monitorDiagram},
+        #{exteriorTrimPanel},
+        #{creator},
+        #{createTime},
+        #{modifyTime},
+        #{status}
+        )
+        ON CONFLICT (id) DO UPDATE
+        <set>
+            id=#{id},
+            bridge_span_id=#{bridgeSpanId},
+            beam_type=#{beamType},
+            beam_number=#{beamNumber},
+            hanging_beam=#{hangingBeam},
+            hanging_beam_support=#{hangingBeamSupport},
+            anti_falling_beam=#{antiFallingBeam},
+            truss=#{truss},
+            primary_node=#{primaryNode},
+            stringer=#{stringer},
+            cross_beam=#{crossBeam},
+            connector=#{connector},
+            arch_ring=#{archRing},
+            horizonta_connection=#{horizontaConnection},
+            arch_structure=#{archStructure},
+            monitor_diagram=#{monitorDiagram},
+            exterior_trim_panel=#{exteriorTrimPanel},
+            creator=#{creator},
+            create_time=#{createTime},
+            modify_time=#{modifyTime},
+            status=#{status}
+        </set>
+    </insert>
+
+    <insert id="insertOrUpdateBridgeSubstructure" parameterType="com.iware.bridge.model.entity.evaluation.BridgeSubstructure" >
+        insert into tb_bridge_substructure(
+        id,
+        bridge_span_id,
+        single_row_dun,
+        single_row_support,
+        arch_foot,
+        exterior_trim_panel,
+        monitor_diagram,
+        creator,
+        create_time,
+        modify_time,
+        status
+        )values
+        (
+        #{id},
+        #{bridgeSpanId},
+        #{singleRowDun},
+        #{singleRowSupport},
+        #{archFoot},
+        #{exteriorTrimPanel},
+        #{monitorDiagram},
+        #{creator},
+        #{createTime},
+        #{modifyTime},
+        #{status}
+        )
+        ON CONFLICT (id) DO UPDATE
+        <set>
+            id=#{id},
+            bridge_span_id=#{bridgeSpanId},
+            single_row_dun=#{singleRowDun},
+            single_row_support=#{singleRowSupport},
+            arch_foot=#{archFoot},
+            exterior_trim_panel=#{exteriorTrimPanel},
+            monitor_diagram=#{monitorDiagram},
+            creator=#{creator},
+            create_time=#{createTime},
+            modify_time=#{modifyTime},
+            status=#{status}
+        </set>
+    </insert>
+
+    <insert id="insertOrUpdateBridgeDeckComponent" parameterType="com.iware.bridge.model.entity.evaluation.BridgeDeckComponent" >
+        insert into tb_bridge_deck_component(
+        id,
+        bridge_deck_system_id,
+        component_id,
+        code,
+        initial_weight,
+        actual_weight,
+        create_time,
+        modify_time,
+        creator,
+        status
+        )values
+        (
+        #{id},
+        #{bridgeDeckSystemId},
+        #{componentId},
+        #{code},
+        #{initialWeight},
+        #{actualWeight},
+        #{createTime},
+        #{modifyTime},
+        #{creator},
+        #{status}
+        )
+        ON CONFLICT (id) DO UPDATE
+        <set>
+            id=#{id},
+            bridge_deck_system_id=#{bridgeDeckSystemId},
+            component_id=#{componentId},
+            code=#{code},
+            initial_weight=#{initialWeight},
+            actual_weight=#{actualWeight},
+            create_time=#{createTime},
+            modify_time=#{modifyTime},
+            creator=#{creator},
+            status=#{status}
+        </set>
+    </insert>
+
+    <insert id="insertOrUpdateBridgeSupcomponent" parameterType="com.iware.bridge.model.entity.evaluation.BridgeSupcomponent" >
+        insert into tb_bridge_supcomponent(
+        id,
+        supstructure_id,
+        component_id,
+        code,
+        initial_weight,
+        actual_weight,
+        web_plate_hight,
+        wing_plate_width,
+        baseplate_width,
+        diaphragms_height,
+        diaphragms_number,
+        cantilever_lenght,
+        hanging_beam_length,
+        create_time,
+        modify_time,
+        creator,
+        status
+        )values
+        (
+        #{id},
+        #{supstructureId},
+        #{componentId},
+        #{code},
+        #{initialWeight},
+        #{actualWeight},
+        #{webPlateHight},
+        #{wingPlateWidth},
+        #{baseplateWidth},
+        #{diaphragmsHeight},
+        #{diaphragmsNumber},
+        #{cantileverLenght},
+        #{hangingBeamLength},
+        #{createTime},
+        #{modifyTime},
+        #{creator},
+        #{status}
+        )
+        ON CONFLICT (id) DO UPDATE
+        <set>
+            id=#{id},
+            supstructure_id=#{supstructureId},
+            component_id=#{componentId},
+            code=#{code},
+            initial_weight=#{initialWeight},
+            actual_weight=#{actualWeight},
+            web_plate_hight=#{webPlateHight},
+            wing_plate_width=#{wingPlateWidth},
+            baseplate_width=#{baseplateWidth},
+            diaphragms_height=#{diaphragmsHeight},
+            diaphragms_number=#{diaphragmsNumber},
+            cantilever_lenght=#{cantileverLenght},
+            hanging_beam_length=#{hangingBeamLength},
+            create_time=#{createTime},
+            modify_time=#{modifyTime},
+            creator=#{creator},
+            status=#{status}
+        </set>
+    </insert>
+
+    <insert id="insertOrUpdateBridgeSubcomponent" parameterType="com.iware.bridge.model.entity.evaluation.BridgeSubcomponent" >
+        insert into tb_bridge_subcomponent(
+        id,
+        bridge_substructure_id,
+        component_id,
+        code,
+        initial_weight,
+        actual_weight,
+        cap_beams_height,
+        cap_beams_width,
+        cap_beams_thick,
+        abutment_height,
+        abutment_width,
+        abutment_thick,
+        abutment_cap_height,
+        pier_shape,
+        pier_height,
+        pier_width,
+        pier_thick,
+        pier_radius,
+        pier_abutment_id,
+        create_time,
+        modify_time,
+        creator,
+        is_abutment,
+        status
+        )values
+        (
+        #{id},
+        #{bridgeSubstructureId},
+        #{componentId},
+        #{code},
+        #{initialWeight},
+        #{actualWeight},
+        #{capBeamsHeight},
+        #{capBeamsWidth},
+        #{capBeamsThick},
+        #{abutmentHeight},
+        #{abutmentWidth},
+        #{abutmentThick},
+        #{abutmentCapHeight},
+        #{pierShape},
+        #{pierHeight},
+        #{pierWidth},
+        #{pierThick},
+        #{pierRadius},
+        #{pierAbutmentId},
+        #{createTime},
+        #{modifyTime},
+        #{creator},
+        #{isAbutment},
+        #{status}
+        )
+        ON CONFLICT (id) DO UPDATE
+        <set>
+            id=#{id},
+            bridge_substructure_id=#{bridgeSubstructureId},
+            component_id=#{componentId},
+            code=#{code},
+            initial_weight=#{initialWeight},
+            actual_weight=#{actualWeight},
+            cap_beams_height=#{capBeamsHeight},
+            cap_beams_width=#{capBeamsWidth},
+            cap_beams_thick=#{capBeamsThick},
+            abutment_height=#{abutmentHeight},
+            abutment_width=#{abutmentWidth},
+            abutment_thick=#{abutmentThick},
+            abutment_cap_height=#{abutmentCapHeight},
+            pier_shape=#{pierShape},
+            pier_height=#{pierHeight},
+            pier_width=#{pierWidth},
+            pier_thick=#{pierThick},
+            pier_radius=#{pierRadius},
+            pier_abutment_id=#{pierAbutmentId},
+            create_time=#{createTime},
+            modify_time=#{modifyTime},
+            creator=#{creator},
+            is_abutment=#{isAbutment},
+            status=#{status}
+        </set>
+    </insert>
+
+    <insert id="insertOrUpdateBridgeOtherStructure" parameterType="com.iware.bridge.model.entity.evaluation.BridgeOtherStructure" >
+        insert into tb_bridge_other_structure(
+        id,
+        bridge_span_id,
+        descript,
+        creator,
+        create_time,
+        modify_time,
+        status
+        )values
+        (
+        #{id},
+        #{bridgeSpanId},
+        #{descript},
+        #{creator},
+        #{createTime},
+        #{modifyTime},
+        #{status}
+        )
+        ON CONFLICT (id) DO UPDATE
+        <set>
+            id=#{id},
+            bridge_span_id=#{bridgeSpanId},
+            descript=#{descript},
+            creator=#{creator},
+            create_time=#{createTime},
+            modify_time=#{modifyTime},
+            status=#{status}
+        </set>
+    </insert>
+
+    <insert id="insertOrUpdatePierAbutment" parameterType="com.iware.bridge.model.entity.evaluation.PierAbutment" >
+        insert into tb_pier_abutment(
+        id,
+        bridge_substructure_id,
+        code
+        )values
+        (
+        #{id},
+        #{bridgeSubstructureId},
+        #{code}
+        )
+        ON CONFLICT (id) DO UPDATE
+        <set>
+            id=#{id},
+            bridge_substructure_id=#{bridgeSubstructureId},
+            code=#{code}
+        </set>
+    </insert>
+
+    <insert id="insertOrUpdateStructureInfo" parameterType="com.iware.bridge.app.assess.vo.offline.offlineData.StructureInfoVo" >
+        insert into tb_structure(
+        id,
+        code,
+        name,
+        number,
+        technology,
+        unit_id
+        )values
+        (
+        #{id},
+        #{structureCode},
+        #{structureName},
+        #{structureNumber},
+         #{technology},
+         #{unitId}
+        )
+        ON CONFLICT (id) DO UPDATE
+        <set>
+            id=#{id},
+            code=#{structureCode},
+            name=#{structureName},
+            number=#{structureNumber},
+            technology=#{technology},
+            unit_id=#{unitId}
+        </set>
+    </insert>
+
+    <insert id="insertOrUpdateDiseaseInstance" parameterType="com.iware.bridge.model.entity.evaluation.DiseaseInstance" >
+        insert into tb_disease_instance(
+        id,
+        part_type,
+        target_id,
+        length,
+        width,
+        depth,
+        seam_length,
+        seam_width,
+        angle,
+        degree,
+        x_axis,
+        y_axis,
+        remark,
+        height_difference,
+        number,
+        deflection_value,
+        trend,
+        creator,
+        create_time,
+        modify_time,
+        status,
+        disease_id,
+        deduct,
+        sort,
+        is_delete,
+        crack_axis
+        )values
+        (
+        #{id},
+        #{partType},
+        #{targetId},
+        #{length},
+        #{width},
+        #{depth},
+        #{seamLength},
+        #{seamWidth},
+        #{angle},
+        #{degree},
+        #{xAxis},
+        #{yAxis},
+        #{remark},
+        #{heightDifference},
+        #{number},
+        #{deflectionValue},
+        #{trend},
+        #{creator},
+        #{createTime},
+        #{modifyTime},
+        #{status},
+        #{diseaseId},
+        #{deduct},
+        #{sort},
+        #{isDelete},
+        #{crackAxis}
+        )
+        ON CONFLICT (id) DO UPDATE
+        <set>
+            id=#{id},
+            part_type=#{partType},
+            target_id=#{targetId},
+            length=#{length},
+            width=#{width},
+            depth=#{depth},
+            seam_length=#{seamLength},
+            seam_width=#{seamWidth},
+            angle=#{angle},
+            degree=#{degree},
+            x_axis=#{xAxis},
+            y_axis=#{yAxis},
+            remark=#{remark},
+            height_difference=#{heightDifference},
+            number=#{number},
+            deflection_value=#{deflectionValue},
+            trend=#{trend},
+            creator=#{creator},
+            create_time=#{createTime},
+            modify_time=#{modifyTime},
+            status=#{status},
+            disease_id=#{diseaseId},
+            deduct=#{deduct},
+            sort=#{sort},
+            is_delete=#{isDelete},
+            crack_axis=#{crackAxis}
+        </set>
+    </insert>
+
+    <insert id="recordDiseaseInstance" parameterType="com.iware.bridge.model.entity.evaluation.DiseaseInstanceRecord" useGeneratedKeys="true"
+            keyProperty="id" keyColumn="id">
+        insert into tb_disease_instance_record(
+        tdi_id,
+        part_type,
+        target_id,
+        disease_id,
+        length,
+        width,
+        depth,
+        seam_length,
+        seam_width,
+        angle,
+        degree,
+        x_axis,
+        y_axis,
+        remark,
+        height_difference,
+        number,
+        deflection_value,
+        trend,
+        creator,
+        create_time,
+        modify_time,
+        status,
+        deduct,
+        sort,
+        crack_axis
+        )values
+        (
+        #{tdiId},
+        #{partType},
+        #{targetId},
+        #{diseaseId},
+        #{length},
+        #{width},
+        #{depth},
+        #{seamLength},
+        #{seamWidth},
+        #{angle},
+        #{degree},
+        #{xAxis},
+        #{yAxis},
+        #{remark},
+        #{heightDifference},
+        #{number},
+        #{deflectionValue},
+        #{trend},
+        #{creator},
+        #{createTime},
+        #{modifyTime},
+        #{status},
+        #{deduct},
+        #{sort},
+        #{crackAxis}
+        )
+    </insert>
+
+    <delete id="deleteStructureInfo" parameterType="Integer">
+        DELETE
+        FROM
+            tb_structure
+        WHERE id = #{structureInfoVoId}
+    </delete>
+
+    <insert id="insertOrUpdateAttachment" parameterType="com.iware.bridge.model.entity.evaluation.Attachment" >
+        insert into tb_attachment(
+        id,
+        name,
+        path,
+        type,
+        part_type,
+        target_id,
+        create_time,
+        modify_time,
+        status
+        )values
+        (
+        #{id},
+        #{name},
+        #{path},
+        #{type},
+        #{partType},
+        #{targetId},
+        #{createTime},
+        #{modifyTime},
+        #{status}
+        )
+        ON CONFLICT (id) DO UPDATE
+        <set>
+            id=#{id},
+            name=#{name},
+            path=#{path},
+            type=#{type},
+            part_type=#{partType},
+            target_id=#{targetId},
+            create_time=#{createTime},
+            modify_time=#{modifyTime},
+            status=#{status}
+        </set>
+    </insert>
+
+    <select id="selectRelIdByStructureIdWhereInRoadTable" resultType="integer">
+        select tb_monitor_plan_structure_rel.id
+        from tb_monitor_plan_structure_rel
+            INNER JOIN tb_bridge_road
+                ON tb_monitor_plan_structure_rel.id=tb_bridge_road.monitor_plan_structure_rel_id
+        WHERE tb_monitor_plan_structure_rel.structure_info_id=#{structureId}
+        GROUP BY tb_monitor_plan_structure_rel.id
+        ORDER BY tb_monitor_plan_structure_rel.id desc
+    </select>
+
+    <insert id="insertNewMonitorPlanStructureRel" useGeneratedKeys="true" parameterType="com.iware.bridge.model.entity.evaluation.MonitorPlanStructureRel"
+    keyProperty="id" keyColumn="id">
+        insert into tb_monitor_plan_structure_rel(
+            monitor_plan_id,
+            structure_info_id,
+            structure_name,
+            file_name,
+            file_url,
+            is_delete
+        )values
+        (
+            #{monitorPlanId},
+            #{structureInfoId},
+            #{structureName},
+            #{fileName},
+            #{fileUrl},
+            0
+        )
+    </insert>
+
+    <insert id="insertNewBridgeRoad" useGeneratedKeys="true" parameterType="com.iware.bridge.model.entity.evaluation.BridgeRoad"
+            keyProperty="id" keyColumn="id">
+        insert into tb_bridge_road(
+            name,
+            monitor_plan_structure_rel_id,
+            bridge_type_id,
+            span_number,
+            main_span_number,
+            stairway_number,
+            stairway_span_number,
+            creator,
+            create_time,
+            modify_time,
+            status,
+            report_path
+        )values
+        (
+            #{name},
+            #{monitorPlanStructureRelId},
+            #{bridgeTypeId},
+            #{spanNumber},
+            #{mainSpanNumber},
+            #{stairwayNumber},
+            #{stairwaySpanNumber},
+            #{creator},
+            #{createTime},
+            #{modifyTime},
+            #{status},
+            #{reportPath}
+        )
+    </insert>
+
+    <insert id="insertNewBridgeSpan" useGeneratedKeys="true" parameterType="com.iware.bridge.model.entity.evaluation.BridgeSpan"
+            keyProperty="id" keyColumn="id">
+        insert into tb_bridge_span(
+            bridge_road_id,
+            bridge_shape,
+            span_code,
+            length,
+            outer_arc_length,
+            inner_arc_length,
+            convex,
+            creator,
+            create_time,
+            modify_time,
+            status
+        )values
+        (
+            #{bridgeRoadId},
+            #{bridgeShape},
+            #{spanCode},
+            #{length},
+            #{outerArcLength},
+            #{innerArcLength},
+            #{convex},
+            #{creator},
+            #{createTime},
+            #{modifyTime},
+            #{status}
+        )
+    </insert>
+
+    <insert id="insertNewBridgeDeckSystem" useGeneratedKeys="true" parameterType="com.iware.bridge.model.entity.evaluation.BridgeDeckSystem"
+            keyProperty="id" keyColumn="id">
+        insert into tb_bridge_deck_system(
+            bridge_span_id,
+            direction,
+            tilt_angle,
+            sidewalk,
+            sidewalk_width,
+            left_sidewalk_width,
+            right_sidewalk_width,
+            lane_width,
+            midle_barrier_width,
+            left_rail_width,
+            right_rail_width,
+            stairway,
+            stairway_shadow_length,
+            stairway_length,
+            stairway_width,
+            platform_number,
+            expansion_joint,
+            bridge_head_board_length,
+            monitor_diagram,
+            create_time,
+            modify_time,
+            creator,
+            status
+        )values
+        (
+            #{bridgeSpanId},
+            #{direction},
+            #{tiltAngle},
+            #{sidewalk},
+            #{sidewalkWidth},
+            #{leftSidewalkWidth},
+            #{rightSidewalkWidth},
+            #{laneWidth},
+            #{midleBarrierWidth},
+            #{leftRailWidth},
+            #{rightRailWidth},
+            #{stairway},
+            #{stairwayShadowLength},
+            #{stairwayLength},
+            #{stairwayWidth},
+            #{platformNumber},
+            #{expansionJoint},
+            #{bridgeHeadBoardLength},
+            #{monitorDiagram},
+            #{createTime},
+            #{modifyTime},
+            #{creator},
+            #{status}
+        )
+    </insert>
+
+    <insert id="insertNewBridgeDeckComponent" useGeneratedKeys="true" parameterType="com.iware.bridge.model.entity.evaluation.BridgeDeckComponent"
+            keyProperty="id" keyColumn="id">
+        insert into tb_bridge_deck_component(
+            bridge_deck_system_id,
+            component_id,
+            code,
+            initial_weight,
+            actual_weight,
+            create_time,
+            modify_time,
+            creator,
+            status
+        )values
+        (
+            #{bridgeDeckSystemId},
+            #{componentId},
+            #{code},
+            #{initialWeight},
+            #{actualWeight},
+            #{createTime},
+            #{modifyTime},
+            #{creator},
+            #{status}
+        )
+    </insert>
+
+    <insert id="insertNewDiseaseInstance" useGeneratedKeys="true" parameterType="com.iware.bridge.model.entity.evaluation.DiseaseInstance"
+            keyProperty="id" keyColumn="id">
+        insert into tb_disease_instance(
+            part_type,
+            target_id,
+            length,
+            width,
+            depth,
+            seam_length,
+            seam_width,
+            angle,
+            degree,
+            x_axis,
+            y_axis,
+            remark,
+            height_difference,
+            number,
+            deflection_value,
+            trend,
+            creator,
+            create_time,
+            modify_time,
+            status,
+            disease_id,
+            deduct,
+            sort,
+            is_delete,
+            crack_axis
+        )values
+        (
+            #{partType},
+            #{targetId},
+            #{length},
+            #{width},
+            #{depth},
+            #{seamLength},
+            #{seamWidth},
+            #{angle},
+            #{degree},
+            #{xAxis},
+            #{yAxis},
+            #{remark},
+            #{heightDifference},
+            #{number},
+            #{deflectionValue},
+            #{trend},
+            #{creator},
+            #{createTime},
+            #{modifyTime},
+            #{status},
+            #{diseaseId},
+            #{deduct},
+            #{sort},
+            #{isDelete},
+            #{crackAxis}
+        )
+    </insert>
+
+    <insert id="insertNewBridgeSupstructure" useGeneratedKeys="true" parameterType="com.iware.bridge.model.entity.evaluation.BridgeSupstructure"
+            keyProperty="id" keyColumn="id">
+        insert into tb_bridge_supstructure(
+            bridge_span_id,
+            beam_type,
+            beam_number,
+            hanging_beam,
+            hanging_beam_support,
+            anti_falling_beam,
+            truss,
+            primary_node,
+            stringer,
+            cross_beam,
+            connector,
+            arch_ring,
+            horizonta_connection,
+            arch_structure,
+            monitor_diagram,
+            exterior_trim_panel,
+            creator,
+            create_time,
+            modify_time,
+            status
+        )values
+        (
+            #{bridgeSpanId},
+            #{beamType},
+            #{beamNumber},
+            #{hangingBeam},
+            #{hangingBeamSupport},
+            #{antiFallingBeam},
+            #{truss},
+            #{primaryNode},
+            #{stringer},
+            #{crossBeam},
+            #{connector},
+            #{archRing},
+            #{horizontaConnection},
+            #{archStructure},
+            #{monitorDiagram},
+            #{exteriorTrimPanel},
+            #{creator},
+            #{createTime},
+            #{modifyTime},
+            #{status}
+        )
+    </insert>
+
+    <insert id="insertNewBridgeSupcomponent" useGeneratedKeys="true" parameterType="com.iware.bridge.model.entity.evaluation.BridgeSupcomponent"
+            keyProperty="id" keyColumn="id">
+        insert into tb_bridge_supcomponent(
+            supstructure_id,
+            component_id,
+            code,
+            initial_weight,
+            actual_weight,
+            web_plate_hight,
+            wing_plate_width,
+            baseplate_width,
+            diaphragms_height,
+            diaphragms_number,
+            cantilever_lenght,
+            hanging_beam_length,
+            create_time,
+            modify_time,
+            creator,
+            status
+        )values
+        (
+            #{supstructureId},
+            #{componentId},
+            #{code},
+            #{initialWeight},
+            #{actualWeight},
+            #{webPlateHight},
+            #{wingPlateWidth},
+            #{baseplateWidth},
+            #{diaphragmsHeight},
+            #{diaphragmsNumber},
+            #{cantileverLenght},
+            #{hangingBeamLength},
+            #{createTime},
+            #{modifyTime},
+            #{creator},
+            #{status}
+        )
+    </insert>
+
+    <insert id="insertNewBridgeSubstructure" useGeneratedKeys="true" parameterType="com.iware.bridge.model.entity.evaluation.BridgeSubstructure"
+            keyProperty="id" keyColumn="id">
+        insert into tb_bridge_substructure(
+            bridge_span_id,
+            single_row_dun,
+            single_row_support,
+            arch_foot,
+            exterior_trim_panel,
+            monitor_diagram,
+            creator,
+            create_time,
+            modify_time,
+            status
+        )values
+        (
+            #{bridgeSpanId},
+            #{singleRowDun},
+            #{singleRowSupport},
+            #{archFoot},
+            #{exteriorTrimPanel},
+            #{monitorDiagram},
+            #{creator},
+            #{createTime},
+            #{modifyTime},
+            #{status}
+        )
+    </insert>
+
+    <insert id="insertNewPierAbutment" useGeneratedKeys="true" parameterType="com.iware.bridge.model.entity.evaluation.PierAbutment"
+            keyProperty="id" keyColumn="id">
+        insert into tb_pier_abutment(
+            bridge_substructure_id,
+            code
+        )values
+        (
+            #{bridgeSubstructureId},
+            #{code}
+        )
+    </insert>
+
+    <insert id="insertNewBridgeSubcomponent" useGeneratedKeys="true" parameterType="com.iware.bridge.model.entity.evaluation.BridgeSubcomponent"
+            keyProperty="id" keyColumn="id">
+        insert into tb_bridge_subcomponent(
+            bridge_substructure_id,
+            component_id,
+            code,
+            initial_weight,
+            actual_weight,
+            cap_beams_height,
+            cap_beams_width,
+            cap_beams_thick,
+            abutment_height,
+            abutment_width,
+            abutment_thick,
+            abutment_cap_height,
+            pier_shape,
+            pier_height,
+            pier_width,
+            pier_thick,
+            pier_radius,
+            pier_abutment_id,
+            create_time,
+            modify_time,
+            creator,
+            is_abutment,
+            status
+        )values
+        (
+            #{bridgeSubstructureId},
+            #{componentId},
+            #{code},
+            #{initialWeight},
+            #{actualWeight},
+            #{capBeamsHeight},
+            #{capBeamsWidth},
+            #{capBeamsThick},
+            #{abutmentHeight},
+            #{abutmentWidth},
+            #{abutmentThick},
+            #{abutmentCapHeight},
+            #{pierShape},
+            #{pierHeight},
+            #{pierWidth},
+            #{pierThick},
+            #{pierRadius},
+            #{pierAbutmentId},
+            #{createTime},
+            #{modifyTime},
+            #{creator},
+            #{isAbutment},
+            #{status}
+        )
+    </insert>
+
+    <insert id="insertNewBridgeOtherStructure" useGeneratedKeys="true" parameterType="com.iware.bridge.model.entity.evaluation.BridgeOtherStructure"
+            keyProperty="id" keyColumn="id">
+        insert into tb_bridge_other_structure(
+            bridge_span_id,
+            descript,
+            creator,
+            create_time,
+            modify_time,
+            status
+        )values
+        (
+            #{bridgeSpanId},
+            #{descript},
+            #{creator},
+            #{createTime},
+            #{modifyTime},
+            #{status}
+        )
+    </insert>
+
+    <insert id="insertNewAttachment" useGeneratedKeys="true" parameterType="com.iware.bridge.model.entity.evaluation.Attachment"
+            keyProperty="id" keyColumn="id">
+        insert into tb_attachment(
+            name,
+            path,
+            type,
+            part_type,
+            target_id,
+            create_time,
+            modify_time,
+            status
+        )values
+        (
+            #{name},
+            #{path},
+            #{type},
+            #{partType},
+            #{targetId},
+            #{createTime},
+            #{modifyTime},
+            #{status}
+        )
+    </insert>
+
+    <insert id="insertNewStructureInfo" useGeneratedKeys="true" parameterType="com.iware.bridge.app.assess.vo.offline.offlineData.StructureInfoVo"
+            keyProperty="id" keyColumn="id">
+        insert into tb_structure(
+            structure_type,
+            code,
+            name,
+            number,
+            technology,
+            unit_id,
+            create_user_id,
+            status
+        )values
+        (
+            #{structureType},
+            #{structureCode},
+            #{structureName},
+            #{structureNumber},
+            #{technology},
+            #{unitId},
+            #{userId},
+            #{status}
+        )
+    </insert>
+
+    <select id="getProjectUnitIdByPlanId" resultType="integer">
+        select project.unit_id
+        from tb_project project,tb_monitor_plan plan
+        where plan.project_info_id=project.id and plan.id=#{planId}
+    </select>
+
+
+    <select id="findBridgeRoadByPlanId" resultType="com.iware.bridge.app.assess.vo.offline.offlineData.BridgeRoadVo">
+        select road.*
+        from tb_monitor_plan_structure_rel rel,tb_bridge_road road
+        where rel.monitor_plan_id=#{planId} and rel.id=road.monitor_plan_structure_rel_id
+    </select>
+
+    <update id="setDiseaseStatus">
+        UPDATE tb_disease_instance
+        <set> status=0 </set>
+        where id=#{id}
+    </update>
+
+    <update id="setOtherAttachmentByTargetId">
+        UPDATE tb_attachment
+        <set> status=0 </set>
+        where target_id=#{targetId} and part_type=#{type} and type=6
+    </update>
+
+</mapper>
+

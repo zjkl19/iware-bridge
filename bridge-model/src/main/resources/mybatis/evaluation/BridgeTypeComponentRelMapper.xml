@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.evaluation.BridgeTypeComponentRelDao">
+
+    <resultMap type="com.iware.bridge.model.entity.evaluation.BridgeTypeComponentRel" id="bridgeTypeComponentRelMap">
+        <result property="id" column="id"/>
+        <result property="bridgeTypeId" column="bridge_type_id"/>
+        <result property="componentId" column="component_id"/>
+        <result property="partType" column="part_type"/>
+        <result property="pierAbutment" column="pier_abutment"/>
+        <result property="initialWeight" column="initial_weight"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       bridge_type_id,
+       component_id,
+       part_type,
+       pier_abutment,
+       initial_weight
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.evaluation.BridgeTypeComponentRel">
+        insert into tb_bridge_type_component_rel
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                bridge_type_id,
+                component_id,
+                part_type,
+                pier_abutment,
+                initial_weight
+            </trim>
+        )
+        values
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{bridgeTypeId},
+                #{componentId},
+                #{partType},
+                #{pierAbutment},
+                #{initialWeight}
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询BridgeTypeComponentRel -->
+    <select id="findById" parameterType="Integer" resultMap="bridgeTypeComponentRelMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_type_component_rel
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.evaluation.BridgeTypeComponentRel">
+        UPDATE
+            tb_bridge_type_component_rel
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                <if test="bridgeTypeId != null">
+                    bridge_type_id = #{bridgeTypeId},
+                </if>
+                <if test="componentId != null">
+                    component_id = #{componentId},
+                </if>
+                <if test="partType != null">
+                    part_type = #{partType},
+                </if>
+                <if test="pierAbutment != null">
+                    pier_abutment = #{pierAbutment},
+                </if>
+                <if test="initialWeight != null and initialWeight != ''">
+                    initial_weight = #{initialWeight}
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_bridge_type_component_rel
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_bridge_type_component_rel
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                bridge_type_id,
+                component_id,
+                part_type,
+                pier_abutment,
+                initial_weight
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.bridgeTypeId},
+                #{it.componentId},
+                #{it.partType},
+                #{it.pierAbutment},
+                #{it.initialWeight}
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_bridge_type_component_rel
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="bridgeTypeComponentRelMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_type_component_rel
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询BridgeTypeComponentRel -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.evaluation.BridgeTypeComponentRel" resultMap="bridgeTypeComponentRelMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_type_component_rel
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="bridgeTypeId != null">
+                AND bridge_type_id = #{bridgeTypeId}
+            </if>
+            <if test="componentId != null">
+                AND component_id = #{componentId}
+            </if>
+            <if test="partType != null">
+                AND part_type = #{partType}
+            </if>
+            <if test="pierAbutment != null">
+                AND pier_abutment = #{pierAbutment}
+            </if>
+            <if test="initialWeight != null and initialWeight != ''">
+                AND initial_weight = #{initialWeight}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询BridgeTypeComponentRel -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.evaluation.BridgeTypeComponentRel" resultMap="bridgeTypeComponentRelMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_type_component_rel
+        <where>
+            <if test="bridgeTypeId != null">
+                AND bridge_type_id = #{bridgeTypeId}
+            </if>
+            <if test="componentId != null">
+                AND component_id = #{componentId}
+            </if>
+            <if test="partType != null">
+                AND part_type = #{partType}
+            </if>
+            <if test="pierAbutment != null">
+                AND pier_abutment = #{pierAbutment}
+            </if>
+            <if test="initialWeight != null and initialWeight != ''">
+                AND initial_weight LIKE CONCAT ('%', #{initialWeight}, '%')
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

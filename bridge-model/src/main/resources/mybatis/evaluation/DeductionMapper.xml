@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.evaluation.DeductionDao">
+
+    <resultMap type="com.iware.bridge.model.entity.evaluation.Deduction" id="deductionMap">
+        <result property="id" column="id"/>
+        <result property="componentId" column="component_id"/>
+        <result property="diseaseId" column="disease_id"/>
+        <result property="degress" column="degress"/>
+        <result property="lower" column="lower"/>
+        <result property="upper" column="upper"/>
+        <result property="value" column="value"/>
+        <result property="type" column="type"/>
+        <result property="levelLimit" column="level_limit"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       component_id,
+       disease_id,
+       degress,
+       lower,
+       upper,
+       value,
+       type,
+       level_limit
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.evaluation.Deduction">
+        insert into tb_deduction
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                component_id,
+                disease_id,
+                degress,
+                lower,
+                upper,
+                value,
+                type,
+                level_limit
+            </trim>
+        )
+        values
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{componentId},
+                #{diseaseId},
+                #{degress},
+                #{lower},
+                #{upper},
+                #{value},
+                #{type},
+                #{levelLimit}
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询Deduction -->
+    <select id="findById" parameterType="Integer" resultMap="deductionMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_deduction
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.evaluation.Deduction">
+        UPDATE
+            tb_deduction
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                <if test="componentId != null">
+                    component_id = #{componentId},
+                </if>
+                <if test="diseaseId != null">
+                    disease_id = #{diseaseId},
+                </if>
+                <if test="degress != null and degress != ''">
+                    degress = #{degress},
+                </if>
+                <if test="lower != null">
+                    lower = #{lower},
+                </if>
+                <if test="upper != null">
+                    upper = #{upper},
+                </if>
+                <if test="value != null">
+                    value = #{value},
+                </if>
+                <if test="type != null">
+                    type = #{type},
+                </if>
+                <if test="levelLimit != null">
+                    level_limit = #{levelLimit}
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_deduction
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_deduction
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                component_id,
+                disease_id,
+                degress,
+                lower,
+                upper,
+                value,
+                type,
+                level_limit
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.componentId},
+                #{it.diseaseId},
+                #{it.degress},
+                #{it.lower},
+                #{it.upper},
+                #{it.value},
+                #{it.type},
+                #{it.levelLimit}
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_deduction
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="deductionMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_deduction
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询Deduction -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.evaluation.Deduction" resultMap="deductionMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_deduction
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="componentId != null">
+                AND component_id = #{componentId}
+            </if>
+            <if test="diseaseId != null">
+                AND disease_id = #{diseaseId}
+            </if>
+            <if test="degress != null and degress != ''">
+                AND degress = #{degress}
+            </if>
+            <if test="lower != null">
+                AND lower = #{lower}
+            </if>
+            <if test="upper != null">
+                AND upper = #{upper}
+            </if>
+            <if test="value != null">
+                AND value = #{value}
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+            <if test="levelLimit != null">
+                AND level_limit = #{levelLimit}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询Deduction -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.evaluation.Deduction" resultMap="deductionMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_deduction
+        <where>
+            <if test="componentId != null">
+                AND component_id = #{componentId}
+            </if>
+            <if test="diseaseId != null">
+                AND disease_id = #{diseaseId}
+            </if>
+            <if test="degress != null and degress != ''">
+                AND degress LIKE CONCAT ('%', #{degress}, '%')
+            </if>
+            <if test="lower != null">
+                AND lower = #{lower}
+            </if>
+            <if test="upper != null">
+                AND upper = #{upper}
+            </if>
+            <if test="value != null">
+                AND value = #{value}
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+            <if test="levelLimit != null">
+                AND level_limit = #{levelLimit}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

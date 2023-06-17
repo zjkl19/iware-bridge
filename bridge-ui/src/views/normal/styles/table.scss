@@ -1,0 +1,165 @@
+//NOTE: table {
+//   // border-collapse: collapse;
+//   //element的表格不能使用这个
+//   //不能正确显示边框
+// }
+//基础表格重置混合
+@mixin daily__table-mixin {
+  &.el-table--border,
+  &.el-table--group {
+    border: 0;
+  }
+  background: transparent;
+  td,
+  th.is-leaf {
+    border-bottom: 0;
+  }
+  .el-table--group::after,
+  .el-table--border::after {
+    background: transparent;
+  }
+
+  thead {
+    color: $YY_SPAN_3CONTENT;
+    tr,
+    th {
+      background: transparent;
+    }
+
+    th div.cell {
+      text-align: center;
+      font-weight: normal;
+      color: $YY_SPAN_3CONTENT;
+    }
+  }
+
+  tbody {
+    color: $YY_SPAN_3CONTENT;
+    tr {
+      background: transparent;
+    }
+    div.cell {
+      text-align: center;
+    }
+
+    tr.el-table__row:hover > td {
+      background: transparent;
+    }
+  }
+}
+
+//表格颜色重置，无边框
+.daily__table-reset {
+  @include daily__table-mixin();
+
+  &::before {
+    background: transparent;
+  }
+}
+
+$table-bg-1: $YY_DIV_BACKGROUND;
+// $table-bg-2: RGB(22, 33, 53, 0.1);
+$table-bg-2: $YY_BACKGROUND;
+
+//表格颜色重置，有边框
+.daily__table-with-border {
+  @include daily__table-mixin();
+
+  //这两个假border,在表格的下和右，会挡住1px的内容，如果内部元素有边框就被挡住了,默认的el-table有的时候有有的情况没有这里统一加上边框
+  &::before {
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    background: $YY_DAILY_BORDER !important;
+  }
+  &::after {
+    content: " ";
+    top: 0;
+    right: 0;
+    width: 1px;
+    height: 100%;
+    position: absolute;
+    background: $YY_DAILY_BORDER !important;
+    z-index:0;
+  }
+
+  thead,
+  thead.is-group {
+    tr > th {
+      background: $table-bg-1;
+      border-top: 1px solid $YY_DAILY_BORDER;
+      border-left: 1px solid $YY_DAILY_BORDER;
+      border-bottom: 0;
+      border-right: 0;
+      border-color: $YY_DAILY_BORDER;
+    }
+  }
+  tbody {
+    tr.el-table__row {
+      td {
+        border-top: 1px solid $YY_DAILY_BORDER;
+        border-left: 1px solid $YY_DAILY_BORDER;
+        border-bottom: 0;
+        border-right: 0;
+        &:last-child {
+          padding-right: 1px; //因为有伪元素挡住了1像素
+        }
+        border-color: $YY_DAILY_BORDER;
+      }
+      &:nth-child(even) > td {
+        //：not(aaa)拉高优先级
+        background: $table-bg-1;
+      }
+      &:nth-child(odd) > td {
+        background: $table-bg-2;
+      }
+
+      &.titled-row > td:first-child {
+        //titled-row为计算出的第一列强制暗色
+        background: $table-bg-2;
+        // font-size: 16px;
+      }
+      &:last-child > td {
+        padding-bottom: 1px; //因为有伪元素挡住了1像素
+      }
+
+      td.titled-cell {
+        //计算重点单元格强制暗色
+        background: $table-bg-2;
+        // font-size: 16px;
+      }
+    }
+  }
+}
+
+.daily__table-form {
+  td,
+  th {
+    padding: 0;
+  }
+
+  td > .cell {
+    color: $YY_SPAN_3CONTENT;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+  }
+}
+
+//表格高度设置
+@mixin daily__table-form-height-mixin($h) {
+  td,
+  th {
+    height: $h;
+    position: relative;
+  }
+
+  div.cell {
+    overflow: visible;
+  }
+  span {
+    line-height: $h;
+  }
+}

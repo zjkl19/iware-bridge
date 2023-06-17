@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.inspection.InspectionDiseaseDao">
+
+    <resultMap type="com.iware.bridge.model.entity.inspection.InspectionDisease" id="inspectionDiseaseMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="diseasePart" column="disease_part"/>
+        <result property="checkItem" column="check_item"/>
+        <result property="damageType" column="damage_type"/>
+        <result property="unit" column="unit"/>
+        <result property="structureType" column="structure_type"/>
+        <result property="type" column="type"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       name,
+       disease_part,
+       check_item,
+       damage_type,
+       unit,
+       structure_type,
+       type
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.inspection.InspectionDisease">
+        insert into tb_inspection_disease
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                name,
+                disease_part,
+                check_item,
+                damage_type,
+                unit,
+                structure_type,
+                type
+            </trim>
+        )
+        values
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{name},
+                #{diseasePart},
+                #{checkItem},
+                #{damageType},
+                #{unit},
+                #{structureType},
+                #{type}
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询InspectionDisease -->
+    <select id="findById" parameterType="Integer" resultMap="inspectionDiseaseMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_inspection_disease
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.inspection.InspectionDisease">
+        UPDATE
+            tb_inspection_disease
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                <if test="name != null and name != ''">
+                    name = #{name},
+                </if>
+                <if test="diseasePart != null and diseasePart != ''">
+                    disease_part = #{diseasePart},
+                </if>
+                <if test="checkItem != null and checkItem != ''">
+                    check_item = #{checkItem},
+                </if>
+                <if test="damageType != null and damageType != ''">
+                    damage_type = #{damageType},
+                </if>
+                <if test="unit != null and unit != ''">
+                    unit = #{unit},
+                </if>
+                <if test="structureType != null">
+                    structure_type = #{structureType},
+                </if>
+                <if test="type != null">
+                    type = #{type}
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_inspection_disease
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_inspection_disease
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                name,
+                disease_part,
+                check_item,
+                damage_type,
+                unit,
+                structure_type,
+                type
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.name},
+                #{it.diseasePart},
+                #{it.checkItem},
+                #{it.damageType},
+                #{it.unit},
+                #{it.structureType},
+                #{it.type}
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_inspection_disease
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="inspectionDiseaseMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_inspection_disease
+        ORDER BY
+            id ASC
+    </select>
+
+    <!-- 根据条件查询InspectionDisease -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.inspection.InspectionDisease" resultMap="inspectionDiseaseMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_inspection_disease
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="name != null and name != ''">
+                AND name = #{name}
+            </if>
+            <if test="diseasePart != null and diseasePart != ''">
+                AND disease_part = #{diseasePart}
+            </if>
+            <if test="checkItem != null and checkItem != ''">
+                AND check_item = #{checkItem}
+            </if>
+            <if test="damageType != null and damageType != ''">
+                AND damage_type = #{damageType}
+            </if>
+            <if test="unit != null and unit != ''">
+                AND unit = #{unit}
+            </if>
+            <if test="structureType != null">
+                AND structure_type = #{structureType}
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+        </where>
+        ORDER BY
+        id ASC
+    </select>
+
+    <!-- 根据条件模糊查询InspectionDisease -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.inspection.InspectionDisease" resultMap="inspectionDiseaseMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_inspection_disease
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT ('%', #{name}, '%')
+            </if>
+            <if test="diseasePart != null and diseasePart != ''">
+                AND disease_part LIKE CONCAT ('%', #{diseasePart}, '%')
+            </if>
+            <if test="checkItem != null and checkItem != ''">
+                AND check_item LIKE CONCAT ('%', #{checkItem}, '%')
+            </if>
+            <if test="damageType != null and damageType != ''">
+                AND damage_type LIKE CONCAT ('%', #{damageType}, '%')
+            </if>
+            <if test="unit != null and unit != ''">
+                AND unit LIKE CONCAT ('%', #{unit}, '%')
+            </if>
+            <if test="structureType != null">
+                AND structure_type = #{structureType}
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

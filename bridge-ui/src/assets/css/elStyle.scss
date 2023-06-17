@@ -1,0 +1,106 @@
+//全局element-ui样式
+.el-button--primary {
+  background-color: #1890ff;
+  border-color: #1890ff;
+}
+.el-button--danger {
+  background-color: #f5222d;
+  border-color: #f5222d;
+}
+.el-button--warning {
+  background-color: #fa8c16;
+  border-color: #fa8c16;
+}
+.el-button--success {
+  background-color: #4ecb73;
+  border-color: #4ecb73;
+}
+.el-dialog__wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .el-dialog {
+    margin: 0 !important;
+    border-radius: 8px;
+    .el-dialog__title {
+      font-weight: bold;
+    }
+  }
+}
+
+//单选样式
+.el-radio__label,
+.el-radio__input.is-checked + .el-radio__label {
+  color: #000;
+}
+.el-radio__input.is-checked .el-radio__inner {
+  background: #fff;
+}
+.el-radio__inner {
+  width: 16px;
+  height: 16px;
+}
+.el-radio__inner::after {
+  width: 8px;
+  height: 8px;
+  background: #1890ff;
+}
+
+//下拉框样式
+// .el-select,
+// .el-input,
+// .el-input__inner {
+//   line-height: unset;
+//   height: 100%;
+// }
+.el-select .el-input .el-select__caret {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+//树形图样式
+.el-tree-node__content {
+  height: 3.203vh;
+}
+
+//表格鼠标经过行背景色
+.el-table--enable-row-hover .el-table__body tr:hover > td {
+  // background: rgba($color: #000, $alpha: 0.2);
+  // color: #fff;
+}
+
+//组件自带图标样式
+// /deep/ .el-input__icon{
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+// }
+
+//el-link经过样式
+.el-link.el-link--primary,
+.el-link.el-link--primary:hover {
+  color: #419aff;
+}
+.el-link.is-underline:hover:after {
+  display: none;
+}
+
+/* element样式重置 start */
+/* 去掉input尾部上下小箭头 start */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  -o-appearance: none !important;
+  -ms-appearance: none !important;
+  appearance: none !important;
+  margin: 0;
+}
+input[type='number'] {
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  -o-appearance: textfield;
+  -ms-appearance: textfield;
+  appearance: textfield;
+}

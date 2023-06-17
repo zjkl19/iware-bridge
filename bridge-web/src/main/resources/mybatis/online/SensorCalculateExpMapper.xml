@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.online.dao.SensorCalculateExpDao">
+
+    <insert id="addCacul">
+		INSERT into tb_sensor_calculate(calculate_time,frequency,sensor_coding,sensor_details_id,cable_force) VALUES (to_timestamp(#{time},'yyyy-mm-dd hh24:mi:00'),#{value},#{sensorCoding},#{detailId},#{cableForce})
+	</insert>
+    <select id="selectHalfHourData" resultType="java.lang.Float">
+		select value from  tb_sensor_converge
+        where sensor_coding = #{sensorCoding}
+        and sensor_details_id = #{detailId}
+        and sampling_time between  to_timestamp(#{time},'yyyy-mm-dd hh24:mi:00')  - INTERVAL '30 MINUTE' and to_timestamp(#{time},'yyyy-mm-dd hh24:mi:00')
+	</select>
+    <select id="selectFrequency" resultType="java.lang.Float">
+		SELECT frequency FROM tb_sensor_calculate
+		WHERE sensor_coding = #{sensorCoding}
+		and sensor_details_id = #{detailId}
+		and to_timestamp(to_char(calculate_time,'yyyy-mm-dd hh24:mi:00'),'yyyy-mm-dd hh24:mi:ss')  = to_timestamp(#{time} ,'yyyy-mm-dd hh24:mi:00')
+	</select>
+    <select id="selectFrequencyByTime" resultType="com.iware.bridge.online.vo.SensorCalculateVO">
+        SELECT distinct to_char(calculate_time,'yyyy-mm-dd hh24:mi:00') as calculate_time,frequency,sensor_coding,sensor_details_id,cable_force  FROM tb_sensor_calculate
+        WHERE sensor_coding = #{filter.sensorCoding}
+        and sensor_details_id = #{filter.sensorDetailsId}
+        and calculate_time between  #{filter.startTime} and #{filter.endTime}
+        ORDER BY calculate_time
+    </select>
+    <select id="selectDescribe" resultType="com.iware.bridge.model.entity.online.MeansPoint">
+        SELECT means.name,means.cable_length,means.unit_cable_length,means.reference_frequency,means.float_range FROM tb_means_point as means
+        join tb_sensor as sensor on sensor.means_point_id = means.id
+        WHERE sensor.sensor_coding =#{sensorCoding}  and sensor.sensor_details_id = #{detailId}
+        limit 1
+    </select>
+    <select id="getPythonDataDH" resultType="java.lang.Float">
+        select value from  tb_sensor_converge
+        where sensor_coding = #{sensorCoding}
+        and sensor_details_id = #{detailId}
+        and sampling_time between  to_timestamp(#{startTime},'yyyy-mm-dd hh24:mi:00') and to_timestamp(#{endTime},'yyyy-mm-dd hh24:mi:00')
+        order by sampling_time
+    </select>
+    <select id="getPythonDataJK" resultType="java.lang.Float">
+         select paravalue from  composedata
+        where paraid = #{sensorCoding}
+        and collecttime between  to_timestamp(#{startTime},'yyyy-mm-dd hh24:mi:00') and to_timestamp(#{endTime},'yyyy-mm-dd hh24:mi:00')
+        order by collecttime
+    </select>
+    <select id="getPythonDataCZ" resultType="java.lang.Float">
+          select total_weight from  tb_sensor_weight
+        where sensor_coding = #{sensorCoding}
+        and sensor_details_id = #{detailId}
+        and sampling_time between  to_timestamp(#{startTime},'yyyy-mm-dd hh24:mi:00') and to_timestamp(#{endTime},'yyyy-mm-dd hh24:mi:00')
+        order by sampling_time
+    </select>
+
+
+</mapper>

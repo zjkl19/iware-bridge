@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.inspection.dao.OverViewExpDao">
+
+    <!--总巡查次数(巡查细项数)-->
+    <select id="countInspectionPlan" resultType="Integer">
+        SELECT
+            COUNT (td.*)
+        FROM
+            tb_plan_detail td
+                LEFT JOIN tb_plan_info tpi ON td.plan_id = tpi. ID
+        <if test="roleId != 3">
+            LEFT JOIN tb_project AS tp ON tpi.project_id = tp.id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+            LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+        </if>
+        <where>
+            <if test="roleId == 1 or roleId == 0">
+                AND tpa.receive_unit_id = #{unitId}
+                AND td.inspection_time BETWEEN tpa.start_time AND tpa.end_time
+                AND papr.power_id = #{powerId}
+            </if>
+            <if test="roleId == 2">
+                AND tp.unit_id = #{unitId}
+            </if>
+            <if test="month != null">
+                AND to_char(td.inspection_time, 'yyyy-MM') = #{month}
+            </if>
+        </where>
+    </select>
+
+    <!--有巡查计划的桥隧数-->
+    <select id="countInspectionStructure" resultType="Integer">
+        select
+               count(distinct (ts.id))
+        from tb_structure ts
+        left join tb_project_structure_rel tpsr on tpsr.structure_id=ts.id
+        where tpsr.project_id
+            in
+            (SELECT
+                distinct (tpi.project_id)
+                FROM
+                tb_plan_info tpi
+                    left join tb_plan_detail tpd on tpd.plan_id=tpi.id
+                <if test="roleId != 3">
+                    LEFT JOIN tb_project AS tp ON tpi.project_id = tp.id
+                </if>
+                <if test="roleId == 1 or roleId == 0">
+                    LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+                    LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+                </if>
+                where
+                    tpi.type=1
+                    <if test="roleId == 1 or roleId == 0">
+                        AND tpa.receive_unit_id = #{unitId}
+                        AND tpd.inspection_time BETWEEN tpa.start_time AND tpa.end_time
+                        AND papr.power_id = #{powerId}
+                    </if>
+                    <if test="roleId == 2">
+                        AND tp.unit_id = #{unitId}
+                    </if>)
+    </select>
+
+    <select id="countMaintainStructure" resultType="Integer">
+        select
+        count(distinct (ts.id))
+        from tb_structure ts
+        left join tb_project_structure_rel tpsr on tpsr.structure_id=ts.id
+        where tpsr.project_id
+            in
+            (SELECT
+                DISTINCT(tpi.project_id)
+                FROM
+                     tb_plan_info tpi
+                    where tpi.id in (
+                        select distinct(tmi.plan_id) from tb_maintain_item tmi
+                            left join tb_plan_info tpiii on tpiii.id=tmi.plan_id
+                <if test="roleId != 3">
+                    LEFT JOIN tb_project AS tp ON tpiii.project_id = tp.id
+                </if>
+                <if test="roleId == 1 or roleId == 0">
+                    LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+                    LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+                </if>
+                where
+                tpiii.type=4
+                    <if test="roleId == 1 or roleId == 0">
+                        AND tpa.receive_unit_id = #{unitId}
+                        AND tmi.proposed_time BETWEEN tpa.start_time AND tpa.end_time
+                        AND papr.power_id = #{powerId}
+                    </if>
+                    <if test="roleId == 2">
+                        AND tp.unit_id = #{unitId}
+                    </if>
+                )
+            )
+    </select>
+
+    <!--最新一次巡查病害数-->
+    <select id="countLastInspectionDisease" resultType="Integer">
+        SELECT
+            SUM (tidi. quantity)
+        FROM
+            tb_inspection_disease_instance tidi
+        RIGHT JOIN (
+            SELECT
+            *
+            FROM
+            (SELECT
+                ROW_NUMBER () OVER (
+                PARTITION BY td.structure_id,td.plan_id
+                ORDER BY
+                td.inspection_time DESC
+                ) rowId,
+                td.*
+                FROM
+                tb_plan_detail td
+                LEFT JOIN tb_plan_info tpi ON td.plan_id = tpi. ID
+                <if test="roleId != 3">
+                    LEFT JOIN tb_project AS tp ON tpi.project_id = tp.id
+                </if>
+                <if test="roleId == 1 or roleId == 0">
+                    LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+                    LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+                </if>
+                WHERE
+                    td.status=1
+                    <if test="roleId == 1 or roleId == 0">
+                        AND tpa.receive_unit_id = #{unitId}
+                        AND td.inspection_time BETWEEN tpa.start_time AND tpa.end_time
+                        AND papr.power_id = #{powerId}
+                    </if>
+                    <if test="roleId == 2">
+                        AND tp.unit_id = #{unitId}
+                    </if>
+                ) T
+            WHERE
+            rowid = 1
+        ) RESULT ON RESULT . ID = tidi.plan_detail_id
+        where tidi.inspection_disease_id != 26 and tidi.inspection_disease_id != 64
+        <if test="status!=null">
+            and tidi.status!=#{status}
+        </if>
+    </select>
+
+    <select id="countMaintainDisease" resultType="Integer">
+        SELECT
+        SUM (tidi.quantity)
+        FROM
+            tb_inspection_disease_instance tidi
+        LEFT JOIN tb_maintain_item tm ON tidi.id=tm.disease_instance_id
+        LEFT JOIN tb_plan_info tpi ON tm.plan_id = tpi. ID
+
+        <if test="roleId != 3">
+            LEFT JOIN tb_project AS tp ON tpi.project_id = tp.id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+            LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+        </if>
+        <where>
+            tm.status=1
+            <if test="roleId == 1 or roleId == 0">
+                AND tpa.receive_unit_id = #{unitId}
+                AND tm.proposed_time BETWEEN tpa.start_time AND tpa.end_time
+                AND papr.power_id = #{powerId}
+            </if>
+            <if test="roleId == 2">
+                AND tp.unit_id = #{unitId}
+            </if>
+        </where>
+    </select>
+
+    <select id="sumMaintainAmount" resultType="double">
+    select SUM (tpiii.expenditure) from tb_plan_info tpiii where tpiii.id in (
+        SELECT
+        distinct (tpi.id)
+        FROM
+        tb_plan_info tpi
+        left join tb_maintain_item tmi on tmi.plan_id=tpi.id
+        <if test="roleId != 3">
+            LEFT JOIN tb_project AS tp ON tpi.project_id = tp.id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+            LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+        </if>
+        where
+--               1=1
+        tpi.type=4 and
+        tpi.status=2
+            <if test="roleId == 1 or roleId == 0">
+                AND tpa.receive_unit_id = #{unitId}
+                AND tmi.proposed_time BETWEEN tpa.start_time AND tpa.end_time
+                AND papr.power_id = #{powerId}
+            </if>
+            <if test="roleId == 2">
+                AND tp.unit_id = #{unitId}
+            </if>
+        )
+    </select>
+
+    <!--获取巡查维养工作记录表-->
+    <select id="getWorkRecord" resultType="java.util.Date">
+        SELECT
+        <if test="type == 1">
+            distinct(td.inspection_time)
+            FROM
+            tb_plan_detail td
+            LEFT JOIN tb_plan_info tpi ON td.plan_id = tpi. ID
+        </if>
+        <if test="type != 1">
+            distinct(tm.maintain_time)
+            FROM
+            tb_maintain_item tm
+            LEFT JOIN tb_plan_info tpi ON tm.plan_id = tpi. ID
+        </if>
+        <if test="roleId != 3">
+            LEFT JOIN tb_project AS tp ON tpi.project_id = tp.id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+            LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+        </if>
+        <where>
+            <if test="type==1">
+                to_char(td.inspection_time, 'yyyy-MM') = #{filterTime}
+                and td.status=1
+            </if>
+            <if test="type!=1">
+                to_char(tm.maintain_time, 'yyyy-MM') = #{filterTime}
+                and tm.status=1
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                AND tpa.receive_unit_id = #{unitId}
+            <if test="type==1">
+                AND td.inspection_time BETWEEN tpa.start_time AND tpa.end_time
+            </if>
+            <if test="type!=1">
+                AND tm.maintain_time BETWEEN tpa.start_time AND tpa.end_time
+            </if>
+                AND papr.power_id = #{powerId}
+            </if>
+            <if test="roleId == 2">
+                AND tp.unit_id = #{unitId}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDiseaseRatio" resultType="com.iware.bridge.inspection.vo.DiseaseRatioVo">
+        SELECT
+            tid.disease_part as disease_part,
+            sum(tidi.quantity) as count
+        FROM
+        tb_inspection_disease_instance tidi
+        RIGHT JOIN (
+            SELECT
+            *
+            FROM
+                (SELECT
+                    ROW_NUMBER () OVER (
+                    PARTITION BY td.structure_id
+                    ORDER BY
+                    td.inspection_time DESC
+                    ) rowId,
+                    td.*
+                FROM
+                    tb_plan_detail td
+                    LEFT JOIN tb_plan_info tpi ON td.plan_id = tpi. ID
+                    <if test="roleId != 3">
+                        LEFT JOIN tb_project AS tp ON tpi.project_id = tp.id
+                    </if>
+                    <if test="roleId == 1 or roleId == 0">
+                        LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+                        LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+                    </if>
+                    WHERE
+                        td.status=1
+                    <if test="roleId == 1 or roleId == 0">
+                        AND tpa.receive_unit_id = #{unitId}
+                        AND tpi.create_time BETWEEN tpa.start_time AND tpa.end_time
+                        AND papr.power_id = #{powerId}
+                    </if>
+                    <if test="roleId == 2">
+                        AND tp.unit_id = #{unitId}
+                    </if>
+                ) T
+            WHERE
+            rowid = 1
+        ) RESULT ON RESULT . ID = tidi.plan_detail_id
+        LEFT JOIN tb_inspection_disease tid ON tid.id=tidi.inspection_disease_id
+        where tidi.inspection_disease_id != 26 and tidi.inspection_disease_id != 64
+        group by tid.disease_part
+    </select>
+
+    <select id="getMaintainGradeRatio" resultType="com.iware.bridge.inspection.vo.StructureGradeRatioVo">
+        select (case ts.maintain_grade
+            when 1 then 'I等养护'
+            when 2 then 'II等养护'
+            when 3 then 'III等养护' end) as gradeName,
+        count(distinct (ts.id)) as count
+        from tb_structure ts
+        left join tb_project_structure_rel tpsr
+            on tpsr.structure_id=ts.id
+        where ts.structure_type=1 and tpsr.project_id
+        in
+            (SELECT
+                distinct (tpi.project_id)
+            FROM
+                tb_plan_info tpi
+            left join tb_plan_detail tpd on tpd.plan_id=tpi.id
+            left join tb_maintain_item tmi on tmi.plan_id=tpi.id
+            <if test="roleId != 3">
+                LEFT JOIN tb_project AS tp ON tpi.project_id = tp.id
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+                LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+            </if>
+            where
+                tpi.type=1
+            <if test="roleId == 1 or roleId == 0">
+                AND tpa.receive_unit_id = #{unitId}
+                AND (tpd.inspection_time BETWEEN tpa.start_time AND tpa.end_time
+                    OR tmi.proposed_time BETWEEN tpa.start_time AND tpa.end_time
+                )
+                AND papr.power_id = #{powerId}
+            </if>
+            <if test="roleId == 2">
+                AND tp.unit_id = #{unitId}
+            </if>)
+        and ts.maintain_grade IS NOT NULL
+        group by ts.maintain_grade
+        order by ts.maintain_grade asc
+    </select>
+
+    <select id="getTypeRatio" resultType="com.iware.bridge.inspection.vo.MaintainTypeVo">
+        SELECT
+            (case
+                tm.type
+                when 0
+                    then '日常保养'
+                when 1
+                    then '小修'
+                when 2
+                    then '中修'
+                when 3
+                    then '大修' end)as type,COUNT(DISTINCT(tm.id)) as count
+        FROM
+        tb_maintain_item tm
+        LEFT JOIN tb_plan_info tpi ON tm.plan_id = tpi. ID
+
+        <if test="roleId != 3">
+            LEFT JOIN tb_project AS tp ON tpi.project_id = tp.id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+            LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+        </if>
+        <where>
+            tm.status=1
+            <if test="roleId == 1 or roleId == 0">
+                AND tpa.receive_unit_id = #{unitId}
+                AND tm.proposed_time BETWEEN tpa.start_time AND tpa.end_time
+                AND papr.power_id = #{powerId}
+            </if>
+            <if test="roleId == 2">
+                AND tp.unit_id = #{unitId}
+            </if>
+        </where>
+        GROUP BY tm.type
+    </select>
+
+    <select id="getDiseaseTrend" resultType="com.iware.bridge.inspection.vo.InspectionDiseaseDateVo">
+        SELECT
+            to_char(td.inspection_time,'dd') as dayOfMonth,
+               sum(tidi.quantity) as count
+        FROM
+            tb_inspection_disease_instance tidi
+                RIGHT JOIN tb_plan_detail td ON tidi.plan_detail_id=td.id
+                LEFT JOIN tb_plan_info tpi ON td.plan_id = tpi. ID
+        <if test="roleId != 3">
+            LEFT JOIN tb_project AS tp ON tpi.project_id = tp.id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+            LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+        </if>
+        <where>
+            tidi.inspection_disease_id != 26 and tidi.inspection_disease_id != 64
+            <if test="filterTime!=null">
+                and to_char(td.inspection_time,'yyyy-MM')=#{filterTime}
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                AND tpa.receive_unit_id = #{unitId}
+                AND td.inspection_time BETWEEN tpa.start_time AND tpa.end_time
+                AND papr.power_id = #{powerId}
+            </if>
+            <if test="roleId == 2">
+                AND tp.unit_id = #{unitId}
+            </if>
+        </where>
+        group by to_char(td.inspection_time,'dd') order by to_char(td.inspection_time,'dd') asc
+    </select>
+
+    <select id="getAccountTrend" resultType="com.iware.bridge.inspection.vo.MaintainAccountMonthVo">
+        SELECT
+            to_char(tpiii.plan_time,'yyyy-MM') as monthOfYear,
+               SUM(tpiii.budget) as budget,
+               SUM(tpiii.expenditure) as expenditure
+        from tb_plan_info tpiii
+        where tpiii.id in
+        ( select distinct (tpi.id)
+        FROM
+        tb_maintain_item tm
+        RIGHT JOIN tb_plan_info tpi ON tm.plan_id = tpi. ID
+
+        <if test="roleId != 3">
+            LEFT JOIN tb_project AS tp ON tpi.project_id = tp.id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+            LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+        </if>
+        where
+--         1=1
+            tpi.status=2
+            <if test="beginMonth!=null and endMonth!=null">
+                AND to_char(tpi.plan_time,'yyyy-MM') BETWEEN #{beginMonth} and #{endMonth}
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                AND tpa.receive_unit_id = #{unitId}
+                AND tm.proposed_time BETWEEN tpa.start_time AND tpa.end_time
+                AND papr.power_id = #{powerId}
+            </if>
+            <if test="roleId == 2">
+                AND tp.unit_id = #{unitId}
+            </if>
+)
+        GROUP BY to_char(tpiii.plan_time,'yyyy-MM')
+    </select>
+
+</mapper>

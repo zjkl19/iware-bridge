@@ -1,0 +1,16 @@
+//可点击的蓝色字无背景的按钮或连接样式，无论是button或者a都是这个样式
+.daily__clickable,
+.daily__clickable:visited {
+  font-size: 14px;
+  border-color: transparent;
+  background-color: transparent;
+  color: #3873ec;
+}
+
+.daily__clickable:hover,
+.daily__clickable:focus {
+  color: #3873ec;
+  filter: brightness(1.5);
+  text-decoration: none;
+  outline: 0;
+}

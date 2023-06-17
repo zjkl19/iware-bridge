@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iware.bridge.info.dao.UnitExpDao">
+
+	<!--查看单位名称是否存在-->
+	<select id="existUnit" resultType="com.iware.bridge.model.entity.user.Unit">
+		SELECT * FROM tb_unit
+		<where>
+			name = #{name}
+			<if test="id != null">
+				AND id != #{id}
+			</if>
+		</where>
+	</select>
+
+	<!--获取单位列表-->
+	<select id="getUnitList" resultType="com.iware.bridge.info.vo.UnitVO">
+		SELECT
+		tu.*,
+		tr.name AS unit_type,
+		(SELECT u.real_name FROM tb_user u WHERE u.id = tu.create_user_id) AS creator
+		FROM tb_unit AS tu
+		LEFT JOIN tb_role AS tr ON tr.id = tu.role_id
+		<if test="roleId == 1">
+			LEFT JOIN tb_unit AS ts ON ts.id = tu.parent_id
+		</if>
+		<where>
+			<if test="roleId == 1">
+				tu.parent_id = #{unitId}
+			</if>
+			<if test="filter.roleId != null">
+				AND tr.id = #{filter.roleId}
+			</if>
+			<if test="filter.keyword != null and filter.keyword != ''">
+				AND tu.name LIKE concat('%',#{filter.keyword},'%')
+			</if>
+		</where>
+		ORDER BY create_time DESC
+	</select>
+
+	<!--创建用户获取单位列表-->
+	<select id="getUserUnitList" resultType="com.iware.bridge.model.entity.user.Unit">
+		SELECT id, name, role_id FROM tb_unit
+		<where>
+			<if test="roleId == 3">
+				role_id != 0
+			</if>
+			<if test="roleId == 2 or roleId == 0">
+				id = #{unitId}
+			</if>
+			<if test="roleId == 1">
+				id = #{unitId} OR role_id = 0
+			</if>
+		</where>
+		ORDER BY create_time DESC
+	</select>
+
+</mapper>

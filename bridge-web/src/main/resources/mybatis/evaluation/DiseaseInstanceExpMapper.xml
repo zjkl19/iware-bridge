@@ -1,0 +1,1291 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+        namespace="com.iware.bridge.evaluation.dao.DiseaseInstanceExpDao">
+    <update id="updateStatusTo0">
+            UPDATE tb_disease_instance set status = 0
+            WHERE
+            id in
+            (SELECT id FROM tb_disease_instance
+            WHERE target_id in (
+            SELECT target_id FROM tb_disease_instance
+            WHERE creator = #{creator} and modify_time = #{createTime} and status = 0)
+            and part_type in (SELECT part_type FROM tb_disease_instance WHERE creator = #{creator}
+            and modify_time = #{createTime} and status = 0)
+            and status = 1)
+
+    </update>
+    <update id="updateStatusTo1">
+        UPDATE tb_disease_instance set status = 1 , is_delete = 0
+        WHERE id in (SELECT id FROM tb_disease_instance
+        WHERE creator = #{creator} and modify_time = #{createTime}  and status = 0)
+    </update>
+    <update id="updateDiseaseInstance">
+        <foreach collection="list" item="item" index="index" separator=";">
+            UPDATE tb_disease_instance
+            <set>
+                deduct = #{item.deduct}
+            </set>
+            WHERE id = #{item.id}
+        </foreach>
+    </update>
+
+    <select id="getDiseaseCount" resultType="java.util.HashMap">
+        select * FROM(
+        (
+        select tbd.id,tbd."name",count(1) from tb_structure tsin
+        left join tb_monitor_plan_structure_rel tmpsr on tmpsr.structure_info_id = tsin.id
+        left join tb_monitor_plan tmp on tmp.id = tmpsr.monitor_plan_id
+        left join tb_bridge_road tbr on tbr.monitor_plan_structure_rel_id = tmpsr.id
+        left join tb_bridge_span tbs on tbs.bridge_road_id = tbr.id
+        left join tb_bridge_deck_system tbds on tbds.bridge_span_id = tbs.id
+        left join tb_bridge_deck_component tbdc on tbds.id = tbdc.bridge_deck_system_id
+        left join tb_disease_instance tsi on tbdc.id = tsi.target_id AND tsi.part_type = 1
+        left join tb_bridge_disease tbd on tbd.id = tsi.disease_id
+        left join tb_component tc on tbdc.component_id = tc.id
+        left join tb_project tpi on tpi.id = tmp.project_info_id
+        left join tb_bridge_score tbss on tbss.target_id = tmpsr.id and tbss.type = 1
+        where tbss.id is not null
+        and tbdc.status  = 1
+        and tsi.status = 1
+        and tmp.upload = 1
+        <if test="list != null and list.size > 0">
+            and tmpsr.structure_info_id in
+            <foreach collection="list" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="filter.bridgeTypeId != null">
+            AND tbr.bridge_type_id = #{filter.bridgeTypeId}
+        </if>
+        <if test="filter.componentId != null">
+            AND tc.id = #{filter.componentId}
+        </if>
+        GROUP BY tbd.id,tbd."name"
+        )
+
+        union all
+        (
+        select tbd.id,tbd."name",count(1) from tb_structure tsin
+        left join tb_monitor_plan_structure_rel tmpsr on tmpsr.structure_info_id = tsin.id
+        left join tb_monitor_plan tmp on tmp.id = tmpsr.monitor_plan_id
+        left join tb_bridge_road tbr on tbr.monitor_plan_structure_rel_id = tmpsr.id
+        left join tb_bridge_span tbs on tbs.bridge_road_id = tbr.id
+        left join tb_bridge_supstructure tbds on tbds.bridge_span_id = tbs.id
+        left join tb_bridge_supcomponent tbdc on tbds.id = tbdc.supstructure_id
+        left join tb_disease_instance tsi on tbdc.id = tsi.target_id AND tsi.part_type = 2
+        left join tb_bridge_disease tbd on tbd.id = tsi.disease_id
+        left join tb_component tc on tbdc.component_id = tc.id
+        left join tb_project tpi on tpi.id = tmp.project_info_id
+        left join tb_bridge_score tbss on tbss.target_id = tmpsr.id and tbss.type = 1
+        where tbss.id is not null
+        and tbdc.status  = 1
+        and tsi.status = 1
+        and tmp.upload = 1
+        <if test="list != null and list.size > 0">
+            and tmpsr.structure_info_id in
+            <foreach collection="list" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="filter.bridgeTypeId != null">
+            AND tbr.bridge_type_id = #{filter.bridgeTypeId}
+        </if>
+        <if test="filter.componentId != null">
+            AND tc.id = #{filter.componentId}
+        </if>
+        GROUP BY tbd.id,tbd."name"
+
+        )
+
+        union all
+        (
+        select tbd.id,tbd."name",count(1) from tb_structure tsin
+        left join tb_monitor_plan_structure_rel tmpsr on tmpsr.structure_info_id = tsin.id
+        left join tb_monitor_plan tmp on tmp.id = tmpsr.monitor_plan_id
+        left join tb_bridge_road tbr on tbr.monitor_plan_structure_rel_id = tmpsr.id
+        left join tb_bridge_span tbs on tbs.bridge_road_id = tbr.id
+        left join tb_bridge_substructure tbds on tbds.bridge_span_id = tbs.id
+        left join tb_bridge_subcomponent tbdc on tbds.id = tbdc.bridge_substructure_id
+        left join tb_disease_instance tsi on tbdc.id = tsi.target_id AND tsi.part_type = 3
+        left join tb_bridge_disease tbd on tbd.id = tsi.disease_id
+        left join tb_component tc on tbdc.component_id = tc.id
+        left join tb_project tpi on tpi.id = tmp.project_info_id
+        left join tb_bridge_score tbss on tbss.target_id = tmpsr.id and tbss.type = 1
+        where tbss.id is not null
+        and tbdc.status  = 1
+        and tsi.status = 1
+        and tmp.upload = 1
+        <if test="list != null and list.size > 0">
+            and tmpsr.structure_info_id in
+            <foreach collection="list" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+
+        <if test="filter.bridgeTypeId != null">
+            AND tbr.bridge_type_id = #{filter.bridgeTypeId}
+        </if>
+        <if test="filter.componentId != null">
+            AND tc.id = #{filter.componentId}
+        </if>
+        GROUP BY tbd.id,tbd."name"
+        )
+        order by count DESC
+        )as total
+        where total.id is not null limit 10
+    </select>
+    <select id="selectComponentDiseaseCount" resultType="com.iware.bridge.info.vo.EchartMap">
+        SELECT a.name,count(a.name) FROM(
+                SELECT distinct disease.id,totalDisease.name FROM tb_monitor_plan_structure_rel as plan
+                join tb_bridge_road as road on road.monitor_plan_structure_rel_id = plan.id
+                join tb_bridge_span as span on road.id = span.bridge_road_id
+                join tb_bridge_deck_system as information on information.bridge_span_id = span.id
+                join tb_bridge_deck_component as instance on instance.bridge_deck_system_id = information.id
+                join tb_disease_instance as disease on disease.target_id = instance.id and disease.part_type = 1
+                join tb_component as component on component.id = instance.component_id
+                join tb_bridge_disease as totalDisease on totalDisease.id = disease.disease_id
+                join tb_monitor_plan as mp on mp.id = plan.monitor_plan_id
+                <if test="roleId == 1 or roleId == 0">
+                    join tb_project_appoint as appoint on appoint.project_id = mp.project_info_id
+                </if>
+                WHERE plan.structure_info_id = #{structureId}
+                <if test="componentId != 0">
+                    and component.id = #{componentId}
+                </if>
+                    and disease.status = 1 and road.status = 1
+                <if test="roleId == 1 or roleId == 0">
+                    AND appoint.receive_unit_id = #{unitId}
+                    AND mp.start_time &gt;= appoint.start_time
+                    AND mp.start_time &lt;= appoint.end_time
+                </if>
+                and plan.id in (
+                select structure.id FROM tb_monitor_plan_structure_rel as structure
+                join tb_bridge_score as score on score.target_id = structure.id and type = 1
+                WHERE structure.structure_info_id = #{structureId}
+                ORDER BY score.evaluation_time desc limit 1
+                )
+
+
+        union all (
+                SELECT distinct disease.id,totalDisease.name FROM tb_monitor_plan_structure_rel as plan
+                 join tb_bridge_road as road on road.monitor_plan_structure_rel_id = plan.id
+                join tb_bridge_span as span on road.id = span.bridge_road_id
+                join tb_bridge_supstructure as information on information.bridge_span_id = span.id
+                join tb_bridge_supcomponent as instance on instance.supstructure_id = information.id
+                join tb_disease_instance as disease on disease.target_id = instance.id and disease.part_type = 2
+                join tb_component as component on component.id = instance.component_id
+                join tb_bridge_disease as totalDisease on totalDisease.id = disease.disease_id
+                join tb_monitor_plan as mp on mp.id = plan.monitor_plan_id
+                <if test="roleId == 1 or roleId == 0">
+                    join tb_project_appoint as appoint on appoint.project_id = mp.project_info_id
+                </if>
+                WHERE plan.structure_info_id = #{structureId}
+                <if test="componentId != 0">
+                    and component.id = #{componentId}
+                </if>
+                and disease.status = 1 and road.status = 1
+                <if test="roleId == 1 or roleId == 0">
+                    AND appoint.receive_unit_id = #{unitId}
+                    AND mp.start_time &gt;= appoint.start_time
+                    AND mp.start_time &lt;= appoint.end_time
+                </if>
+
+
+                and plan.id in (
+                select structure.id FROM tb_monitor_plan_structure_rel as structure
+                join tb_bridge_score as score on score.target_id = structure.id and type = 1
+                WHERE structure.structure_info_id = #{structureId}
+                ORDER BY score.evaluation_time desc limit 1
+                )
+             )
+        union all (
+                SELECT distinct disease.id,totalDisease.name FROM tb_monitor_plan_structure_rel as plan
+                join tb_bridge_road as road on road.monitor_plan_structure_rel_id = plan.id
+                join tb_bridge_span as span on road.id = span.bridge_road_id
+                join tb_bridge_substructure as information on information.bridge_span_id = span.id
+                join tb_bridge_subcomponent as instance on instance.bridge_substructure_id = information.id
+                join tb_disease_instance as disease on disease.target_id = instance.id and disease.part_type = 3
+                join tb_component as component on component.id = instance.component_id
+                join tb_bridge_disease as totalDisease on totalDisease.id = disease.disease_id
+                join tb_monitor_plan as mp on mp.id = plan.monitor_plan_id
+                <if test="roleId == 1 or roleId == 0">
+                    join tb_project_appoint as appoint on appoint.project_id = mp.project_info_id
+                </if>
+                WHERE plan.structure_info_id = #{structureId}
+                <if test="componentId != 0">
+                    and component.id = #{componentId}
+                </if>
+                	and disease.status = 1 and road.status = 1
+                <if test="roleId == 1 or roleId == 0">
+                    AND appoint.receive_unit_id = #{unitId}
+                    AND mp.start_time &gt;= appoint.start_time
+                    AND mp.start_time &lt;= appoint.end_time
+                </if>
+
+                and plan.id in (
+                select structure.id FROM tb_monitor_plan_structure_rel as structure
+                join tb_bridge_score as score on score.target_id = structure.id and type = 1
+                WHERE structure.structure_info_id = #{structureId}
+                ORDER BY score.evaluation_time desc limit 1
+                )
+                )
+        )  as a
+        GROUP BY a.name
+        ORDER BY count(a.name) desc limit 10
+    </select>
+    <select id="selectDiseaseNumber" resultType="com.iware.bridge.evaluation.vo.DiseaseNumber">
+  SELECT count(id) AS value,
+               '桥面系'::varchar AS name
+        FROM tb_disease_instance
+        WHERE part_type = 1
+        AND target_id IN (
+            SELECT id
+            FROM tb_bridge_deck_component
+            WHERE bridge_deck_system_id IN (
+                SELECT id
+                FROM tb_bridge_deck_system
+                WHERE bridge_span_id IN (
+                    SELECT id
+                    FROM tb_bridge_span
+                    WHERE bridge_road_id IN (
+                        SELECT id
+                        FROM tb_bridge_road
+                        WHERE monitor_plan_structure_rel_id IN (
+                            SELECT rel.id
+                                FROM tb_monitor_plan_structure_rel as rel
+								join tb_bridge_score as score on rel.id = score.target_id and score.type = 1
+								join tb_monitor_plan as plan on rel.monitor_plan_id = plan.id
+                                WHERE  rel.structure_info_id= #{structureId} and plan.project_info_id = #{projectId}
+								ORDER BY score.evaluation_time desc
+								limit 1
+                            ) and status = 1
+                        )
+                    )
+                )
+            )
+        and status = 1
+
+        UNION All
+        (
+            SELECT count(id) AS value,
+                   '上部结构'::varchar AS name
+            FROM tb_disease_instance
+            WHERE part_type = 2
+                AND target_id IN (
+                    SELECT id
+                    FROM tb_bridge_supcomponent
+                    WHERE supstructure_id IN (
+                        SELECT id
+                        FROM tb_bridge_supstructure
+                        WHERE bridge_span_id IN (
+                            SELECT id
+                            FROM tb_bridge_span
+                            WHERE bridge_road_id IN (
+                                SELECT id
+                                FROM tb_bridge_road
+                                WHERE monitor_plan_structure_rel_id IN (
+                                      SELECT rel.id
+                                        FROM tb_monitor_plan_structure_rel as rel
+                                        join tb_bridge_score as score on rel.id = score.target_id and score.type = 1
+                                        join tb_monitor_plan as plan on rel.monitor_plan_id = plan.id
+                                        WHERE  rel.structure_info_id= #{structureId} and plan.project_info_id = #{projectId}
+                                        ORDER BY score.evaluation_time desc
+                                        limit 1
+                                    ) and status = 1
+                                )
+                            )
+                        )
+                    )
+                and status = 1
+        )
+
+        UNION All
+        (
+            SELECT count(id) AS value,
+                   '下部结构'::varchar AS name
+            FROM tb_disease_instance
+            WHERE part_type = 3
+            AND target_id IN (
+                SELECT id
+                FROM tb_bridge_subcomponent
+                WHERE bridge_substructure_id IN (
+                    SELECT id
+                    FROM tb_bridge_substructure
+                    WHERE bridge_span_id IN (
+                        SELECT id
+                        FROM tb_bridge_span
+                        WHERE bridge_road_id IN (
+                            SELECT id
+                            FROM tb_bridge_road
+                            WHERE monitor_plan_structure_rel_id IN (
+                                   SELECT rel.id
+                                        FROM tb_monitor_plan_structure_rel as rel
+                                        join tb_bridge_score as score on rel.id = score.target_id and score.type = 1
+                                    	join tb_monitor_plan as plan on rel.monitor_plan_id = plan.id
+                                        WHERE  rel.structure_info_id= #{structureId} and plan.project_info_id = #{projectId}
+                                        ORDER BY score.evaluation_time desc
+                                        limit 1
+                                ) and status = 1
+                            )
+                        )
+                    )
+                )
+            AND status = 1
+        )
+    </select>
+    <select id="selectComponentDisease" resultType="com.iware.bridge.evaluation.vo.ComponentDiseaseNumber">
+    SELECT number.name,
+               number.count,
+               case when score.points is null then 0 ELSE score.points END,
+               '桥面系'::varchar as type_name,
+               '1' as type_id
+        FROM (
+            SELECT component.name, count(component.name)
+            FROM (
+                SELECT id, component_id FROM tb_bridge_deck_component
+                WHERE bridge_deck_system_id in (
+                    SELECT id FROM tb_bridge_deck_system
+                    WHERE bridge_span_id in (
+                        SELECT id FROM tb_bridge_span
+                        WHERE bridge_road_id in (
+                            SELECT id FROM tb_bridge_road
+                            WHERE monitor_plan_structure_rel_id in (
+                                SELECT rel.id
+                                    FROM tb_monitor_plan_structure_rel as rel
+                                    join tb_bridge_score as score on rel.id = score.target_id and score.type = 1
+                                    join tb_monitor_plan as plan on rel.monitor_plan_id = plan.id
+                                    WHERE  rel.structure_info_id= #{structureId} and plan.project_info_id = #{projectId}
+                                    ORDER BY score.evaluation_time desc
+                                    limit 1
+                                ) and status = 1
+                            )
+                        )
+                    )
+                ) as BDcomponent
+                join tb_component as component on BDcomponent.component_id = component.id
+                join tb_disease_instance as disease on disease.target_id = BDcomponent.id
+            WHERE disease.part_type = 1 and disease.status = 1
+            GROUP BY component.name ) as number
+            left join (
+                SELECT component.name, count(component.name) as points
+                FROM (
+                    SELECT id, component_id FROM tb_bridge_deck_component
+                    WHERE bridge_deck_system_id in (
+                        SELECT id FROM tb_bridge_deck_system
+                        WHERE bridge_span_id in (
+                            SELECT id FROM tb_bridge_span
+                            WHERE bridge_road_id in (
+                                SELECT id FROM tb_bridge_road
+                                WHERE monitor_plan_structure_rel_id in (
+                                    SELECT rel.id
+                                        FROM tb_monitor_plan_structure_rel as rel
+                                        join tb_bridge_score as score on rel.id = score.target_id and score.type = 1
+                                        join tb_monitor_plan as plan on rel.monitor_plan_id = plan.id
+                                        WHERE  rel.structure_info_id= #{structureId} and plan.project_info_id = #{projectId}
+                                        ORDER BY score.evaluation_time desc
+                                        limit 1
+                                    ) and status = 1
+                                )
+                            )
+                        )
+                    ) as BDcomponent
+                    join tb_component as component on BDcomponent.component_id = component.id
+                    join tb_disease_instance as disease on disease.target_id = BDcomponent.id
+                WHERE disease.part_type = 1 and disease.status = 1 and disease.deduct != 0
+                GROUP BY component.name ) as score on number.name = score.name
+
+        union All
+        (
+            SELECT number.name,
+                   number.count,
+                   case when score.points is null then 0 ELSE score.points END,
+                   '上部结构'::varchar as typeName,
+                   '2' as typeId
+            FROM (
+                SELECT component.name, count(component.name)
+                FROM (
+                    SELECT id, component_id FROM tb_bridge_supcomponent
+                    WHERE supstructure_id in (
+                        SELECT id FROM tb_bridge_supstructure
+                        WHERE bridge_span_id in (
+                            SELECT id FROM tb_bridge_span
+                            WHERE bridge_road_id in (
+                                SELECT id FROM tb_bridge_road
+                                WHERE monitor_plan_structure_rel_id in (
+                                    SELECT rel.id
+                                        FROM tb_monitor_plan_structure_rel as rel
+                                        join tb_bridge_score as score on rel.id = score.target_id and score.type = 1
+                                        join tb_monitor_plan as plan on rel.monitor_plan_id = plan.id
+                                        WHERE  rel.structure_info_id= #{structureId} and plan.project_info_id = #{projectId}
+                                        ORDER BY score.evaluation_time desc
+                                        limit 1
+                                    ) and status = 1
+                                )
+                            )
+                        )
+                    ) as BSPcomponent
+                    join tb_component as component on BSPcomponent.component_id = component.id
+                    join tb_disease_instance as disease on disease.target_id = BSPcomponent.id
+                WHERE disease.part_type = 2 and disease.status = 1
+                GROUP BY component.name ) as number
+                left join
+                (
+                    SELECT component.name, count(component.name) as points
+                    FROM (
+                        SELECT id, component_id FROM tb_bridge_supcomponent
+                        WHERE supstructure_id in (
+                            SELECT id FROM tb_bridge_supstructure
+                            WHERE bridge_span_id in (
+                                SELECT id FROM tb_bridge_span
+                                WHERE bridge_road_id in (
+                                    SELECT id FROM tb_bridge_road
+                                    WHERE monitor_plan_structure_rel_id in (
+                                    SELECT rel.id
+                                        FROM tb_monitor_plan_structure_rel as rel
+                                        join tb_bridge_score as score on rel.id = score.target_id and score.type = 1
+                                        join tb_monitor_plan as plan on rel.monitor_plan_id = plan.id
+                                        WHERE  rel.structure_info_id= #{structureId} and plan.project_info_id = #{projectId}
+                                        ORDER BY score.evaluation_time desc
+                                        limit 1
+                                        ) and status = 1
+                                    )
+                                )
+                            )
+                        ) as BSPcomponent
+                        join tb_component as component on BSPcomponent.component_id = component.id
+                        join tb_disease_instance as disease on disease.target_id = BSPcomponent.id
+                    WHERE disease.part_type = 2 and disease.status = 1 and disease.deduct != 0
+                    GROUP BY component.name ) as score on number.name = score.name )
+        union All
+        (
+            SELECT number.name,
+                   number.count,
+                   case when score.points is null then 0 ELSE score.points END,
+                   '下部结构'::varchar as typeName,
+                   '3' as typeId
+            FROM (
+                SELECT component.name, count(component.name)
+                FROM (
+                    SELECT id, component_id FROM tb_bridge_subcomponent
+                    WHERE bridge_substructure_id in (
+                        SELECT id FROM tb_bridge_substructure
+                        WHERE bridge_span_id in (
+                            SELECT id FROM tb_bridge_span
+                            WHERE bridge_road_id in (
+                                SELECT id FROM tb_bridge_road
+                                WHERE monitor_plan_structure_rel_id in (
+                                    SELECT rel.id
+                                        FROM tb_monitor_plan_structure_rel as rel
+                                        join tb_bridge_score as score on rel.id = score.target_id and score.type = 1
+                                        join tb_monitor_plan as plan on rel.monitor_plan_id = plan.id
+                                        WHERE  rel.structure_info_id= #{structureId} and plan.project_info_id = #{projectId}
+                                        ORDER BY score.evaluation_time desc
+                                        limit 1
+                                    ) and status = 1
+                                )
+                            )
+                        )
+                    ) as BSBcomponent
+                    join tb_component as component on BSBcomponent.component_id = component.id
+                    join tb_disease_instance as disease on disease.target_id = BSBcomponent.id
+                WHERE disease.part_type = 3 and disease.status = 1
+                GROUP BY component.name ) as number
+                left join
+                (
+                    SELECT component.name, count(component.name) as points
+                    FROM (
+                        SELECT id, component_id FROM tb_bridge_subcomponent
+                        WHERE bridge_substructure_id in (
+                            SELECT id FROM tb_bridge_substructure
+                            WHERE bridge_span_id in (
+                                SELECT id FROM tb_bridge_span
+                                WHERE bridge_road_id in (
+                                    SELECT id FROM tb_bridge_road
+                                    WHERE monitor_plan_structure_rel_id in (
+                                    SELECT rel.id
+                                        FROM tb_monitor_plan_structure_rel as rel
+                                        join tb_bridge_score as score on rel.id = score.target_id and score.type = 1
+                                        join tb_monitor_plan as plan on rel.monitor_plan_id = plan.id
+                                        WHERE  rel.structure_info_id= #{structureId} and plan.project_info_id = #{projectId}
+                                        ORDER BY score.evaluation_time desc
+                                        limit 1
+                                        ) and status = 1
+                                    )
+                                )
+                            )
+                        ) as BSBcomponent
+                        join tb_component as component on BSBcomponent.component_id = component.id
+                        join tb_disease_instance as disease on disease.target_id = BSBcomponent.id
+                    WHERE disease.part_type = 3 and disease.status = 1 and disease.deduct != 0
+                    GROUP BY component.name ) as score on number.name = score.name)
+        ORDER BY type_name
+    </select>
+    <select id="selectComponentDiseaseType"
+            resultType="com.iware.bridge.evaluation.vo.ComponentDiseaseTypeNumber">
+        SELECT result.name,sum(result.count) as count FROM(
+        <if test="componentType == null or componentType == '' or componentType == '桥面系'">
+            SELECT BD.name,count(BD.name) FROM(
+            SELECT id,component_id FROM tb_bridge_deck_component
+            WHERE bridge_deck_system_id in (
+            SELECT id FROM tb_bridge_deck_system
+            WHERE bridge_span_id in (
+            SELECT id FROM tb_bridge_span
+            WHERE bridge_road_id in (
+            SELECT id FROM tb_bridge_road
+            WHERE monitor_plan_structure_rel_id in (
+            SELECT rel.id
+            FROM tb_monitor_plan_structure_rel as rel
+            join tb_bridge_score as score on rel.id = score.target_id and score.type = 1
+            join tb_monitor_plan as plan on rel.monitor_plan_id = plan.id
+            WHERE  rel.structure_info_id= #{structureId} and plan.project_info_id = #{projectId}
+            ORDER BY score.evaluation_time desc
+            limit 1) and status = 1
+            )
+            )
+            )
+            )as BDcomponent
+            join tb_component as component on BDcomponent.component_id = component.id
+            join tb_disease_instance as disease on BDcomponent.id = disease.target_id join tb_bridge_disease as BD on BD.id = disease.disease_id
+            WHERE disease.part_type = 1 and disease.status = 1
+            <if test="componentName != null and componentName != ''">
+                and component.name = #{componentName}
+            </if>
+            GROUP BY BD.name
+        </if>
+
+        <if test="componentType == null or componentType == ''">
+            union All(
+        </if>
+
+        <if test="componentType == null or componentType == '' or componentType == '上部结构'">
+            SELECT BD.name,count(BD.name) FROM(
+            SELECT id,component_id FROM tb_bridge_supcomponent
+            WHERE supstructure_id in (
+            SELECT id FROM tb_bridge_supstructure
+            WHERE bridge_span_id in (
+            SELECT id FROM tb_bridge_span
+            WHERE bridge_road_id in (
+            SELECT id FROM tb_bridge_road
+            WHERE monitor_plan_structure_rel_id in (
+            SELECT rel.id
+            FROM tb_monitor_plan_structure_rel as rel
+            join tb_bridge_score as score on rel.id = score.target_id and score.type = 1
+            join tb_monitor_plan as plan on rel.monitor_plan_id = plan.id
+            WHERE  rel.structure_info_id= #{structureId} and plan.project_info_id = #{projectId}
+            ORDER BY score.evaluation_time desc
+            limit 1
+            ) and status = 1
+            )
+            )
+            )
+            )as BSPcomponent
+            join tb_component as component on BSPcomponent.component_id = component.id
+            join tb_disease_instance as disease on BSPcomponent.id = disease.target_id join tb_bridge_disease as BD on BD.id = disease.disease_id
+            WHERE disease.part_type = 2 and disease.status = 1
+            <if test="componentName != null and componentName != ''">
+                and component.name = #{componentName}
+            </if>
+            GROUP BY BD.name
+        </if>
+
+        <if test="componentType == null or componentType == ''">
+            )
+        </if>
+
+        <if test="componentType == null or componentType == ''">
+            union All(
+        </if>
+
+        <if test="componentType == null or componentType == '' or componentType == '下部结构'">
+            SELECT BD.name,count(BD.name) FROM(
+            SELECT id,component_id FROM tb_bridge_subcomponent
+            WHERE bridge_substructure_id in (
+            SELECT id FROM tb_bridge_substructure
+            WHERE bridge_span_id in (
+            SELECT id FROM tb_bridge_span
+            WHERE bridge_road_id in (
+            SELECT id FROM tb_bridge_road
+            WHERE monitor_plan_structure_rel_id in (
+            SELECT rel.id
+            FROM tb_monitor_plan_structure_rel as rel
+            join tb_bridge_score as score on rel.id = score.target_id and score.type = 1
+            join tb_monitor_plan as plan on rel.monitor_plan_id = plan.id
+            WHERE  rel.structure_info_id= #{structureId} and plan.project_info_id = #{projectId}
+            ORDER BY score.evaluation_time desc
+            limit 1
+            ) and status = 1
+            )
+            )
+            )
+            )as BSBcomponent
+            join tb_component as component on BSBcomponent.component_id = component.id
+            join tb_disease_instance as disease on BSBcomponent.id = disease.target_id join tb_bridge_disease as BD on BD.id = disease.disease_id
+            WHERE disease.part_type = 3 and disease.status = 1
+            <if test="componentName != null and componentName != ''">
+                and component.name = #{componentName}
+            </if>
+            GROUP BY BD.name
+        </if>
+
+        <if test="componentType == null or componentType == ''">
+            )
+        </if>
+        ) as result
+        GROUP BY result.name
+        ORDER BY count DESC limit 10
+    </select>
+    <select id="getDiseaseMaxTime" resultType="java.lang.String">
+        SELECT disease.modify_time FROM tb_bridge_road as road
+        join tb_bridge_span as span on span.bridge_road_id = road.id
+        join tb_bridge_deck_system as system on system.bridge_span_id = span.id
+        join tb_bridge_deck_component as compoent on compoent.bridge_deck_system_id = system.id
+        join tb_disease_instance as disease on disease.target_id = compoent.id
+        WHERE disease.part_type = 1 and road.id = #{roadId}
+
+        union all (
+        SELECT disease.modify_time FROM tb_bridge_road as road
+
+        join tb_bridge_span as span on span.bridge_road_id = road.id
+        join tb_bridge_supstructure as sup on sup.bridge_span_id = span.id
+        join tb_bridge_supcomponent as compoent on compoent.supstructure_id = sup.id
+        join tb_disease_instance as disease on disease.target_id = compoent.id
+         WHERE disease.part_type = 2 and road.id = #{roadId}
+         )
+
+        union all (
+         SELECT disease.modify_time FROM tb_bridge_road as road
+
+        join tb_bridge_span as span on span.bridge_road_id = road.id
+        join tb_bridge_substructure as sub on sub.bridge_span_id = span.id
+        join tb_bridge_subcomponent as compoent on compoent.bridge_substructure_id = sub.id
+        join tb_disease_instance as disease on disease.target_id = compoent.id
+        WHERE disease.part_type = 3 and road.id = #{roadId}
+        )
+        order by modify_time desc limit 1
+    </select>
+    <select id="selectDiseaseList" resultType="com.iware.bridge.evaluation.vo.DiseaseBridge">
+        SELECT
+        a.value1,a.value2,a.value3,a.value4,a.value5,a.value6,a.value7,a.value8,a.value9,a.part_type,a.target_id,a.disease_id,a.id,a.value10,a.height_difference,a.number,a.photo
+        FROM (
+
+        (select distinct
+        a.value1,a.value2,a.value3,a.value4,a.value5,a.value6,a.value7,a.value8,a.value9,a.part_type,a.target_id,a.disease_id,a.id,case
+        when b.id is not null then 1 else 0 end as value10,a.height_difference,a.number,case when attachment.path is not null then '1' else '0' end as photo  from(
+        SELECT road.name as value1,concat(span.span_code, '#跨') as value2,'桥面系'::varchar as value3,component.name as
+        value4,totalDisease.name
+        as value5,disease.degree as value6,concat(totalDisease.code,'-',disease.sort) as value7,disease.remark as
+        value8,disease.creator as
+        value9,disease.part_type,disease.target_id,disease.disease_id,disease.id,disease.height_difference,disease.number
+
+        FROM tb_bridge_disease as totalDisease
+
+        join tb_disease_instance as disease on disease.disease_id = totalDisease.id
+
+        join tb_bridge_deck_component as BDcomponent on BDcomponent.id = disease.target_id
+
+        join tb_bridge_deck_system as system on system.id = BDcomponent.bridge_deck_system_id
+
+        join tb_component as component on BDcomponent.component_id = component.id
+
+        join tb_bridge_span as span on span.id = system.bridge_span_id
+
+        join tb_bridge_road as road on road.id = span.bridge_road_id
+
+        join (SELECT id FROM tb_monitor_plan_structure_rel WHERE id = #{id}) as structure on
+        road.monitor_plan_structure_rel_id = structure.id
+
+
+
+        WHERE disease.part_type = 1 and disease.status = 1 and road.status = 1 and span.status = 1 and system.status = 1
+        and BDcomponent.status = 1
+        ) as a
+        left join tb_attachment as attachment on attachment.target_id = a.id and attachment.type = 5 and attachment.part_type = 1
+        left join tb_disease_instance_record as b on
+        b.tdi_id = a.id and b.creator
+        = a.value9)
+        union All(
+
+        (select distinct
+        a.value1,a.value2,a.value3,a.value4,a.value5,a.value6,a.value7,a.value8,a.value9,a.part_type,a.target_id,a.disease_id,a.id,case
+        when b.id is not null then 1 else 0 end as value10,a.height_difference,a.number,case when attachment.path is not null then '1' else '0' end as photo  from(
+        SELECT road.name as value1,concat(span.span_code, '#跨') as value2,'上部结构'::varchar as
+        value3,CONCAT(BSPcomponent.code,'#',component.name) as
+        value4,totalDisease.name
+        as value5,disease.degree as value6,concat(totalDisease.code,'-',disease.sort) as value7,disease.remark as
+        value8,disease.creator as
+        value9
+        ,disease.part_type,disease.target_id,disease.disease_id,disease.id,disease.height_difference,disease.number
+        FROM tb_bridge_disease as totalDisease
+
+        join tb_disease_instance as disease
+        on disease.disease_id = totalDisease.id
+
+        join tb_bridge_supcomponent as BSPcomponent on BSPcomponent.id =
+        disease.target_id
+
+        join tb_bridge_supstructure as supstructure on supstructure.id =
+        BSPcomponent.supstructure_id
+
+        join tb_component as component on BSPcomponent.component_id = component.id
+
+        join tb_bridge_span as span on span.id = supstructure.bridge_span_id
+
+        join tb_bridge_road as road on road.id = span.bridge_road_id
+
+        join (SELECT id FROM tb_monitor_plan_structure_rel WHERE id = #{id}) as structure on
+        road.monitor_plan_structure_rel_id = structure.id
+
+        WHERE disease.part_type = 2 and disease.status = 1 and road.status = 1 and span.status = 1 and
+        supstructure.status = 1
+        and BSPcomponent.status = 1
+        ) as a
+        left join tb_attachment as attachment on attachment.target_id = a.id and attachment.type = 5 and attachment.part_type = 2
+        left join tb_disease_instance_record as b on
+        b.tdi_id = a.id and b.creator
+        = a.value9)
+        )
+        union all(
+
+
+        (select distinct
+        a.value1,a.value2,a.value3,a.value4,a.value5,a.value6,a.value7,a.value8,a.value9,a.part_type,a.target_id,a.disease_id,a.id,case
+        when b.id is not null then 1 else 0 end as value10,a.height_difference,a.number,case when attachment.path is not null then '1' else '0' end as photo  from(
+        SELECT road.name as value1,concat(span.span_code, '#跨') as value2,'下部结构'::varchar as
+        value3,CONCAT(BSBcomponent.code,'#',component.name) as
+        value4,totalDisease.name
+        as value5,disease.degree as value6,concat(totalDisease.code,'-',disease.sort) as value7,disease.remark as
+        value8,disease.creator as
+        value9,disease.part_type,disease.target_id,disease.disease_id,disease.id,disease.height_difference,disease.number
+        FROM tb_bridge_disease as totalDisease
+
+        join tb_disease_instance as disease
+        on disease.disease_id = totalDisease.id
+
+        join tb_bridge_subcomponent as BSBcomponent on
+        BSBcomponent.id = disease.target_id
+
+        join tb_bridge_substructure as substructure on substructure.id =
+        BSBcomponent.bridge_substructure_id
+
+        join tb_component as component on BSBcomponent.component_id = component.id
+
+        join tb_bridge_span as span on span.id = substructure.bridge_span_id
+
+        join tb_bridge_road as road on road.id = span.bridge_road_id
+
+        join (SELECT id FROM tb_monitor_plan_structure_rel WHERE id = #{id}) as structure on
+        road.monitor_plan_structure_rel_id = structure.id
+
+        WHERE disease.part_type = 3 and disease.status = 1 and road.status = 1 and span.status = 1 and
+        substructure.status = 1
+        and BSBcomponent.status = 1
+
+
+        ) as a
+        left join tb_attachment as attachment on attachment.target_id = a.id and attachment.type = 5 and attachment.part_type = 3
+        left join tb_disease_instance_record as b on
+        b.tdi_id = a.id and b.creator
+        = a.value9)
+        )
+
+        union all (
+
+        (select distinct
+        a.value1,a.value2,a.value3,a.value4,a.value5,a.value6,a.value7,a.value8,a.value9,a.part_type,a.target_id,a.disease_id,a.id,case
+        when b.id is not null then 1 else 0 end as value10,a.height_difference,a.number,case when attachment.path is not null then '1' else '0' end as photo from(
+        SELECT road.name as value1,concat(span.span_code, '#跨') as value2,'其他结构'::varchar as
+        value3,'其他结构' as
+        value4,totalDisease.name
+        as value5,disease.degree as value6,concat(totalDisease.code,'-',disease.sort) as value7,disease.remark as
+        value8,disease.creator as
+        value9
+        ,disease.part_type,disease.target_id,disease.disease_id,disease.id,disease.height_difference,disease.number
+        FROM tb_bridge_disease as totalDisease
+
+        join tb_disease_instance as disease
+        on disease.disease_id = totalDisease.id
+
+        join tb_bridge_other_structure as other on disease.target_id = other.id
+
+
+        join tb_bridge_span as span on span.id = other.bridge_span_id
+
+        join tb_bridge_road as road on road.id = span.bridge_road_id
+
+        join (SELECT id FROM tb_monitor_plan_structure_rel WHERE id = #{id}) as structure on
+        road.monitor_plan_structure_rel_id = structure.id
+
+        WHERE disease.part_type = 4 and disease.status = 1 and road.status = 1 and span.status = 1
+        and other.status = 1
+        ) as a
+        left join tb_attachment as attachment on attachment.target_id = a.id and attachment.type = 5 and attachment.part_type = 4
+        left join tb_disease_instance_record as b on
+        b.tdi_id = a.id and b.creator
+        = a.value9)
+        )
+
+        ) as a
+
+
+        <if test="keyword != null and keyword != ''">
+            WHERE value1 like concat('%',#{keyword},'%')
+            or value2 like concat('%',#{keyword},'%')
+            or value3 like concat('%',#{keyword},'%')
+            or value4 like concat('%',#{keyword},'%')
+            or value5 like concat('%',#{keyword},'%')
+            or value6 like concat('%',#{keyword},'%')
+            or value7 like concat('%',#{keyword},'%')
+            or value8 like concat('%',#{keyword},'%')
+            or value9 like concat('%',#{keyword},'%')
+        </if>
+        ORDER BY value1,value2,(case
+        when value3='桥面系' then 1
+        when value3='上部结构'then 2
+        when value3='下部结构'then 3
+        else 4
+        end),value4,value5,value6,value7,value8,value9
+    </select>
+    <select id="selectDiseaseRecordList" resultType="com.iware.bridge.evaluation.vo.RecordVO">
+        SELECT disease.id,totalDisease.name,disease.degree,CONCAT(totalDisease.code,'-',disease.sort) as code,disease.modify_time as createTime,disease.creator  FROM tb_disease_instance_record as disease
+		join tb_disease_instance as instance on instance.id = disease.tdi_id
+        left join tb_bridge_disease as totalDisease on instance.disease_id = totalDisease.id
+        WHERE disease.tdi_id = #{id} and disease.creator = #{creator}
+        ORDER BY disease.modify_time DESC
+    </select>
+    <select id="selectRecyclingList" resultType="com.iware.bridge.evaluation.vo.RecyclingVO">
+        SELECT DISTINCT creator,modify_time as create_time,is_delete FROM (
+
+        (SELECT disease.creator,disease.modify_time,is_delete  FROM tb_bridge_disease as totalDisease
+
+        join  tb_disease_instance as disease on disease.disease_id = totalDisease.id
+
+        join  tb_bridge_deck_component as BDcomponent on BDcomponent.id = disease.target_id
+
+        join  tb_bridge_deck_system as system on system.id = BDcomponent.bridge_deck_system_id
+
+        join  tb_component as component on BDcomponent.component_id = component.id
+
+        join  tb_bridge_span as span on span.id = system.bridge_span_id
+
+        join  tb_bridge_road as road on road.id = span.bridge_road_id
+
+        join (SELECT id FROM tb_monitor_plan_structure_rel WHERE id = #{id}) as structure on
+        road.monitor_plan_structure_rel_id = structure.id
+
+        WHERE disease.part_type = 1 and disease.status = 0
+
+        )
+        union All(
+        SELECT disease.creator,disease.modify_time,is_delete FROM tb_bridge_disease as totalDisease
+
+        join  tb_disease_instance as disease on disease.disease_id = totalDisease.id
+
+        join  tb_bridge_supcomponent as BSPcomponent on BSPcomponent.id = disease.target_id
+
+        join  tb_bridge_supstructure as supstructure on supstructure.id = BSPcomponent.supstructure_id
+
+        join  tb_component as component on BSPcomponent.component_id = component.id
+
+        join  tb_bridge_span as span on span.id = supstructure.bridge_span_id
+
+        join  tb_bridge_road as road on road.id = span.bridge_road_id
+
+        join (SELECT id FROM tb_monitor_plan_structure_rel WHERE id = #{id}) as structure on
+        road.monitor_plan_structure_rel_id = structure.id
+
+        WHERE disease.part_type = 2 and disease.status = 0
+
+        )
+        union all(
+
+
+        SELECT disease.creator,disease.modify_time,is_delete FROM tb_bridge_disease as totalDisease
+
+        join  tb_disease_instance as disease on disease.disease_id = totalDisease.id
+
+        join  tb_bridge_subcomponent as BSBcomponent on BSBcomponent.id = disease.target_id
+
+        join  tb_bridge_substructure as substructure on substructure.id =
+        BSBcomponent.bridge_substructure_id
+
+        join  tb_component as component on BSBcomponent.component_id = component.id
+
+        join  tb_bridge_span as span on span.id = substructure.bridge_span_id
+
+        join  tb_bridge_road as road on road.id = span.bridge_road_id
+
+        join (SELECT id FROM tb_monitor_plan_structure_rel WHERE id =  #{id} )as structure on
+        road.monitor_plan_structure_rel_id = structure.id
+
+        WHERE disease.part_type = 3 and disease.status = 0
+
+
+        )
+
+        ) as total
+
+        ORDER BY modify_time DESC
+
+    </select>
+    <select id="selectTypeAndTargetId" resultType="com.iware.bridge.model.entity.evaluation.DiseaseInstance">
+        SELECT part_type,target_id FROM tb_disease_instance
+        WHERE creator = #{creator}
+        and modify_time = #{createTime}
+    </select>
+    <select id="selectTypeAndTargetId2" resultType="com.iware.bridge.model.entity.evaluation.DiseaseInstance">
+        SELECT part_type,target_id,to_char(modify_time,'yyyy-mm-dd hh24:mi:ss') as degree FROM tb_disease_instance
+        WHERE creator = #{creator}
+        and modify_time = #{createTime} and status = 0
+    </select>
+    <select id="selectRecordDetailList" resultType="com.iware.bridge.evaluation.vo.DiseaseBridge">
+                SELECT a.value1,a.value2,a.value3,a.value4,a.value5,a.value6,a.value7,a.value8,a.value9,a.id,a.photo FROM (
+
+        (SELECT distinct disease.id,road.name as value1,concat(span.span_code, '#跨') as value2,'桥面系'::varchar as value3,component.name as value4,totalDisease.name
+        as value5,disease.degree as value6,concat(totalDisease.code,'-',disease.sort) as value7,disease.remark as value8,disease.creator as
+        value9,case when attachment.path is not null then '1' else '0' end as photo FROM tb_bridge_disease as totalDisease
+
+        join  tb_disease_instance as disease on disease.disease_id = totalDisease.id
+
+        join  tb_bridge_deck_component as BDcomponent on BDcomponent.id = disease.target_id
+
+        join  tb_bridge_deck_system as system on system.id = BDcomponent.bridge_deck_system_id
+
+        join  tb_component as component on BDcomponent.component_id = component.id
+
+        join  tb_bridge_span as span on span.id = system.bridge_span_id
+
+        join  tb_bridge_road as road on road.id = span.bridge_road_id
+
+        join (SELECT id FROM tb_monitor_plan_structure_rel WHERE id = #{id}) as structure on
+        road.monitor_plan_structure_rel_id = structure.id
+
+         left join tb_attachment as attachment on attachment.target_id = disease.id and attachment.type = 5
+
+        WHERE disease.part_type = 1 and disease.status = 0 and disease.creator = #{creator}
+               and disease.modify_time = #{createTime}
+
+        )
+        union All(
+        SELECT distinct disease.id,road.name as value1,concat(span.span_code, '#跨') as value2,'上部结构'::varchar as value3, CONCAT(BSPcomponent.code,'#',component.name) as value4,totalDisease.name
+        as value5,disease.degree as value6,concat(totalDisease.code,'-',disease.sort) as value7,disease.remark as value8,disease.creator as
+        value9,case when attachment.path is not null then '1' else '0' end as photo FROM tb_bridge_disease as totalDisease
+
+        join  tb_disease_instance as disease on disease.disease_id = totalDisease.id
+
+        join  tb_bridge_supcomponent as BSPcomponent on BSPcomponent.id = disease.target_id
+
+        join  tb_bridge_supstructure as supstructure on supstructure.id = BSPcomponent.supstructure_id
+
+        join  tb_component as component on BSPcomponent.component_id = component.id
+
+        join  tb_bridge_span as span on span.id = supstructure.bridge_span_id
+
+        join  tb_bridge_road as road on road.id = span.bridge_road_id
+
+        join (SELECT id FROM tb_monitor_plan_structure_rel WHERE id = #{id}) as structure on
+        road.monitor_plan_structure_rel_id = structure.id
+
+         left join tb_attachment as attachment on attachment.target_id = disease.id and attachment.type = 5
+
+        WHERE disease.part_type = 2 and disease.status = 0 and disease.creator = #{creator}
+             and disease.modify_time = #{createTime}
+
+        )
+        union all(
+
+
+        SELECT distinct disease.id,road.name as value1,concat(span.span_code, '#跨') as value2,'下部结构'::varchar as value3, CONCAT(BSBcomponent.code,'#',component.name) as value4,totalDisease.name
+        as value5,disease.degree as value6,concat(totalDisease.code,'-',disease.sort) as value7,disease.remark as value8,disease.creator as
+        value9,case when attachment.path is not null then '1' else '0' end as photo FROM tb_bridge_disease as totalDisease
+
+        join  tb_disease_instance as disease on disease.disease_id = totalDisease.id
+
+        join  tb_bridge_subcomponent as BSBcomponent on BSBcomponent.id = disease.target_id
+
+        join  tb_bridge_substructure as substructure on substructure.id =
+        BSBcomponent.bridge_substructure_id
+
+        join  tb_component as component on BSBcomponent.component_id = component.id
+
+        join  tb_bridge_span as span on span.id = substructure.bridge_span_id
+
+        join  tb_bridge_road as road on road.id = span.bridge_road_id
+
+         left join tb_attachment as attachment on attachment.target_id = disease.id and attachment.type = 5
+
+        join (SELECT id FROM tb_monitor_plan_structure_rel WHERE id = #{id}) as structure on
+        road.monitor_plan_structure_rel_id = structure.id
+
+        WHERE disease.part_type = 3 and disease.status = 0 and disease.creator = #{creator}
+            and disease.modify_time = #{createTime}
+
+        )
+
+        ) as a
+
+
+        ORDER BY value1,value2,value3,value4,value5,value6,value7,value8,value9
+    </select>
+    <select id="selectDBByStructureId" resultType="com.iware.bridge.evaluation.vo.DetectionRecord">
+        SELECT  disease.id,totalComponent.name,totalDisease.name as disease_name,span.span_code,disease.degree,disease.sort,totalDisease.code,road.name as road_name,disease.x_axis,disease.y_axis,road.id as road_id,span.id as span_id,disease.remark
+         FROM tb_disease_instance as disease
+
+
+        join  tb_bridge_deck_component as componet  on componet.id = disease.target_id
+
+        join tb_bridge_deck_system as system on componet.bridge_deck_system_id = system.id
+
+        join  tb_bridge_span as span on system.bridge_span_id = span.id
+
+        join tb_bridge_road  as road on road.id = span.bridge_road_id
+
+        join (SELECT id FROM tb_monitor_plan_structure_rel WHERE id = #{structureId}) as structure on structure.id = road.monitor_plan_structure_rel_id
+
+        join tb_bridge_disease as totalDisease on disease.disease_id = totalDisease.id
+
+        join tb_component as totalComponent on componet.component_id = totalComponent.id
+
+        WHERE disease.part_type = 1 and disease.status = 1 and road.status = 1
+
+        ORDER BY road.id,span.id,road.name,span.span_code
+
+    </select>
+    <select id="selectSUPByStructureId" resultType="com.iware.bridge.evaluation.vo.DetectionRecord">
+        SELECT  disease.id,totalComponent.name,totalDisease.name as disease_name,span.span_code,disease.degree,disease.sort,totalDisease.code,road.name as road_name,disease.x_axis,disease.y_axis,road.id as road_id,span.id as span_id,disease.remark
+                                  ,supcomponent.code as componentCode
+        FROM tb_disease_instance as disease
+
+        join  tb_bridge_supcomponent as supcomponent  on supcomponent.id = disease.target_id
+
+        join tb_bridge_supstructure as supstructure on supcomponent.supstructure_id = supstructure.id
+
+        join  tb_bridge_span as span on supstructure.bridge_span_id = span.id
+
+        join tb_bridge_road  as road on road.id = span.bridge_road_id
+
+        join (SELECT id FROM tb_monitor_plan_structure_rel WHERE id = #{structureId}) as structure on structure.id = road.monitor_plan_structure_rel_id
+
+        join tb_bridge_disease as totalDisease on disease.disease_id = totalDisease.id
+
+        join tb_component as totalComponent on supcomponent.component_id = totalComponent.id
+
+        WHERE disease.part_type = 2 and disease.status = 1 and road.status = 1
+
+        ORDER BY road.id,span.id,road.name,span.span_code
+    </select>
+    <select id="selectSUBByStructureId" resultType="com.iware.bridge.evaluation.vo.DetectionRecord">
+        SELECT  disease.id,totalComponent.name,totalDisease.name as disease_name,span.span_code,disease.degree,disease.sort,totalDisease.code,road.name as road_name,disease.x_axis,disease.y_axis,road.id as road_id,span.id as span_id,disease.remark
+                    ,subcomponent.code as componentCode
+         FROM tb_disease_instance as disease
+
+        join  tb_bridge_subcomponent as subcomponent  on subcomponent.id = disease.target_id
+
+        join tb_bridge_substructure as substructure on subcomponent.bridge_substructure_id = substructure.id
+
+        join  tb_bridge_span as span on substructure.bridge_span_id = span.id
+
+        join tb_bridge_road  as road on road.id = span.bridge_road_id
+
+        join (SELECT id FROM tb_monitor_plan_structure_rel WHERE id = #{structureId}) as structure on structure.id = road.monitor_plan_structure_rel_id
+
+        join tb_bridge_disease as totalDisease on disease.disease_id = totalDisease.id
+
+        join tb_component as totalComponent on subcomponent.component_id = totalComponent.id
+
+        WHERE disease.part_type = 3 and disease.status = 1 and road.status = 1
+
+        ORDER BY road.id,span.id,road.name,span.span_code
+    </select>
+    <select id="selectBDDiseaseByRoadId" resultType="com.iware.bridge.evaluation.vo.WordCheckResults">
+        SELECT  disease.id,totalComponent.name,totalDisease.name as disease_name,span.span_code,disease.degree,disease.sort,totalDisease.code
+         ,disease.remark
+         FROM tb_disease_instance as disease
+
+        join  tb_bridge_deck_component as componet  on componet.id = disease.target_id
+
+        join tb_bridge_deck_system as system on componet.bridge_deck_system_id = system.id
+
+        join  tb_bridge_span as span on system.bridge_span_id = span.id
+
+        join (SELECT id FROM tb_bridge_road WHERE id = #{id}) as road on road.id = span.bridge_road_id
+
+        join tb_bridge_disease as totalDisease on disease.disease_id = totalDisease.id
+
+        join tb_component as totalComponent on componet.component_id = totalComponent.id
+
+
+        WHERE disease.part_type = 1 and disease.status = 1
+
+        ORDER BY span.span_code,totalComponent.name,totalDisease.name,disease.sort
+    </select>
+    <select id="selectSUPDiseaseByRoadId" resultType="com.iware.bridge.evaluation.vo.WordCheckResults">
+        SELECT  disease.id,totalComponent.name,totalDisease.name as disease_name,span.span_code,disease.degree,disease.sort,totalDisease.code
+         ,disease.remark
+         FROM tb_disease_instance as disease
+        join  tb_bridge_supcomponent as supcomponent  on supcomponent.id = disease.target_id
+
+        join tb_bridge_supstructure as supstructure on supcomponent.supstructure_id = supstructure.id
+
+        join  tb_bridge_span as span on supstructure.bridge_span_id = span.id
+
+        join (SELECT id FROM tb_bridge_road WHERE id = #{id}) as road on road.id = span.bridge_road_id
+
+        join tb_bridge_disease as totalDisease on disease.disease_id = totalDisease.id
+
+        join tb_component as totalComponent on supcomponent.component_id = totalComponent.id
+
+
+        WHERE disease.part_type = 2 and disease.status = 1
+
+        ORDER BY span.span_code,totalComponent.name,totalDisease.name,disease.sort
+    </select>
+    <select id="selectSUBDiseaseByRoadId" resultType="com.iware.bridge.evaluation.vo.WordCheckResults">
+        SELECT  disease.id,totalComponent.name,totalDisease.name as disease_name,span.span_code,disease.degree,disease.sort,totalDisease.code
+        ,disease.remark FROM tb_disease_instance as disease
+
+        join  tb_bridge_subcomponent as subcomponent  on subcomponent.id = disease.target_id
+
+        join tb_bridge_substructure as substructure on subcomponent.bridge_substructure_id = substructure.id
+
+        join  tb_bridge_span as span on substructure.bridge_span_id = span.id
+
+        join (SELECT id FROM tb_bridge_road WHERE id = #{id}) as road on road.id = span.bridge_road_id
+
+        join tb_bridge_disease as totalDisease on disease.disease_id = totalDisease.id
+
+        join tb_component as totalComponent on subcomponent.component_id = totalComponent.id
+
+
+        WHERE disease.part_type = 3 and disease.status = 1
+
+        ORDER BY span.span_code,totalComponent.name,totalDisease.name,disease.sort
+    </select>
+    <select id="selectDiseaseSummary" resultType="com.iware.bridge.evaluation.vo.DiseaseSummary">
+SELECT '桥面系'::varchar as value1 ,component.name as value2,totalDisease.name as value3,sum(disease.length * disease.width)
+        as area ,sum(disease.number) as number,sum(disease.depth) as depth,sum(disease.seam_length) as seam_length,sum(disease.seam_width) as
+        seam_width,disease.degree,sum(disease.height_difference) as height_difference  FROM tb_bridge_road as road
+
+        join  tb_bridge_span as span on span.bridge_road_id = road.id
+
+        join  tb_bridge_deck_system  as system on system.bridge_span_id = span.id
+
+        join  tb_bridge_deck_component  as BDcomponent on BDcomponent.bridge_deck_system_id = system.id
+
+        join  tb_disease_instance  as disease on disease.target_id = BDcomponent.id
+
+        join  tb_bridge_disease  as totalDisease on disease.disease_id = totalDisease.id
+
+        join  tb_component  as component on BDcomponent.component_id = component.id
+
+        WHERE road.id = #{id} and disease.part_type = 1 and disease.status = 1  and disease.deduct != 0
+
+        GROUP BY component.name,totalDisease.name,disease.degree,disease.height_difference
+
+        union all (
+        SELECT '上部结构'::varchar as value1 ,component.name as value2,totalDisease.name as value3,sum(disease.length *
+        disease.width) as area ,sum(disease.number) as number,sum(disease.depth) as depth,sum(disease.seam_length) as
+        seam_length,sum(disease.seam_width) as seam_width,disease.degree,sum(disease.height_difference) as height_difference  FROM tb_bridge_road as road
+
+        join  tb_bridge_span as span on span.bridge_road_id = road.id
+
+        join  tb_bridge_supstructure  as supstructure on supstructure.bridge_span_id = span.id
+
+        join  tb_bridge_supcomponent  as SUPcomponent on SUPcomponent.supstructure_id = supstructure.id
+
+        join  tb_disease_instance  as disease on disease.target_id = SUPcomponent.id
+
+        join  tb_bridge_disease  as totalDisease on disease.disease_id = totalDisease.id
+
+        join  tb_component  as component on SUPcomponent.component_id = component.id
+
+        WHERE road.id = #{id} and disease.part_type =2 and disease.status = 1  and disease.deduct != 0
+
+        GROUP BY component.name,totalDisease.name,disease.degree,disease.height_difference
+
+        )
+
+        union all (
+        SELECT '下部结构'::varchar as value1 ,component.name as value2,totalDisease.name as value3,sum(disease.length *
+        disease.width) as area ,sum(disease.number) as number,sum(disease.depth) as depth,sum(disease.seam_length) as
+        seam_length,sum(disease.seam_width) as seam_width,disease.degree,sum(disease.height_difference) as height_difference FROM tb_bridge_road as road
+
+        join  tb_bridge_span as span on span.bridge_road_id = road.id
+
+        join  tb_bridge_substructure  as substructure on substructure.bridge_span_id = span.id
+
+        join  tb_bridge_subcomponent  as SUBcomponent on SUBcomponent.bridge_substructure_id =
+        substructure.id
+
+        join tb_disease_instance  as disease on disease.target_id = SUBcomponent.id
+
+        join  tb_bridge_disease  as totalDisease on disease.disease_id = totalDisease.id
+
+        join  tb_component as component on SUBcomponent.component_id = component.id
+
+        WHERE road.id =#{id} and disease.part_type = 3 and disease.status = 1  and disease.deduct != 0
+
+        GROUP BY component.name,totalDisease.name,disease.degree,disease.height_difference
+
+        )
+        	ORDER BY value1,value2,value3,degree
+    </select>
+    <select id="selectDiseaseIdByRoadId" resultType="com.iware.bridge.model.entity.evaluation.DiseaseInstance">
+        SELECT disease.id,disease.degree,disease.disease_id,component.component_id as target_id,disease.part_type,disease.height_difference,disease.number  FROM tb_bridge_road as road
+
+        join tb_bridge_span as span on span.bridge_road_id = road.id
+
+        join tb_bridge_deck_system as system on system.bridge_span_id = span.id
+
+        join tb_bridge_deck_component as component on component.bridge_deck_system_id = system.id
+
+        join tb_disease_instance as disease on disease.target_id = component.id and disease.part_type = 1
+
+        WHERE road.id = #{roadId}
+
+
+        union all(
+        SELECT disease.id,disease.degree,disease.disease_id,component.component_id as target_id,disease.part_type,disease.height_difference,disease.number  FROM tb_bridge_road as road
+
+
+
+        join tb_bridge_span as span on span.bridge_road_id = road.id
+
+        join tb_bridge_supstructure as supstructre on supstructre.bridge_span_id = span.id
+
+        join tb_bridge_supcomponent as component on component.supstructure_id = supstructre.id
+
+        join tb_disease_instance as disease on disease.target_id = component.id and disease.part_type = 2
+
+        WHERE road.id = #{roadId}
+        )
+
+        union all(
+        SELECT disease.id,disease.degree,disease.disease_id,component.component_id as target_id,disease.part_type,disease.height_difference,disease.number  FROM tb_bridge_road as road
+
+
+
+        join tb_bridge_span as span on span.bridge_road_id = road.id
+
+        join tb_bridge_substructure as substructre on substructre.bridge_span_id = span.id
+
+        join tb_bridge_subcomponent as component on component.bridge_substructure_id = substructre.id
+
+        join tb_disease_instance as disease on disease.target_id = component.id and disease.part_type = 3
+
+        WHERE road.id = #{roadId}
+        )
+    </select>
+    <select id="selectDegreeType" resultType="java.lang.Integer">
+         SELECT type  FROM tb_deduction WHERE disease_id = #{diseaseId} and component_id = #{partType} limit 1
+    </select>
+    <select id="selectDiseaseInstance" resultType="com.iware.bridge.evaluation.vo.DiseaseInstanceVO">
+        SELECT disease.*,deduct.level_limit FROM tb_disease_instance as disease
+
+        join tb_deduction as deduct on deduct.disease_id = disease.disease_id and  deduct.component_id =#{componentId} and disease.degree = deduct.degress
+
+        WHERE disease.part_type = #{partType} and disease.target_id = #{targetId} and disease.status = 1
+    </select>
+</mapper>

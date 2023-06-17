@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.inspection.dao.AnalyseExpDao">
+
+    <select id="getDiseaseType" resultType="com.iware.bridge.inspection.vo.DiseaseTypeVo">
+        SELECT
+            tid.damage_type as type,
+            sum (tidi.quantity) as count
+        FROM
+            tb_inspection_disease_instance tidi
+                LEFT JOIN tb_inspection_disease tid ON tid. ID = tidi.inspection_disease_id
+                LEFT JOIN tb_plan_detail tpd ON tpd. ID = tidi.plan_detail_id
+                LEFT JOIN tb_project_structure_rel tpsr on tpsr.structure_id=tpd.structure_id
+        WHERE
+            tidi.inspection_disease_id != 26 and tidi.inspection_disease_id != 64
+            <if test="structureId != null">
+                and tpd.structure_id = #{structureId}
+            </if>
+        GROUP BY
+            tid.damage_type
+        order by
+            count desc
+    </select>
+
+    <select id="getDiseasePartStructure" resultType="com.iware.bridge.inspection.vo.DiseaseRatioVo">
+        SELECT
+            tid.disease_part as diseasePart,
+            sum (tidi.quantity) as count
+        FROM
+            tb_inspection_disease_instance tidi
+            LEFT JOIN tb_inspection_disease tid ON tid. ID = tidi.inspection_disease_id
+            LEFT JOIN tb_plan_detail tpd ON tpd. ID = tidi.plan_detail_id
+        WHERE
+            tpd.structure_id = #{structureId} and tidi.inspection_disease_id != 26 and tidi.inspection_disease_id != 64
+            <if test="filterMonth!=null">
+                and to_char(tpd.inspection_time,'yyyy-MM')=#{filterMonth}
+            </if>
+            <if test="filterYear!=null">
+                and to_char(tpd.inspection_time,'yyyy')=#{filterYear}
+            </if>
+        GROUP BY
+            tid.disease_part
+        order by
+            count desc
+    </select>
+
+    <select id="countDiseaseRepair" resultType="com.iware.bridge.inspection.vo.DiseaseRepairVo">
+        SELECT
+            tid.disease_part as part,
+            tidi.strategy as strategy,
+            sum (tidi.quantity) as count
+        FROM
+            tb_inspection_disease_instance tidi
+        LEFT JOIN tb_inspection_disease tid ON tid. ID = tidi.inspection_disease_id
+        LEFT JOIN tb_plan_detail tpd ON tpd. ID = tidi.plan_detail_id
+        WHERE
+            tpd.structure_id = #{structureId} and tidi.inspection_disease_id != 26 and tidi.inspection_disease_id != 64
+        GROUP BY
+            tid.disease_part,tidi.strategy
+        order by
+            count desc
+    </select>
+
+    <select id="sumMaintainExpenditure" resultType="integer">
+        SELECT
+            SUM (DISTINCT(tpi).expenditure)
+        FROM
+            tb_maintain_item tmi
+                LEFT JOIN tb_plan_info tpi ON tmi.plan_id = tpi. ID
+        WHERE
+            to_char(tmi.proposed_time, 'yyyy') = #{filterYear}
+          AND tmi.structure_id = #{structureId} and tmi.status = 1
+    </select>
+
+    <select id="countMaintainItemStructure" resultType="integer">
+        SELECT
+            COUNT (tmi.id)
+        FROM
+            tb_maintain_item tmi
+                LEFT JOIN tb_plan_info tpi ON tmi.plan_id = tpi. ID
+        WHERE
+            to_char(tmi.proposed_time, 'yyyy') = #{filterYear}
+          AND tmi.structure_id = #{structureId} and tmi.status=1
+    </select>
+
+    <select id="countMaintainDiseasePart" resultType="com.iware.bridge.inspection.vo.DiseaseRatioVo">
+        SELECT
+            tid.check_item AS diseasePart,
+            sum (tidi.quantity) AS COUNT
+        FROM
+            tb_maintain_item tmi
+            INNER JOIN tb_plan_info tpi ON tmi.plan_id = tpi. ID
+            INNER JOIN tb_inspection_disease_instance tidi ON tmi.disease_instance_id = tidi. ID
+            INNER JOIN tb_inspection_disease tid ON tid. ID = tidi.inspection_disease_id
+        WHERE
+            to_char(tmi.proposed_time, 'yyyy') = #{filterYear}
+          AND tmi.structure_id = #{structureId} and tmi.status=1
+        GROUP BY
+            tid.check_item
+        order by
+            count desc
+    </select>
+
+    <select id="countMaintainMethodCycle" resultType="com.iware.bridge.inspection.vo.MaintainMethodCycleVo">
+        SELECT
+            tid.check_item as method,
+            Round(
+                    CASE (
+                             SELECT
+                                 sum (tidiii. quantity)
+                             FROM
+                                 tb_maintain_item tmii
+                                     LEFT JOIN tb_inspection_disease_instance tidiii ON tidiii. ID = tmii.disease_instance_id
+                             WHERE
+                                 tmii.structure_id = #{structureId} and tmii.status=1
+                         ) * 1.0
+                        WHEN 0 THEN
+                            0
+                        ELSE
+                                sum (tidi. quantity) / (
+                                    (
+                                        SELECT
+                                            sum (tidiii. quantity)
+                                        FROM
+                                            tb_maintain_item tmii
+                                                LEFT JOIN tb_inspection_disease_instance tidiii ON tidiii. ID = tmii.disease_instance_id
+                                        WHERE
+                                            tmii.structure_id = #{structureId} and tmii.status=1
+                                    ) * 1.0
+                                )
+                        END,
+                    2
+                ) * 100 AS rate
+        FROM
+            tb_maintain_item tmi
+                INNER JOIN tb_inspection_disease_instance tidi ON tidi. ID = tmi.disease_instance_id
+                INNER JOIN tb_inspection_disease tid ON tid. ID = tidi.inspection_disease_id
+        WHERE
+            tmi.structure_id = #{structureId} and tmi.status=1
+        GROUP BY
+            tid.check_item
+        order by
+            rate desc
+    </select>
+
+
+</mapper>

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.user.UserAppRoleRelDao">
+
+    <resultMap type="com.iware.bridge.model.entity.user.UserAppRoleRel" id="userAppRoleRelMap">
+        <result property="id" column="id"/>
+        <result property="appRoleId" column="app_role_id"/>
+        <result property="userId" column="user_id"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       app_role_id,
+       user_id
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.user.UserAppRoleRel">
+        insert into tb_user_app_role_rel
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                app_role_id,
+                user_id
+            </trim>
+        )
+        values
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{appRoleId},
+                #{userId}
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询UserAppRoleRel -->
+    <select id="findById" parameterType="Integer" resultMap="userAppRoleRelMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_user_app_role_rel
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.user.UserAppRoleRel">
+        UPDATE
+            tb_user_app_role_rel
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                <if test="appRoleId != null">
+                    app_role_id = #{appRoleId},
+                </if>
+                <if test="userId != null">
+                    user_id = #{userId}
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_user_app_role_rel
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_user_app_role_rel
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                app_role_id,
+                user_id
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.appRoleId},
+                #{it.userId}
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_user_app_role_rel
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="userAppRoleRelMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_user_app_role_rel
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询UserAppRoleRel -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.user.UserAppRoleRel" resultMap="userAppRoleRelMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_user_app_role_rel
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="appRoleId != null">
+                AND app_role_id = #{appRoleId}
+            </if>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询UserAppRoleRel -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.user.UserAppRoleRel" resultMap="userAppRoleRelMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_user_app_role_rel
+        <where>
+            <if test="appRoleId != null">
+                AND app_role_id = #{appRoleId}
+            </if>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

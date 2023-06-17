@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.inspection.dao.WordDataDao">
+
+    <!--查询word所需数据-->
+    <select id="getWordDataInspection" resultType="com.iware.bridge.inspection.vo.InspectionWordDataVo">
+        SELECT
+            tpd.id,
+            ts. NAME AS structureName,
+            to_char(tpd.inspection_time, 'yyyy') AS inspectionYear,
+            to_char(tpd.inspection_time, 'MM') AS inspectionMonth,
+            to_char(tpd.inspection_time, 'dd') AS inspectionDate,
+            to_char(tpd.inspection_time, 'd') AS inspectionDay,
+            (
+                CASE
+                    WHEN to_char(tpd.inspection_time, 'HH24') > '12' THEN
+                        '下'
+                    ELSE
+                        '上'
+                    END
+                ) AS inspectionEve,
+            tpd.weather AS inspectionWeather,
+            tpd.inspector AS inspector
+        FROM
+            tb_plan_detail tpd
+                LEFT JOIN tb_structure ts ON tpd.structure_id = ts. ID
+        WHERE
+            tpd. ID = #{planId}
+    </select>
+
+</mapper>

@@ -1,0 +1,588 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.global.StructureDao">
+
+    <resultMap type="com.iware.bridge.model.entity.global.Structure" id="structureMap">
+        <result property="id" column="id"/>
+        <result property="code" column="code"/>
+        <result property="name" column="name"/>
+        <result property="number" column="number"/>
+        <result property="provinceId" column="province_id"/>
+        <result property="cityId" column="city_id"/>
+        <result property="countyId" column="county_id"/>
+        <result property="chargeName" column="charge_name"/>
+        <result property="chargePhone" column="charge_phone"/>
+        <result property="roadName" column="road_name"/>
+        <result property="buildTime" column="build_time"/>
+        <result property="maintainCategory" column="maintain_category"/>
+        <result property="maintainGrade" column="maintain_grade"/>
+        <result property="maintainDepartment" column="maintain_department"/>
+        <result property="maintainDepartPhone" column="maintain_depart_phone"/>
+        <result property="designLoad" column="design_load"/>
+        <result property="spanType" column="span_type"/>
+        <result property="longitude" column="longitude"/>
+        <result property="latitude" column="latitude"/>
+        <result property="structureType" column="structure_type"/>
+        <result property="bridgeType" column="bridge_type"/>
+        <result property="runningDepartment" column="running_department"/>
+        <result property="supervisionDepartment" column="supervision_department"/>
+        <result property="buildingDepartment" column="building_department"/>
+        <result property="constructionDepartment" column="construction_department"/>
+        <result property="designDepartment" column="design_department"/>
+        <result property="unitId" column="unit_id"/>
+        <result property="createUserId" column="create_user_id"/>
+        <result property="technology" column="technology"/>
+        <result property="grade" column="grade"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       code,
+       name,
+       number,
+       province_id,
+       city_id,
+       county_id,
+       charge_name,
+       charge_phone,
+       road_name,
+       build_time,
+       maintain_category,
+       maintain_grade,
+       maintain_department,
+       maintain_depart_phone,
+       design_load,
+       span_type,
+       longitude,
+       latitude,
+       structure_type,
+       bridge_type,
+       running_department,
+       supervision_department,
+       building_department,
+       construction_department,
+       design_department,
+       unit_id,
+       create_user_id,
+       technology,
+       grade,
+       status,
+       create_time,
+       modify_time
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.global.Structure">
+        insert into tb_structure
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            code,
+            name,
+            number,
+            province_id,
+            city_id,
+            county_id,
+            charge_name,
+            charge_phone,
+            road_name,
+            build_time,
+            maintain_category,
+            maintain_grade,
+            maintain_department,
+            maintain_depart_phone,
+            design_load,
+            span_type,
+            longitude,
+            latitude,
+            structure_type,
+            bridge_type,
+            running_department,
+            supervision_department,
+            building_department,
+            construction_department,
+            design_department,
+            unit_id,
+            create_user_id,
+            technology,
+            grade,
+            status,
+        </trim>
+        )
+        values
+        (
+        now(),
+        now(),
+        <trim prefix="" suffix="" suffixOverrides=",">
+            #{code},
+            #{name},
+            #{number},
+            #{provinceId},
+            #{cityId},
+            #{countyId},
+            #{chargeName},
+            #{chargePhone},
+            #{roadName},
+            #{buildTime},
+            #{maintainCategory},
+            #{maintainGrade},
+            #{maintainDepartment},
+            #{maintainDepartPhone},
+            #{designLoad},
+            #{spanType},
+            #{longitude},
+            #{latitude},
+            #{structureType},
+            #{bridgeType},
+            #{runningDepartment},
+            #{supervisionDepartment},
+            #{buildingDepartment},
+            #{constructionDepartment},
+            #{designDepartment},
+            #{unitId},
+            #{createUserId},
+            #{technology},
+            #{grade},
+            #{status},
+        </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询Structure -->
+    <select id="findById" parameterType="Integer" resultMap="structureMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_structure
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.global.Structure">
+        UPDATE
+        tb_structure
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="code != null and code != ''">
+                    code = #{code},
+                </if>
+                <if test="name != null and name != ''">
+                    name = #{name},
+                </if>
+                <if test="number != null and number != ''">
+                    number = #{number},
+                </if>
+                <if test="provinceId != null">
+                    province_id = #{provinceId},
+                </if>
+                <if test="cityId != null">
+                    city_id = #{cityId},
+                </if>
+                <if test="countyId != null">
+                    county_id = #{countyId},
+                </if>
+                <if test="chargeName != null and chargeName != ''">
+                    charge_name = #{chargeName},
+                </if>
+                <if test="chargePhone != null and chargePhone != ''">
+                    charge_phone = #{chargePhone},
+                </if>
+                <if test="roadName != null and roadName != ''">
+                    road_name = #{roadName},
+                </if>
+                <if test="buildTime != null">
+                    build_time = #{buildTime},
+                </if>
+                <if test="maintainCategory != null">
+                    maintain_category = #{maintainCategory},
+                </if>
+                <if test="maintainGrade != null">
+                    maintain_grade = #{maintainGrade},
+                </if>
+                <if test="maintainDepartment != null and maintainDepartment != ''">
+                    maintain_department = #{maintainDepartment},
+                </if>
+                <if test="maintainDepartPhone != null and maintainDepartPhone != ''">
+                    maintain_depart_phone = #{maintainDepartPhone},
+                </if>
+                <if test="designLoad != null and designLoad != ''">
+                    design_load = #{designLoad},
+                </if>
+                <if test="spanType != null and spanType != ''">
+                    span_type = #{spanType},
+                </if>
+                <if test="longitude != null">
+                    longitude = #{longitude},
+                </if>
+                <if test="latitude != null">
+                    latitude = #{latitude},
+                </if>
+                <if test="structureType != null">
+                    structure_type = #{structureType},
+                </if>
+                <if test="bridgeType != null">
+                    bridge_type = #{bridgeType},
+                </if>
+                <if test="runningDepartment != null and runningDepartment != ''">
+                    running_department = #{runningDepartment},
+                </if>
+                <if test="supervisionDepartment != null and supervisionDepartment != ''">
+                    supervision_department = #{supervisionDepartment},
+                </if>
+                <if test="buildingDepartment != null and buildingDepartment != ''">
+                    building_department = #{buildingDepartment},
+                </if>
+                <if test="constructionDepartment != null and constructionDepartment != ''">
+                    construction_department = #{constructionDepartment},
+                </if>
+                <if test="designDepartment != null and designDepartment != ''">
+                    design_department = #{designDepartment},
+                </if>
+                <if test="unitId != null">
+                    unit_id = #{unitId},
+                </if>
+                <if test="createUserId != null">
+                    create_user_id = #{createUserId},
+                </if>
+                <if test="technology != null and technology != ''">
+                    technology = #{technology},
+                </if>
+                <if test="grade != null and grade != ''">
+                    grade = #{grade},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_structure
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_structure
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            code,
+            name,
+            number,
+            province_id,
+            city_id,
+            county_id,
+            charge_name,
+            charge_phone,
+            road_name,
+            build_time,
+            maintain_category,
+            maintain_grade,
+            maintain_department,
+            maintain_depart_phone,
+            design_load,
+            span_type,
+            longitude,
+            latitude,
+            structure_type,
+            bridge_type,
+            running_department,
+            supervision_department,
+            building_department,
+            construction_department,
+            design_department,
+            unit_id,
+            create_user_id,
+            technology,
+            grade,
+            status,
+        </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+            (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.code},
+                #{it.name},
+                #{it.number},
+                #{it.provinceId},
+                #{it.cityId},
+                #{it.countyId},
+                #{it.chargeName},
+                #{it.chargePhone},
+                #{it.roadName},
+                #{it.buildTime},
+                #{it.maintainCategory},
+                #{it.maintainGrade},
+                #{it.maintainDepartment},
+                #{it.maintainDepartPhone},
+                #{it.designLoad},
+                #{it.spanType},
+                #{it.longitude},
+                #{it.latitude},
+                #{it.structureType},
+                #{it.bridgeType},
+                #{it.runningDepartment},
+                #{it.supervisionDepartment},
+                #{it.buildingDepartment},
+                #{it.constructionDepartment},
+                #{it.designDepartment},
+                #{it.unitId},
+                #{it.createUserId},
+                #{it.technology},
+                #{it.grade},
+                #{it.status},
+            </trim>
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+        tb_structure
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="structureMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_structure
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件查询Structure -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.global.Structure" resultMap="structureMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_structure
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="code != null and code != ''">
+                AND code = #{code}
+            </if>
+            <if test="name != null and name != ''">
+                AND name = #{name}
+            </if>
+            <if test="number != null and number != ''">
+                AND number = #{number}
+            </if>
+            <if test="provinceId != null">
+                AND province_id = #{provinceId}
+            </if>
+            <if test="cityId != null">
+                AND city_id = #{cityId}
+            </if>
+            <if test="countyId != null">
+                AND county_id = #{countyId}
+            </if>
+            <if test="chargeName != null and chargeName != ''">
+                AND charge_name = #{chargeName}
+            </if>
+            <if test="chargePhone != null and chargePhone != ''">
+                AND charge_phone = #{chargePhone}
+            </if>
+            <if test="roadName != null and roadName != ''">
+                AND road_name = #{roadName}
+            </if>
+            <if test="buildTime != null">
+                AND build_time = #{buildTime}
+            </if>
+            <if test="maintainCategory != null">
+                AND maintain_category = #{maintainCategory}
+            </if>
+            <if test="maintainGrade != null">
+                AND maintain_grade = #{maintainGrade}
+            </if>
+            <if test="maintainDepartment != null and maintainDepartment != ''">
+                AND maintain_department = #{maintainDepartment}
+            </if>
+            <if test="maintainDepartPhone != null and maintainDepartPhone != ''">
+                AND maintain_depart_phone = #{maintainDepartPhone}
+            </if>
+            <if test="designLoad != null and designLoad != ''">
+                AND design_load = #{designLoad}
+            </if>
+            <if test="spanType != null and spanType != ''">
+                AND span_type = #{spanType}
+            </if>
+            <if test="longitude != null">
+                AND longitude = #{longitude}
+            </if>
+            <if test="latitude != null">
+                AND latitude = #{latitude}
+            </if>
+            <if test="structureType != null">
+                AND structure_type = #{structureType}
+            </if>
+            <if test="bridgeType != null">
+                AND bridge_type = #{bridgeType}
+            </if>
+            <if test="runningDepartment != null and runningDepartment != ''">
+                AND running_department = #{runningDepartment}
+            </if>
+            <if test="supervisionDepartment != null and supervisionDepartment != ''">
+                AND supervision_department = #{supervisionDepartment}
+            </if>
+            <if test="buildingDepartment != null and buildingDepartment != ''">
+                AND building_department = #{buildingDepartment}
+            </if>
+            <if test="constructionDepartment != null and constructionDepartment != ''">
+                AND construction_department = #{constructionDepartment}
+            </if>
+            <if test="designDepartment != null and designDepartment != ''">
+                AND design_department = #{designDepartment}
+            </if>
+            <if test="unitId != null">
+                AND unit_id = #{unitId}
+            </if>
+            <if test="createUserId != null">
+                AND create_user_id = #{createUserId}
+            </if>
+            <if test="technology != null and technology != ''">
+                AND technology = #{technology}
+            </if>
+            <if test="grade != null and grade != ''">
+                AND grade = #{grade}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件模糊查询Structure -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.global.Structure" resultMap="structureMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_structure
+        <where>
+            <if test="code != null and code != ''">
+                AND code LIKE CONCAT ('%', #{code}, '%')
+            </if>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT ('%', #{name}, '%')
+            </if>
+            <if test="number != null and number != ''">
+                AND number LIKE CONCAT ('%', #{number}, '%')
+            </if>
+            <if test="provinceId != null">
+                AND province_id = #{provinceId}
+            </if>
+            <if test="cityId != null">
+                AND city_id = #{cityId}
+            </if>
+            <if test="countyId != null">
+                AND county_id = #{countyId}
+            </if>
+            <if test="chargeName != null and chargeName != ''">
+                AND charge_name LIKE CONCAT ('%', #{chargeName}, '%')
+            </if>
+            <if test="chargePhone != null and chargePhone != ''">
+                AND charge_phone LIKE CONCAT ('%', #{chargePhone}, '%')
+            </if>
+            <if test="roadName != null and roadName != ''">
+                AND road_name LIKE CONCAT ('%', #{roadName}, '%')
+            </if>
+            <if test="buildTime != null">
+                AND build_time LIKE CONCAT ('%', #{buildTime}, '%')
+            </if>
+            <if test="maintainCategory != null">
+                AND maintain_category = #{maintainCategory}
+            </if>
+            <if test="maintainGrade != null">
+                AND maintain_grade = #{maintainGrade}
+            </if>
+            <if test="maintainDepartment != null and maintainDepartment != ''">
+                AND maintain_department LIKE CONCAT ('%', #{maintainDepartment}, '%')
+            </if>
+            <if test="maintainDepartPhone != null and maintainDepartPhone != ''">
+                AND maintain_depart_phone LIKE CONCAT ('%', #{maintainDepartPhone}, '%')
+            </if>
+            <if test="designLoad != null and designLoad != ''">
+                AND design_load LIKE CONCAT ('%', #{designLoad}, '%')
+            </if>
+            <if test="spanType != null and spanType != ''">
+                AND span_type LIKE CONCAT ('%', #{spanType}, '%')
+            </if>
+            <if test="longitude != null">
+                AND longitude = #{longitude}
+            </if>
+            <if test="latitude != null">
+                AND latitude = #{latitude}
+            </if>
+            <if test="structureType != null">
+                AND structure_type = #{structureType}
+            </if>
+            <if test="bridgeType != null">
+                AND bridge_type = #{bridgeType}
+            </if>
+            <if test="runningDepartment != null and runningDepartment != ''">
+                AND running_department LIKE CONCAT ('%', #{runningDepartment}, '%')
+            </if>
+            <if test="supervisionDepartment != null and supervisionDepartment != ''">
+                AND supervision_department LIKE CONCAT ('%', #{supervisionDepartment}, '%')
+            </if>
+            <if test="buildingDepartment != null and buildingDepartment != ''">
+                AND building_department LIKE CONCAT ('%', #{buildingDepartment}, '%')
+            </if>
+            <if test="constructionDepartment != null and constructionDepartment != ''">
+                AND construction_department LIKE CONCAT ('%', #{constructionDepartment}, '%')
+            </if>
+            <if test="designDepartment != null and designDepartment != ''">
+                AND design_department LIKE CONCAT ('%', #{designDepartment}, '%')
+            </if>
+            <if test="unitId != null">
+                AND unit_id = #{unitId}
+            </if>
+            <if test="createUserId != null">
+                AND create_user_id = #{createUserId}
+            </if>
+            <if test="technology != null and technology != ''">
+                AND technology LIKE CONCAT ('%', #{technology}, '%')
+            </if>
+            <if test="grade != null and grade != ''">
+                AND grade LIKE CONCAT ('%', #{grade}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+</mapper>

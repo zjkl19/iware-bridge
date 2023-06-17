@@ -1,0 +1,664 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+        namespace="com.iware.bridge.evaluation.dao.BridgeExpDao">
+
+    <resultMap id="bridgeSurver" type="com.iware.bridge.evaluation.vo.BridgeSurveyFirstTierVO">
+        <id column="first_id" property="id"/>
+        <result column="first_name" property="name"/>
+        <result column="type" property="type"/>
+        <result column="monitor_plan_structure_rel_id" property="monitorPlanStructureRelId"/>
+        <result column="bridge_type_id" property="bridgeTypeId"/>
+        <result column="report_path" property="reportPath"/>
+        <result column="span_number" property="spanNumber"/>
+        <result column="main_span_number" property="mainSpanNumber"/>
+        <result column="stairway_number" property="stairwayNumber"/>
+        <result column="stairway_spanNumber" property="stairwaySpanNumber"/>
+
+        <collection property="children" javaType="java.util.List"
+                    ofType="com.iware.bridge.evaluation.vo.BridgeSurveySecondTierVO">
+            <id column="second_id" property="id"/>
+            <result column="second_name" property="name"/>
+            <result column="bridge_road_id" property="bridgeRoadId"/>
+            <result column="type2" property="type"/>
+            <result column="spanC-ode" property="spanCode"/>
+            <result column="bridge_shape" property="bridgeShape"/>
+            <result column="length" property="length"/>
+            <result column="outer_arc_length" property="outerArcLength"/>
+            <result column="inner_arc_length" property="innerArcLength"/>
+            <result column="convex" property="convex"/>
+        </collection>
+    </resultMap>
+
+
+    <!-- 三四级菜单 -->
+    <resultMap id="thirdTierMap" type="com.iware.bridge.evaluation.vo.BridgeSurveyThirdTierVO">
+        <id column="deckSystemId" property="id"/>
+        <result column="bridgeSpanId" property="bridgeSpanId"/>
+        <result column="deckSystemName" property="name"/>
+        <result column="type" property="type"/>
+        <collection property="bridgeDeckSystem" resultMap="bridgeDeckSystemMap"></collection>
+        <collection property="bridgeSupstructure" resultMap="bridgeSupstructureMap"></collection>
+        <collection property="bridgeSubstructure" resultMap="bridgeSubstructureMap"></collection>
+
+        <collection property="children" javaType="java.util.List"
+                    ofType="com.iware.bridge.evaluation.vo.BridgeSurveyFourthTierVO">
+            <id column="fourthId" property="id"/>
+            <result column="fourthName" property="name"/>
+            <result column="componentId" property="componentId"/>
+            <result column="bridgeDeckSystemId" property="bridgeDeckSystemId"/>
+            <result column="type2" property="type"/>
+            <collection property="bridgeSupcomponent" resultMap="bridgeSupcomponentMap"></collection>
+            <collection property="bridgeSubcomponent" resultMap="bridgeSubcomponentMap"></collection>
+        </collection>
+    </resultMap>
+
+    <!-- 桥面系信息 -->
+    <resultMap type="com.iware.bridge.model.entity.evaluation.BridgeDeckSystem" id="bridgeDeckSystemMap">
+        <result property="direction" column="direction"/>
+        <result property="tiltAngle" column="tilt_angle"/>
+        <result property="sidewalk" column="sidewalk"/>
+        <result property="sidewalkWidth" column="sidewalk_width"/>
+        <result property="leftSidewalkWidth" column="left_sidewalk_width"/>
+        <result property="rightSidewalkWidth" column="right_sidewalk_width"/>
+        <result property="laneWidth" column="lane_width"/>
+        <result property="midleBarrierWidth" column="midle_barrier_width"/>
+        <result property="leftRailWidth" column="left_rail_width"/>
+        <result property="rightRailWidth" column="right_rail_width"/>
+        <result property="stairway" column="stairway"/>
+        <result property="stairwayShadowLength" column="stairway_shadow_length"/>
+        <result property="stairwayLength" column="stairway_length"/>
+        <result property="stairwayWidth" column="stairway_width"/>
+        <result property="platformNumber" column="platform_number"/>
+        <result property="expansionJoint" column="expansion_joint"/>
+        <result property="bridgeHeadBoardLength" column="bridge_head_board_length"/>
+        <result property="monitorDiagram" column="monitor_diagram"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+        <result property="creator" column="creator"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <!-- 上部结构信息 -->
+    <resultMap type="com.iware.bridge.model.entity.evaluation.BridgeSupstructure" id="bridgeSupstructureMap">
+        <result property="beamType" column="beam_type"/>
+        <result property="beamNumber" column="beam_number"/>
+        <result property="hangingBeam" column="hanging_beam"/>
+        <result property="hangingBeamSupport" column="hanging_beam_support"/>
+        <result property="antiFallingBeam" column="anti_falling_beam"/>
+        <result property="truss" column="truss"/>
+        <result property="primaryNode" column="primary_node"/>
+        <result property="stringer" column="stringer"/>
+        <result property="crossBeam" column="cross_beam"/>
+        <result property="connector" column="connector"/>
+        <result property="archRing" column="arch_ring"/>
+        <result property="horizontaConnection" column="horizonta_connection"/>
+        <result property="archStructure" column="arch_structure"/>
+        <result property="monitorDiagram" column="monitor_diagram"/>
+        <result property="exteriorTrimPanel" column="exterior_trim_panel"/>
+        <result property="creator" column="creator"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <!-- 下部信息 -->
+    <resultMap type="com.iware.bridge.model.entity.evaluation.BridgeSubstructure" id="bridgeSubstructureMap">
+        <result property="singleRowDun" column="single_row_dun"/>
+        <result property="singleRowSupport" column="single_row_support"/>
+        <result property="archFoot" column="arch_foot"/>
+        <result property="exteriorTrimPanel" column="exterior_trim_panel"/>
+        <result property="monitorDiagram" column="monitor_diagram"/>
+        <result property="creator" column="creator"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <!-- 上部结构构件信息 -->
+    <resultMap type="com.iware.bridge.model.entity.evaluation.BridgeSupcomponent" id="bridgeSupcomponentMap">
+        <result property="code" column="code"/>
+        <result property="initialWeight" column="initial_weight"/>
+        <result property="actualWeight" column="actual_weight"/>
+        <result property="deduct" column="deduct"/>
+        <result property="webPlateHight" column="web_plate_hight"/>
+        <result property="wingPlateWidth" column="wing_plate_width"/>
+        <result property="baseplateWidth" column="baseplate_width"/>
+        <result property="diaphragmsHeight" column="diaphragms_height"/>
+        <result property="diaphragmsNumber" column="diaphragms_number"/>
+        <result property="cantileverLenght" column="cantilever_lenght"/>
+        <result property="hangingBeamLength" column="hanging_beam_length"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+        <result property="creator" column="creator"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <!-- 下部构件信息 -->
+    <resultMap type="com.iware.bridge.model.entity.evaluation.BridgeSubcomponent" id="bridgeSubcomponentMap">
+        <result property="code" column="code"/>
+        <result property="initialWeight" column="initial_weight"/>
+        <result property="actualWeight" column="actual_weight"/>
+        <result property="deduct" column="deduct"/>
+        <result property="capBeamsHeight" column="cap_beams_height"/>
+        <result property="capBeamsWidth" column="cap_beams_width"/>
+        <result property="capBeamsThick" column="cap_beams_thick"/>
+        <result property="abutmentHeight" column="abutment_height"/>
+        <result property="abutmentWidth" column="abutment_width"/>
+        <result property="abutmentThick" column="abutment_thick"/>
+        <result property="abutmentCapHeight" column="abutment_cap_height"/>
+        <result property="pierShape" column="pier_shape"/>
+        <result property="pierHeight" column="pier_height"/>
+        <result property="pierWidth" column="pier_width"/>
+        <result property="pierThick" column="pier_thick"/>
+        <result property="pierRadius" column="pier_radius"/>
+        <result property="pierAbutmentId" column="pier_abutment_id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+        <result property="creator" column="creator"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <sql id="DeckSystem_Base_Column_List">
+		tbds.direction,tbds.tilt_angle,tbds.sidewalk,tbds.sidewalk_width,tbds.left_sidewalk_width,
+		tbds.right_sidewalk_width,tbds.lane_width,tbds.midle_barrier_width,tbds.left_rail_width,
+		tbds.right_rail_width,tbds.stairway,tbds.stairway_shadow_length,tbds.stairway_length,
+		tbds.stairway_width,tbds.platform_number,tbds.expansion_joint,tbds.bridge_head_board_length,
+		tbds.monitor_diagram,tbds.create_time,tbds.modify_time,tbds.creator,tbds.status
+	</sql>
+
+    <sql id="Supstructure_Base_Column_List">
+		tbs.beam_type,
+		tbs.beam_number,
+		tbs.hanging_beam,
+		tbs.hanging_beam_support,
+		tbs.anti_falling_beam,
+		tbs.truss,
+		tbs.primary_node,
+		tbs.stringer,
+		tbs.cross_beam,
+		tbs.connector,
+		tbs.arch_ring,
+		tbs.horizonta_connection,
+		tbs.arch_structure,
+		tbs.monitor_diagram,
+		tbs.exterior_trim_panel,
+		tbs.creator,
+		tbs.create_time,
+		tbs.modify_time,
+		tbs.status,
+	</sql>
+
+    <sql id="BridgeSupcomponent_Base_Column_List">
+		tbsp.code,
+		tbsp.initial_weight,
+		tbsp.actual_weight,
+		tbsp.deduct,
+		tbsp.web_plate_hight,
+		tbsp.wing_plate_width,
+		tbsp.baseplate_width,
+		tbsp.diaphragms_height,
+		tbsp.diaphragms_number,
+		tbsp.cantilever_lenght,
+		tbsp.hanging_beam_length,
+		tbsp.create_time,
+		tbsp.modify_time,
+		tbsp.creator,
+		tbsp.status
+	</sql>
+
+    <sql id="BridgeSubstructure_Base_Column_List">
+		tbs.single_row_dun,
+		tbs.single_row_support,
+		tbs.arch_foot,
+		tbs.exterior_trim_panel,
+		tbs.monitor_diagram,
+		tbs.creator,
+		tbs.create_time,
+		tbs.modify_time,
+		tbs.status,
+	</sql>
+
+    <sql id="BridgeSubcomponent_Base_Column_List">
+		tbsb.code,
+		tbsb.initial_weight,
+		tbsb.actual_weight,
+		tbsb.deduct,
+		tbsb.cap_beams_height,
+		tbsb.cap_beams_width,
+		tbsb.cap_beams_thick,
+		tbsb.abutment_height,
+		tbsb.abutment_width,
+		tbsb.abutment_thick,
+		tbsb.abutment_cap_height,
+		tbsb.pier_shape,
+		tbsb.pier_height,
+		tbsb.pier_width,
+		tbsb.pier_thick,
+		tbsb.pier_radius,
+		tbsb.pier_abutment_id,
+		tbsb.create_time,
+		tbsb.modify_time,
+		tbsb.creator,
+		tbsb.status
+	</sql>
+    <update id="updateReportPath">
+		 update tb_bridge_road set report_path = #{path} WHERE id = #{id}
+	</update>
+    <update id="updateComponent">
+        UPDATE tb_bridge_deck_component
+        <set>
+            deduct = #{deduct},serious = #{limit}
+        </set>
+        WHERE id = #{id}
+    </update>
+    <update id="updateComponent2">
+        UPDATE tb_bridge_supcomponent
+        <set>
+            deduct = #{deduct},serious = #{limit}
+        </set>
+        WHERE id = #{id}
+    </update>
+    <update id="updateComponent3">
+        UPDATE tb_bridge_subcomponent
+        <set>
+            deduct = #{deduct},serious = #{limit}
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!--	<select id="listCityTechnologyStatus" resultType="com.iware.bridge.evaluation.vo.TechnologyStatusVO">-->
+    <!--		SELECT-->
+    <!--		concat ( A.rating_level, '级' ) AS grade,-->
+    <!--		COUNT( A.rating_level ) AS count-->
+    <!--		FROM-->
+    <!--		(-->
+    <!--		SELECT-->
+    <!--		*-->
+    <!--		FROM-->
+    <!--		tb_structure tsi-->
+    <!--		INNER JOIN (-->
+    <!--		SELECT-->
+    <!--		tt.structure_info_id,-->
+    <!--		rating_level-->
+    <!--		FROM-->
+    <!--		tb_bridge_score tbs-->
+    <!--		INNER JOIN tb_monitor_plan_structure_rel tt ON tt.ID = tbs.target_id-->
+    <!--		WHERE-->
+    <!--		tbs.evaluation_time IN (-->
+    <!--		SELECT-->
+    <!--		MAX( tbs.evaluation_time )-->
+    <!--		FROM-->
+    <!--		tb_monitor_plan_structure_rel mpsr-->
+    <!--		LEFT JOIN tb_bridge_score tbs ON tbs.target_id = mpsr.ID-->
+    <!--		WHERE-->
+    <!--		tbs.TYPE = 1-->
+    <!--		GROUP BY-->
+    <!--		mpsr.structure_info_id-->
+    <!--		)-->
+    <!--		) AS rs ON tsi.ID = rs.structure_info_id-->
+    <!--		WHERE-->
+    <!--		tsi.technology = '城市桥隧技术状况'-->
+    <!--		and-->
+    <!--		tsi.id IN-->
+    <!--		<foreach collection="list" item="item" separator="," open="(" close=")">-->
+    <!--			#{item}-->
+    <!--		</foreach>-->
+    <!--		) A-->
+    <!--		GROUP BY-->
+    <!--		A.rating_level-->
+    <!--	</select>-->
+    <select id="listCityTechnologyStatus" resultType="com.iware.bridge.evaluation.vo.TechnologyStatusVO">
+        SELECT
+        tsi.grade,
+        count( 1 ) AS count
+        FROM
+        tb_structure AS tsi
+        WHERE
+        tsi.id IN (
+        SELECT
+        tmpsr.structure_info_id
+        FROM
+        tb_structure AS tsi
+        LEFT JOIN tb_monitor_plan_structure_rel AS tmpsr ON tmpsr.structure_info_id = tsi.ID
+        LEFT JOIN tb_monitor_plan AS tmp ON tmp.id = tmpsr.monitor_plan_id
+        WHERE
+        tmp.upload = 1
+        AND tsi.technology = '城市桥隧技术状况'
+        and
+        tsi.id IN
+        <foreach collection="list" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        )
+        GROUP BY
+        tsi.technology,
+        tsi.grade
+        ORDER BY
+        tsi.grade
+    </select>
+
+    <select id="listRoadTechnologyStatus" resultType="com.iware.bridge.evaluation.vo.TechnologyStatusVO">
+        SELECT
+        tsi.grade,
+        count( 1 ) AS count
+        FROM
+        tb_structure AS tsi
+        WHERE
+        tsi.id IN (
+        SELECT
+        tmpsr.structure_info_id
+        FROM
+        tb_structure AS tsi
+        LEFT JOIN tb_monitor_plan_structure_rel AS tmpsr ON tmpsr.structure_info_id = tsi.ID
+        LEFT JOIN tb_monitor_plan AS tmp ON tmp.id = tmpsr.monitor_plan_id
+        WHERE
+        tmp.upload = 1
+        AND tsi.technology = '公路桥隧技术状况'
+        and
+        tsi.id IN
+        <foreach collection="list" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        )
+        GROUP BY
+        tsi.technology,
+        tsi.grade
+        ORDER BY
+        tsi.grade
+    </select>
+    <select id="getDeckSystem" resultMap="thirdTierMap">
+        SELECT tbds.id AS deckSystemId,
+        #{bridgeSpanId} AS bridgeSpanId,
+        '桥面系' AS deckSystemName,
+        3 as type,
+        <include refid="DeckSystem_Base_Column_List"/>
+
+
+        FROM tb_bridge_deck_system AS tbds
+        WHERE tbds.bridge_span_id = #{bridgeSpanId} and tbds.status = 1
+        ORDER BY tbds.id DESC
+    </select>
+    <select id="getSuperstructure" resultMap="thirdTierMap">
+        SELECT tbs.id AS deckSystemId,
+        #{bridgeSpanId} AS bridgeSpanId,
+        '上部结构' AS deckSystemName,
+        4 as type,
+        6 as type2,
+        <include refid="Supstructure_Base_Column_List"/>
+
+        tbsp.id AS fourthId,
+        case when tbsp.id is not null then
+        CONCAT(tbsp.code,'#',tc.name)
+        else '' end AS fourthName ,
+        tc.id AS componentId,
+        tbs.id AS bridgeDeckSystemId,
+        <include refid="BridgeSupcomponent_Base_Column_List"/>
+        FROM tb_bridge_supstructure AS tbs
+        LEFT JOIN tb_bridge_supcomponent AS tbsp ON tbs.id = tbsp.supstructure_id and tbsp.status = 1
+        LEFT JOIN tb_component AS tc ON tbsp.component_id = tc.id
+        WHERE tbs.bridge_span_id = #{bridgeSpanId} and tbs.status = 1
+        ORDER BY tbs.id DESC,tbsp.code asc
+    </select>
+    <select id="getSubstructure" resultMap="thirdTierMap">
+        SELECT tbs.id AS deckSystemId,
+        #{bridgeSpanId} AS bridgeSpanId,
+        '下部结构' AS deckSystemName,
+        5 as type,
+        7 as type2,
+        <include refid="BridgeSubstructure_Base_Column_List"/>
+
+        tbsb.id AS fourthId,
+        case when tbsb.id is not null then
+        CONCAT(tbsb.code,'#',tc.name)
+        else '' end AS fourthName ,
+        tc.id AS componentId,
+        tbs.id AS bridgeDeckSystemId,
+        <include refid="BridgeSubcomponent_Base_Column_List"/>
+
+        FROM tb_bridge_substructure AS tbs
+        LEFT JOIN tb_bridge_subcomponent AS tbsb ON tbs.id = tbsb.bridge_substructure_id and tbsb.status = 1
+        LEFT JOIN tb_component AS tc ON tbsb.component_id = tc.id
+        WHERE tbs.bridge_span_id = #{bridgeSpanId} and tbs.status = 1
+        ORDER BY tbs.id DESC,tbsb.code asc
+    </select>
+    <select id="getFirstTierByMpSrelId" resultMap="bridgeSurver">
+        SELECT  *,CASE WHEN second_id IS NULL THEN NULL ELSE CONCAT(a.second_code,'#跨') END AS second_name FROM(
+		SELECT first.id AS first_id,
+		       first.name AS first_name,
+		       #{mpSrelId} AS monitor_plan_structure_rel_id,
+			   first.bridge_type_id AS bridge_type_id,
+			   first.report_path AS report_path,
+			   first.span_number AS span_number,
+		       first.main_span_number AS main_span_number,
+			   first.stairway_number AS stairway_number,
+			   first.stairway_span_number AS stairway_npanNumber,
+			   1 as type,
+
+			   second.id AS second_id,
+			   second.span_code::numeric AS second_code,
+			   second.bridge_road_id AS bridge_road_id,
+			   second.span_code AS span_code,
+			   second.bridge_shape AS bridge_shape,
+		       second.length AS length,
+		       second.outer_arc_length AS outer_arc_length,
+		       second.inner_arc_length AS inner_arc_length,
+		       second.convex AS convex,
+		       2 as type2
+		FROM tb_bridge_road AS first
+		LEFT JOIN tb_bridge_span AS second ON second.bridge_road_id = first.id and  second.status = 1
+		WHERE first.monitor_plan_structure_rel_id = #{mpSrelId} and first.status = 1
+		ORDER BY first.id ,second.span_code asc
+		)as a
+		ORDER BY a.first_id,a.second_code
+	</select>
+    <select id="listRankYear" resultType="java.lang.String">
+  		SELECT
+            to_char(evaluation_time, 'yyyy')
+        FROM
+            tb_bridge_score
+        WHERE
+            evaluation_time IS NOT NULL and type = 2
+        GROUP BY
+            to_char(evaluation_time, 'yyyy')
+        ORDER BY
+            to_char(evaluation_time, 'yyyy') DESC
+	</select>
+    <select id="selectRoadLimit1" resultType="com.iware.bridge.model.entity.evaluation.BridgeRoad">
+		SELECT
+			*
+		FROM
+			tb_bridge_road
+		WHERE
+			monitor_plan_structure_rel_id IN (
+		SELECT
+			structure.id
+		FROM
+			tb_monitor_plan AS plan
+			JOIN tb_monitor_plan_structure_rel AS structure ON plan.id = structure.monitor_plan_id
+		WHERE
+			structure.structure_info_id = #{structureId}
+		ORDER BY
+			start_time DESC
+			LIMIT 1
+			)
+	</select>
+    <select id="selectRoadList" resultType="com.iware.bridge.evaluation.vo.RoadBridge">
+  		SELECT 	road.id,road.name,road.monitor_plan_structure_rel_id,road.bridge_type_id,road.span_number,road.main_span_number,road.stairway_number,road.stairway_span_number,road.creator,road.status,road.report_path,
+        case when score.bridge_condition_index is null then 0 else 1 end as bridge_condition_index,
+        case plan.type when 1 then '定期检测'  when 2 then '特殊检测' when 3 then '静载实验' end as type
+		FROM tb_bridge_road  as road
+		left join tb_bridge_score as score on road.id = score.target_id and score.type = 2
+		join tb_monitor_plan_structure_rel as structure on structure.id = road.monitor_plan_structure_rel_id
+		join tb_monitor_plan as plan on plan.id = structure.monitor_plan_id
+		WHERE road.monitor_plan_structure_rel_id = #{structureId} and road.status = 1
+		ORDER BY road.name
+	</select>
+    <select id="selectUserNameByRoadId" resultType="java.lang.String">
+        SELECT unit.name FROM tb_unit as unit
+		join tb_project  as project on unit.id = project.unit_id
+
+		join  tb_monitor_plan  as plan on plan.project_info_id = project.id
+
+		join  tb_monitor_plan_structure_rel  as structure on structure.monitor_plan_id = plan.id
+
+		join (SELECT monitor_plan_structure_rel_id FROM tb_bridge_road    WHERE  id = #{id}) as road on  structure.id = road.monitor_plan_structure_rel_id
+
+	</select>
+    <select id="selectBDEvaResByRoadId" resultType="com.iware.bridge.evaluation.vo.WordEvaluateResults">
+		SELECT  componet.id,totalComponent.name,componet.actual_weight,componet.deduct,span.span_code FROM  tb_bridge_deck_component as componet
+
+		join tb_bridge_deck_system as system on componet.bridge_deck_system_id = system.id
+
+		join  tb_bridge_span as span on system.bridge_span_id = span.id
+
+		join (SELECT id FROM tb_bridge_road WHERE id = #{id}) as road on road.id = span.bridge_road_id
+
+		join tb_component as totalComponent on componet.component_id = totalComponent.id
+
+		ORDER BY totalComponent.name
+	</select>
+    <select id="selectSUPEvaResByRoadId" resultType="com.iware.bridge.evaluation.vo.WordEvaluateResults">
+		 SELECT  supcomponent.id,totalComponent.name,supcomponent.actual_weight,supcomponent.deduct,span.span_code FROM  tb_bridge_supcomponent as supcomponent
+
+		join tb_bridge_supstructure as supstructure on supcomponent.supstructure_id = supstructure.id
+
+		join  tb_bridge_span as span on supstructure.bridge_span_id = span.id
+
+		join (SELECT id FROM tb_bridge_road WHERE id = #{id}) as road on road.id = span.bridge_road_id
+
+		join tb_component as totalComponent on supcomponent.component_id = totalComponent.id
+
+		ORDER BY span.span_code,totalComponent.name
+	</select>
+    <select id="selectSUBEvaResByRoadId" resultType="com.iware.bridge.evaluation.vo.WordEvaluateResults">
+        SELECT  subcomponent.id,totalComponent.name,subcomponent.actual_weight,subcomponent.deduct,span.span_code FROM  tb_bridge_subcomponent as subcomponent
+
+		join tb_bridge_substructure as substructure on subcomponent.bridge_substructure_id = substructure.id
+
+		join  tb_bridge_span as span on substructure.bridge_span_id = span.id
+
+		join (SELECT id FROM tb_bridge_road WHERE id = #{id}) as road on road.id = span.bridge_road_id
+
+		join tb_component as totalComponent on subcomponent.component_id = totalComponent.id
+
+		ORDER BY span.span_code,totalComponent.name
+	</select>
+    <select id="selectWeightByRoadId" resultType="java.lang.Float">
+		SELECT weight.weight  FROM tb_bridge_road as road
+
+		join tb_bridge_weight as weight on road.bridge_type_id = weight.bridge_type_id
+
+		WHERE road.id = #{id}
+
+		ORDER BY weight.part_type
+	</select>
+    <select id="selectComponentIdByRoad" resultType="com.iware.bridge.evaluation.vo.Score">
+		 SELECT '桥面系' as code,component.id,a.name as creator,span.span_code  as span_code,component.component_id FROM tb_bridge_road as road
+
+		join tb_bridge_span as span on span.bridge_road_id = road.id
+
+		join tb_bridge_deck_system as system on system.bridge_span_id = span.id
+
+		join tb_bridge_deck_component as component on component.bridge_deck_system_id = system.id
+
+		join tb_component as a on a.id = component.component_id
+
+
+		WHERE road.id = #{roadId}
+
+
+		union all(
+		SELECT '上部结构' as code,component.id,a.name as creator,span.span_code as span_code,component.component_id  FROM tb_bridge_road  as road
+
+
+
+		join tb_bridge_span as span on span.bridge_road_id = road.id
+
+		join tb_bridge_supstructure as supstructre on supstructre.bridge_span_id = span.id
+
+		join tb_bridge_supcomponent as component on component.supstructure_id = supstructre.id
+
+		join tb_component as a on a.id = component.component_id
+
+		WHERE road.id = #{roadId}
+		)
+		union all(
+		SELECT '下部结构' as code,component.id,a.name as creator,span.span_code  as span_code,component.component_id  FROM tb_bridge_road as road
+
+
+
+		join tb_bridge_span as span on span.bridge_road_id = road.id
+
+		join tb_bridge_substructure as substructre on substructre.bridge_span_id = span.id
+
+		join tb_bridge_subcomponent as component on component.bridge_substructure_id = substructre.id
+
+		join tb_component as a on a.id = component.component_id
+
+
+		WHERE road.id = #{roadId}
+		)
+	</select>
+    <select id="selectSpanMaxLength" resultType="java.lang.Double">
+		SELECT max(span.length) FROM tb_bridge_span as span
+		join tb_bridge_road as road on road.id = span.bridge_road_id
+		join tb_monitor_plan_structure_rel as structure on structure.id = road.monitor_plan_structure_rel_id
+		WHERE structure.structure_info_id = #{structureId}
+	</select>
+    <select id="selectRoadByDkId" resultType="com.iware.bridge.model.entity.evaluation.BridgeRoad">
+		SELECT road.* FROM tb_bridge_deck_system as deck
+		JOIN tb_bridge_span as span on span.id = deck.bridge_span_id
+		JOIN tb_bridge_road as road on road.id = span.bridge_road_id
+		WHERE deck.id = #{id}
+	</select>
+    <select id="selectRoadBySupId" resultType="com.iware.bridge.model.entity.evaluation.BridgeRoad">
+		SELECT road.* FROM tb_bridge_supstructure as sup
+		JOIN tb_bridge_span as span on span.id = sup.bridge_span_id
+		JOIN tb_bridge_road as road on road.id = span.bridge_road_id
+		WHERE sup.id = #{id}
+	</select>
+    <select id="selectRoadBySubId" resultType="com.iware.bridge.model.entity.evaluation.BridgeRoad">
+		SELECT road.* FROM tb_bridge_substructure as sub
+		JOIN tb_bridge_span as span on span.id = sub.bridge_span_id
+		JOIN tb_bridge_road as road on road.id = span.bridge_road_id
+		WHERE sub.id = #{id}
+	</select>
+    <select id="selectRoadBySupComponentId" resultType="com.iware.bridge.model.entity.evaluation.BridgeRoad">
+		SELECT road.* FROM tb_bridge_supcomponent as compoent
+		JOIN tb_bridge_supstructure as sup on sup.id = compoent.supstructure_id
+		JOIN tb_bridge_span as span on span.id = sup.bridge_span_id
+		JOIN tb_bridge_road as road on road.id = span.bridge_road_id
+		WHERE compoent.id = #{id}
+	</select>
+    <select id="selectRoadBySubComponentId" resultType="com.iware.bridge.model.entity.evaluation.BridgeRoad">
+		SELECT * FROM tb_bridge_subcomponent as compoent
+		JOIN tb_bridge_substructure as sub on sub.id = compoent.bridge_substructure_id
+		JOIN tb_bridge_span as span on span.id = sub.bridge_span_id
+		JOIN tb_bridge_road as road on road.id = span.bridge_road_id
+		WHERE compoent.id = #{id}
+	</select>
+    <select id="selectStructureRelIdByRoadId" resultType="java.lang.Integer">
+		SELECT id FROM tb_monitor_plan_structure_rel WHERE monitor_plan_id = (
+		SELECT plan.id FROM tb_bridge_road as road
+		join tb_monitor_plan_structure_rel as structure on road.monitor_plan_structure_rel_id = structure.id
+		join tb_monitor_plan as plan on structure.monitor_plan_id = plan.id
+		WHERE road.id = #{roadId})
+	</select>
+    <select id="selectComponentByBridgeTypeId" resultType="com.iware.bridge.model.entity.evaluation.Component">
+        SELECT DISTINCT component.* FROM tb_bridge_type_component_rel as rel
+        join tb_component as component on rel.component_id = component.id
+        WHERE 1=1
+        <if test="bridgeTypeId != 0">
+            and rel.bridge_type_id = #{bridgeTypeId}
+        </if>
+        order by id
+    </select>
+    <select id="getOther" resultType="com.iware.bridge.evaluation.vo.BridgeSurveyThirdTierVO">
+		SELECT *,'其他结构' as name,8 as type FROM tb_bridge_other_structure as other
+		join tb_bridge_span as span on other.bridge_span_id = span.id
+		WHERE span.id = #{bridgeSpanId}
+	</select>
+</mapper>

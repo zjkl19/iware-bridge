@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.evaluation.ComponentDao">
+
+    <resultMap type="com.iware.bridge.model.entity.evaluation.Component" id="componentMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="needJudge" column="need_judge"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       name,
+       need_judge
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.evaluation.Component">
+        insert into tb_component
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                name,
+                need_judge
+            </trim>
+        )
+        values
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{name},
+                #{needJudge}
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询Component -->
+    <select id="findById" parameterType="Integer" resultMap="componentMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_component
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.evaluation.Component">
+        UPDATE
+            tb_component
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                <if test="name != null and name != ''">
+                    name = #{name},
+                </if>
+                <if test="needJudge != null">
+                    need_judge = #{needJudge}
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_component
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_component
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                name,
+                need_judge
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.name},
+                #{it.needJudge}
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_component
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="componentMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_component
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询Component -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.evaluation.Component" resultMap="componentMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_component
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="name != null and name != ''">
+                AND name = #{name}
+            </if>
+            <if test="needJudge != null">
+                AND need_judge = #{needJudge}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询Component -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.evaluation.Component" resultMap="componentMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_component
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT ('%', #{name}, '%')
+            </if>
+            <if test="needJudge != null">
+                AND need_judge = #{needJudge}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

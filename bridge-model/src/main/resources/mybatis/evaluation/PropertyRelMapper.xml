@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.evaluation.PropertyRelDao">
+
+    <resultMap type="com.iware.bridge.model.entity.evaluation.PropertyRel" id="propertyRelMap">
+        <result property="id" column="id"/>
+        <result property="targetId" column="target_id"/>
+        <result property="propertyId" column="property_id"/>
+        <result property="targetType" column="target_type"/>
+        <result property="partType" column="part_type"/>
+        <result property="bridgeTypeId" column="bridge_type_id"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       target_id,
+       property_id,
+       target_type,
+       part_type,
+       bridge_type_id
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.evaluation.PropertyRel">
+        insert into tb_property_rel
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                target_id,
+                property_id,
+                target_type,
+                part_type,
+                bridge_type_id
+            </trim>
+        )
+        values
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{targetId},
+                #{propertyId},
+                #{targetType},
+                #{partType},
+                #{bridgeTypeId}
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询PropertyRel -->
+    <select id="findById" parameterType="Integer" resultMap="propertyRelMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_property_rel
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.evaluation.PropertyRel">
+        UPDATE
+            tb_property_rel
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                <if test="targetId != null">
+                    target_id = #{targetId},
+                </if>
+                <if test="propertyId != null">
+                    property_id = #{propertyId},
+                </if>
+                <if test="targetType != null">
+                    target_type = #{targetType},
+                </if>
+                <if test="partType != null">
+                    part_type = #{partType},
+                </if>
+                <if test="bridgeTypeId != null">
+                    bridge_type_id = #{bridgeTypeId}
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_property_rel
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_property_rel
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                target_id,
+                property_id,
+                target_type,
+                part_type,
+                bridge_type_id
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.targetId},
+                #{it.propertyId},
+                #{it.targetType},
+                #{it.partType},
+                #{it.bridgeTypeId}
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_property_rel
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="propertyRelMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_property_rel
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询PropertyRel -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.evaluation.PropertyRel" resultMap="propertyRelMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_property_rel
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="targetId != null">
+                AND target_id = #{targetId}
+            </if>
+            <if test="propertyId != null">
+                AND property_id = #{propertyId}
+            </if>
+            <if test="targetType != null">
+                AND target_type = #{targetType}
+            </if>
+            <if test="partType != null">
+                AND part_type = #{partType}
+            </if>
+            <if test="bridgeTypeId != null">
+                AND bridge_type_id = #{bridgeTypeId}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询PropertyRel -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.evaluation.PropertyRel" resultMap="propertyRelMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_property_rel
+        <where>
+            <if test="targetId != null">
+                AND target_id = #{targetId}
+            </if>
+            <if test="propertyId != null">
+                AND property_id = #{propertyId}
+            </if>
+            <if test="targetType != null">
+                AND target_type = #{targetType}
+            </if>
+            <if test="partType != null">
+                AND part_type = #{partType}
+            </if>
+            <if test="bridgeTypeId != null">
+                AND bridge_type_id = #{bridgeTypeId}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

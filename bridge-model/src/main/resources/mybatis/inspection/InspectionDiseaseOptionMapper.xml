@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.inspection.InspectionDiseaseOptionDao">
+
+    <resultMap type="com.iware.bridge.model.entity.inspection.InspectionDiseaseOption" id="inspectionDiseaseOptionMap">
+        <result property="id" column="id"/>
+        <result property="inspectionDiseaseId" column="inspection_disease_id"/>
+        <result property="name" column="name"/>
+        <result property="seqNum" column="seq_num"/>
+        <result property="optionStatus" column="option_status"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       inspection_disease_id,
+       name,
+       seq_num,
+       option_status
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.inspection.InspectionDiseaseOption">
+        insert into tb_inspection_disease_option
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                inspection_disease_id,
+                name,
+                seq_num,
+                option_status
+            </trim>
+        )
+        values
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{inspectionDiseaseId},
+                #{name},
+                #{seqNum},
+                #{optionStatus}
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询InspectionDiseaseOption -->
+    <select id="findById" parameterType="Integer" resultMap="inspectionDiseaseOptionMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_inspection_disease_option
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.inspection.InspectionDiseaseOption">
+        UPDATE
+            tb_inspection_disease_option
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                <if test="inspectionDiseaseId != null">
+                    inspection_disease_id = #{inspectionDiseaseId},
+                </if>
+                <if test="name != null and name != ''">
+                    name = #{name},
+                </if>
+                <if test="seqNum != null">
+                    seq_num = #{seqNum},
+                </if>
+                <if test="optionStatus != null">
+                    option_status = #{optionStatus}
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_inspection_disease_option
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_inspection_disease_option
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                inspection_disease_id,
+                name,
+                seq_num,
+                option_status
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.inspectionDiseaseId},
+                #{it.name},
+                #{it.seqNum},
+                #{it.optionStatus}
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_inspection_disease_option
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="inspectionDiseaseOptionMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_inspection_disease_option
+        ORDER BY
+            id ASC
+    </select>
+
+    <!-- 根据条件查询InspectionDiseaseOption -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.inspection.InspectionDiseaseOption" resultMap="inspectionDiseaseOptionMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_inspection_disease_option
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="inspectionDiseaseId != null">
+                AND inspection_disease_id = #{inspectionDiseaseId}
+            </if>
+            <if test="name != null and name != ''">
+                AND name = #{name}
+            </if>
+            <if test="seqNum != null">
+                AND seq_num = #{seqNum}
+            </if>
+            <if test="optionStatus != null">
+                AND option_status = #{optionStatus}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询InspectionDiseaseOption -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.inspection.InspectionDiseaseOption" resultMap="inspectionDiseaseOptionMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_inspection_disease_option
+        <where>
+            <if test="inspectionDiseaseId != null">
+                AND inspection_disease_id = #{inspectionDiseaseId}
+            </if>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT ('%', #{name}, '%')
+            </if>
+            <if test="seqNum != null">
+                AND seq_num = #{seqNum}
+            </if>
+            <if test="optionStatus != null">
+                AND option_status = #{optionStatus}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

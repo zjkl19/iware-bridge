@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.inspection.dao.ImportExcelCellNameExistDao">
+
+    <select id="countProjectNameExist" parameterType="arraylist" resultType="integer">
+        SELECT
+            COUNT (DISTINCT(tp.NAME))
+        FROM
+        tb_project AS tp
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+            LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+        </if>
+        WHERE
+        tp.NAME IN
+        <foreach collection="names" item="i" open="(" close=")" separator=",">
+            #{i}
+        </foreach>
+        <if test="roleId == 1 or roleId == 0">
+            AND tpa.receive_unit_id = #{unitId}
+            AND papr.power_id = #{powerId}
+        </if>
+        <if test="roleId == 2">
+            AND tp.unit_id = #{unitId}
+        </if>
+    </select>
+
+    <select id="countStructureNameExist" parameterType="arraylist" resultType="integer">
+        SELECT
+            COUNT (DISTINCT(ts.NAME))
+        FROM
+            tb_structure ts
+            LEFT JOIN tb_project_structure_rel tpsr on tpsr.structure_id=ts.id
+            LEFT JOIN tb_project AS tp ON tpsr.project_id = tp.id
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tp.id
+            LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+        </if>
+        WHERE
+            ts.NAME IN
+        <foreach collection="names" item="i" open="(" close=")" separator=",">
+            #{i}
+        </foreach>
+        <if test="roleId == 1 or roleId == 0">
+            AND tpa.receive_unit_id = #{unitId}
+            AND papr.power_id = #{powerId}
+        </if>
+        <if test="roleId == 2">
+            AND tp.unit_id = #{unitId}
+        </if>
+    </select>
+
+    <select id="countUserNameExist" resultType="integer" parameterType="arraylist">
+        SELECT
+        COUNT (DISTINCT(tu.real_name))
+        FROM
+        tb_user tu
+        WHERE
+        tu.real_name IN
+        <foreach collection="names" item="i" open="(" close=")" separator=",">
+            #{i}
+        </foreach>
+    </select>
+
+    <select id="selectStructureIdByName" resultType="integer" parameterType="string">
+        select
+            id
+        from tb_structure
+        where
+            name=#{structureName}
+    </select>
+
+    <select id="selectInstanceIdByInspectionDiseaseName" parameterType="string" resultType="integer">
+        select
+            id
+        from tb_inspection_disease
+        where
+            disease_part=#{diseasePart}
+            and check_item=#{checkItem}
+            and damage_type=#{damageType}
+    </select>
+
+    <select id="selectProjectIdByName" resultType="integer" parameterType="string">
+        select
+            id
+        from tb_project
+        where name=#{projectName}
+    </select>
+
+</mapper>

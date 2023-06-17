@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.iware.bridge.info.dao.AnnouncementExpDao">
+
+	<!--获取公告信息列表-->
+	<select id="getAnnouncementList" parameterType="com.iware.bridge.info.vo.InfoFilter"
+		resultType="com.iware.bridge.model.entity.global.Announcement">
+		SELECT ta.*
+		FROM tb_announcement ta
+		<where>
+			<if test="roleId != 3">
+				ta.unit_id = #{unitId}
+			</if>
+			<if test="filter.status != null">
+				<if test="filter.status != 2">
+					AND ta.status = #{filter.status} AND ta.expires_time > now()
+				</if>
+				<if test="filter.status == 2">
+					AND ta.expires_time &lt; now()
+				</if>
+			</if>
+			<if test="filter.keyword != null and filter.keyword != ''">
+				AND (
+					ta.title LIKE CONCAT('%', #{filter.keyword}, '%')
+					OR ta.content LIKE CONCAT('%', #{filter.keyword}, '%')
+				)
+			</if>
+		</where>
+		ORDER BY create_time DESC
+	</select>
+
+	<!--发布后重新修改本公告提醒(除自己)-->
+	<update id="batchUpdateExceptSelf">
+		UPDATE
+			tb_user_announcement_rel
+		SET
+			status = 0
+		WHERE
+			user_id != #{userId}
+			AND announcement_id = #{announcementId}
+	</update>
+
+	<!--获取用户提醒公告-->
+	<select id="listNoticeByUser" resultType="com.iware.bridge.model.entity.global.Announcement">
+		SELECT
+			ta.id,
+       		ta.title,
+		    ta.content,
+		    ta.create_user_id,
+		    ta.creator,
+		    ta.effect_time,
+		    ta.expires_time,
+		    ta.create_time,
+		    ta.modify_time,
+		    uar.status
+		FROM
+			tb_user_announcement_rel uar
+		INNER JOIN tb_announcement ta ON ta.id = uar.announcement_id AND uar.user_id = #{userId}
+		WHERE
+			ta.effect_time &lt; now() AND ta.expires_time > now() AND ta.status = 1
+		ORDER BY uar.status ASC, ta.effect_time
+	</select>
+
+	<!--修改公告读取状态-->
+	<update id="updateNoticeStatus">
+		UPDATE
+			tb_user_announcement_rel
+		SET
+			status = #{status}
+		WHERE
+			user_id = #{userId}
+			AND announcement_id = #{announcementId}
+	</update>
+
+	<!--删除相关通知-->
+	<delete id="delRelByAnnouncementId">
+		DELETE FROM tb_user_announcement_rel WHERE announcement_id = #{announcementId}
+	</delete>
+
+</mapper>

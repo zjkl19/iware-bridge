@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.inspection.dao.ReceiveTimeDao">
+
+    <!--查询指派时间段-->
+    <select id="selectReceiveTimeByUserAndProject" resultType="com.iware.bridge.inspection.vo.ReceiveTime">
+        select tp.start_time as beginTime,tp.end_time from tb_project_appoint tp
+            join tb_project_appoint_power_rel ta on tp.id=ta.project_appoint_id
+        where tp.receive_unit_id = #{unitId}
+          and project_id=#{projectId}
+          and ta.power_id = #{powerId}
+          and to_char(tp.end_time,'yyyy-MM-dd') &gt;= #{beginTime}
+    </select>
+</mapper>

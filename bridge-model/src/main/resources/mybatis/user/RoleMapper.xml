@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.user.RoleDao">
+
+    <resultMap type="com.iware.bridge.model.entity.user.Role" id="roleMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="englishName" column="english_name"/>
+        <result property="remarks" column="remarks"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       name,
+       english_name,
+       remarks
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.user.Role">
+        insert into tb_role
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                name,
+                english_name,
+                remarks
+            </trim>
+        )
+        values
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{name},
+                #{englishName},
+                #{remarks}
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询Role -->
+    <select id="findById" parameterType="Integer" resultMap="roleMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_role
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.user.Role">
+        UPDATE
+            tb_role
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                <if test="name != null and name != ''">
+                    name = #{name},
+                </if>
+                <if test="englishName != null and englishName != ''">
+                    english_name = #{englishName},
+                </if>
+                <if test="remarks != null and remarks != ''">
+                    remarks = #{remarks}
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_role
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_role
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                name,
+                english_name,
+                remarks
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.name},
+                #{it.englishName},
+                #{it.remarks}
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_role
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="roleMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_role
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询Role -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.user.Role" resultMap="roleMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_role
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="name != null and name != ''">
+                AND name = #{name}
+            </if>
+            <if test="englishName != null and englishName != ''">
+                AND english_name = #{englishName}
+            </if>
+            <if test="remarks != null and remarks != ''">
+                AND remarks = #{remarks}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询Role -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.user.Role" resultMap="roleMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_role
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT ('%', #{name}, '%')
+            </if>
+            <if test="englishName != null and englishName != ''">
+                AND english_name LIKE CONCAT ('%', #{englishName}, '%')
+            </if>
+            <if test="remarks != null and remarks != ''">
+                AND remarks LIKE CONCAT ('%', #{remarks}, '%')
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

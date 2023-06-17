@@ -1,0 +1,73 @@
+swagger:
+  enable: false
+
+#登录配置信息
+login:
+  #是否需要登录校验
+  enable: true
+  # session  token
+  type: token
+
+power:
+  online: 3
+  inspection: 31
+  maintain: 50
+  evaluation: 69
+  video: 86
+
+remote-connect:
+  username: test1
+  password: test1
+
+
+file:
+  upload-path: /home/bridgeModel/file/
+  script-path: /home/bridgeModel/script/
+  template-path:
+    inspection-word: /home/bridgeModel/template/inspection_model.docx
+    inspection-word-tunnel: /home/bridgeModel/template/inspection_model_tunnel.docx
+    maintain-word: /home/bridgeModel/template/maintain_model.docx
+
+common:
+  schedule:
+    day:
+      #每天执行小时数据保存
+      cron: 0 0 0 0/1 * ?
+    hour:
+      #每小时执行10分、1分数据保存
+      cron: 0 0 0/1 * * ?
+    minute:
+      #每2分执行3秒、1秒数据保存
+      cron: 0 0/2 * * * ?
+    sensorStatus:
+      #每小时传感器状态更新
+      cron: 0 0 0/1 * * ?
+
+spring:
+  datasource:
+    url: jdbc:postgresql://172.16.6.62:5432/bridge?useUnicode=true&characterEncoding=utf8
+    username: postgres
+    password: pgadmin123
+    driver-class-name: org.postgresql.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    initialSize: 10
+    minIdle: 10
+    maxActive: 50
+    maxWait: 60000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 30000
+    validationQuery: SELECT 1
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+    maxPoolPreparedStatementPerConnectionSize: 20
+    filters: stat,wall,slf4j
+    connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+    useGlobalDataSourceStat: true
+
+logging:
+  config: classpath:logback-prod.xml
+  level:
+    org.springframework.web: ERROR
+    io.swagger.models.parameters.AbstractSerializableParameter: error

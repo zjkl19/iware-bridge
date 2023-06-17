@@ -1,0 +1,646 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.iware.bridge.home.dao.HomeDao">
+
+	<!--获取今年之前用户项目-->
+	<select id="getLastUnitProjectIds" resultType="java.lang.Integer">
+		<if test="roleId == 1 or roleId == 0">
+			SELECT DISTINCT tp.id FROM tb_project tp
+			INNER JOIN tb_project_appoint tpa ON tpa.project_id = tp.id
+			WHERE tpa.receive_unit_id = #{unitId}
+			AND tpa.start_time &lt; (SELECT date_trunc('year',CURRENT_DATE)::timestamp)
+		</if>
+		<if test="roleId == 2 or roleId == 3">
+			SELECT DISTINCT tp.id FROM tb_project tp
+			<where>
+				tp.create_time &lt; (SELECT date_trunc('year',CURRENT_DATE)::timestamp)
+				<if test="roleId == 2">
+					AND tp.unit_id = #{unitId}
+				</if>
+			</where>
+		</if>
+	</select>
+
+	<!--获取各个市桥隧数-->
+	<select id="sortByArea" resultType="com.iware.bridge.info.vo.EchartMap">
+		SELECT
+			ta.NAME AS name,
+			COUNT ( ta.NAME ) AS count
+		FROM
+			tb_structure ts
+		INNER JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+		INNER JOIN tb_project tp ON tp.id = psr.project_id
+		LEFT JOIN tb_area ta ON ts.city_id = ta.ID
+		<where>
+			tp.id IN
+			<foreach collection="list" item="id" separator="," open="(" close=")">
+				#{id}
+			</foreach>
+		</where>
+		GROUP BY
+			ta.id, ta.name
+	</select>
+
+	<!--获取巡查概况-->
+	<select id="getInspectionInfo" resultType="java.lang.Integer">
+		SELECT
+			COUNT(tpd.status)
+		FROM
+			tb_plan_detail tpd
+		LEFT JOIN tb_structure AS ts ON tpd.structure_id = ts.id
+		<if test="filter.roleId == 1 or filter.roleId == 0">
+			LEFT JOIN tb_project_structure_rel AS psr ON psr.structure_id = ts.id
+			LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = psr.project_id
+			LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+		</if>
+		<where>
+			<if test="type == 0">
+				tpd.status != 1
+			</if>
+			<if test="type == 1">
+				tpd.status = 1
+			</if>
+			<if test="filter.roleId == 1 or filter.roleId == 0">
+				AND tpa.receive_unit_id = #{filter.unitId}
+				AND tpd.inspection_time BETWEEN tpa.start_time AND tpa.end_time
+				AND papr.power_id = #{powerId}
+			</if>
+			<if test="filter.startTime != null">
+				AND tpd.inspection_time >= #{filter.startTime}
+			</if>
+			<if test="filter.endTime != null">
+				AND tpd.inspection_time &lt;= #{filter.endTime}
+			</if>
+			<if test="filter.roleId == 2">
+				AND ts.unit_id = #{filter.unitId}
+			</if>
+			<if test="filter.structureId != null">
+				AND ts.id = #{filter.structureId}
+			</if>
+		</where>
+	</select>
+
+    <!--获取维养概况-->
+    <select id="getMaintainInfo" resultType="java.lang.Integer">
+		SELECT
+			COUNT(tmi.status)
+		FROM
+		tb_maintain_item tmi
+		LEFT JOIN tb_structure AS ts ON tmi.structure_id = ts.id
+		<if test="filter.roleId == 1 or filter.roleId == 0">
+			LEFT JOIN tb_project_structure_rel AS psr ON psr.structure_id = ts.id
+			LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = psr.project_id
+			LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+		</if>
+		<where>
+			<if test="type == 0">
+				tmi.status != 1
+			</if>
+			<if test="type == 1">
+				tmi.status = 1
+			</if>
+			<if test="filter.roleId == 1 or filter.roleId == 0">
+				AND tpa.receive_unit_id = #{filter.unitId}
+				AND tmi.proposed_time BETWEEN tpa.start_time AND tpa.end_time
+				AND papr.power_id = #{powerId}
+			</if>
+			<if test="filter.startTime != null">
+				AND tmi.proposed_time >= #{filter.startTime}
+			</if>
+			<if test="filter.endTime != null">
+				AND tmi.proposed_time &lt;= #{filter.endTime}
+			</if>
+			<if test="filter.roleId == 2">
+				AND ts.unit_id = #{filter.unitId}
+			</if>
+			<if test="filter.structureId != null">
+				AND tmi.structure_id = #{filter.structureId}
+			</if>
+		</where>
+    </select>
+
+	<!--获取桥隧评分-->
+    <select id="getBridgeScore" resultType="com.iware.bridge.home.vo.BridgeScoreVO">
+		SELECT * FROM (SELECT DISTINCT
+		ts.ID,
+		ts.name,
+		CASE
+		WHEN rs.score IS NULL THEN
+		CASE ts.technology
+		WHEN '公路桥隧技术状况' THEN
+		CASE ts.grade
+		WHEN '1类' THEN 95.0
+		WHEN '2类' THEN 85.0
+		WHEN '3类' THEN 73.0
+		WHEN '4类' THEN 58.0
+		WHEN '5类' THEN 45.0
+		END
+		WHEN '城市桥隧技术状况' THEN
+		CASE ts.grade
+		WHEN 'A级' THEN 95.0
+		WHEN 'B级' THEN 85.0
+		WHEN 'C级' THEN 73.0
+		WHEN 'D级' THEN 58.0
+		WHEN 'E级' THEN 45.0
+		WHEN '合格级' THEN 85.0
+		WHEN '不合格级' THEN 50.0
+		END
+		END
+		WHEN rs.score IS NOT NULL THEN rs.score
+		END AS score,
+		rs.evaluation_time,
+		rs.monitor_plan_id
+		FROM
+		tb_structure ts
+		LEFT JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+		<if test="roleId == 0 or roleId == 1">
+			LEFT JOIN tb_project_appoint tpa ON tpa.project_id = psr.project_id
+		</if>
+		LEFT JOIN (
+		SELECT
+		ts.ID,
+		ts.name,
+		tmp.id as monitor_plan_id,
+		tbs.evaluation_time,
+		tbs.score
+		FROM
+		tb_structure ts
+		LEFT JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+		LEFT JOIN tb_project tp ON tp.id = psr.project_id
+		<if test="roleId == 0 or roleId == 1">
+			LEFT JOIN tb_project_appoint tpa ON tpa.project_id = tp.id
+		</if>
+		LEFT JOIN tb_monitor_plan tmp ON tmp.project_info_id = tp.id
+		LEFT JOIN tb_monitor_plan_structure_rel mpsr ON mpsr.structure_info_id = ts.id
+		LEFT JOIN tb_bridge_score tbs ON tbs.target_id = mpsr.id
+		INNER JOIN (
+		SELECT
+		MAX(tbs.evaluation_time) AS TIME
+		FROM
+		tb_structure ts
+		LEFT JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+		LEFT JOIN tb_project tp ON tp.ID = psr.project_id
+		<if test="roleId == 0 or roleId == 1">
+			LEFT JOIN tb_project_appoint tpa ON tpa.project_id = tp.id
+		</if>
+		LEFT JOIN tb_monitor_plan tmp ON tmp.project_info_id = tp.id
+		LEFT JOIN tb_monitor_plan_structure_rel mpsr ON mpsr.structure_info_id = ts.id
+		LEFT JOIN tb_bridge_score tbs ON tbs.target_id = mpsr.id
+		WHERE ts.structure_type = 1 AND tbs.TYPE = 1
+		<if test="roleId == 0 or roleId == 1">
+			AND tpa.receive_unit_id = #{unitId}
+			AND tmp.create_time > tpa.start_time
+			AND tmp.create_time &lt; tpa.end_time
+		</if>
+		<if test="roleId == 2">
+            AND tp.unit_id = #{unitId}
+		</if>
+		<if test="structureId != null">
+            AND ts.id = #{structureId}
+        </if>
+		GROUP
+		BY
+		ts.id
+		) AS T ON T.TIME = tbs.
+		evaluation_time
+		WHERE
+		ts.
+		structure_type = 1
+		AND tbs.TYPE = 1
+		<if test="roleId == 1 or roleId == 0">
+			AND tpa.receive_unit_id = #{unitId}
+			AND tmp.create_time > tpa.start_time
+			AND tmp.create_time &lt; tpa.end_time
+		</if>
+		<if test="roleId == 2">
+            AND tp.unit_id = #{unitId}
+		</if>
+		<if test="structureId != null">
+			AND ts.id = #{structureId}
+		</if>
+        GROUP BY
+            ts.ID,
+            ts.name,
+			tmp.id,
+            tbs.evaluation_time,
+            tbs.score
+        ) AS rs ON ts.id = rs.id
+        <where>
+        	ts.structure_type = 1
+			<if test="roleId == 2">
+				AND ts.unit_id = #{unitId}
+			</if>
+			<if test="roleId == 0 or roleId == 1">
+				AND tpa.receive_unit_id = #{unitId}
+			</if>
+            <if test="structureId != null">
+                AND ts.id = #{structureId}
+            </if>
+        </where>
+        ) AS result WHERE score IS NOT NULL
+    </select>
+
+	<!--获取用户检测评估所有计划状态-->
+	<select id="getEvaluationPlanStatus" resultType="java.lang.Integer">
+		SELECT
+			CASE
+				WHEN rs.total != rs.road OR rs.total != rs.score THEN 0
+				WHEN rs.total = rs.road AND rs.total = rs.score THEN 1
+			END
+		FROM
+		(
+			SELECT
+				A.plan_id,
+				COUNT ( 1 ) AS total,
+				COUNT ( A.road_id ) AS road,
+				COUNT ( A.score_id ) AS score
+			FROM
+			(
+				SELECT
+					tmp.id AS plan_id,
+					tbr.id AS road_id,
+					tbs.id AS score_id
+				FROM
+					tb_monitor_plan tmp
+				LEFT JOIN tb_monitor_plan_structure_rel mpsr ON mpsr.monitor_plan_id = tmp.id
+				LEFT JOIN tb_bridge_road tbr ON tbr.monitor_plan_structure_rel_id = mpsr.id
+				LEFT JOIN tb_bridge_score tbs ON tbs.target_id = tbr.id AND tbs.type = 2
+				LEFT JOIN tb_structure ts ON ts.id = mpsr.structure_info_id
+				LEFT JOIN tb_project tp ON tp.id = tmp.project_info_id
+				<if test="roleId == 0 or roleId == 1">
+					LEFT JOIN tb_project_appoint tpa ON tpa.project_id = tp.id
+				</if>
+				<where>
+					<if test="roleId == 0 or roleId == 1">
+						AND tpa.receive_unit_id = #{unitId}
+						AND tmp.create_time > tpa.start_time AND tmp.create_time &lt; tpa.end_time
+					</if>
+					<if test="roleId == 2">
+						AND tp.unit_id = #{unitId}
+					</if>
+					<if test="structureId != null">
+						AND ts.id = #{structureId}
+					</if>
+				</where>
+				ORDER BY
+					tmp.id ASC,
+					tbr.id ASC
+			) AS A
+			GROUP BY
+				A.plan_id
+		) AS rs
+	</select>
+
+	<!--获取结构物最新一次评分-->
+	<select id="getEvaluationInfo" resultType="com.iware.bridge.home.vo.BridgeScoreVO">
+		SELECT
+			rs.target_id AS monitor_plan_rel_id,
+			rs.evaluation_time,
+			CASE
+				WHEN rs.rating_level IS NULL THEN ts.grade
+				WHEN rs.rating_level IS NOT NULL THEN rs.rating_level
+			END AS rating_level,
+			CASE
+				WHEN rs.score IS NULL THEN
+					CASE ts.technology
+						WHEN '公路桥隧技术状况' THEN
+							CASE ts.grade
+								WHEN '1类' THEN 95
+								WHEN '2类' THEN 85
+								WHEN '3类' THEN 73
+								WHEN '4类' THEN 58
+								WHEN '5类' THEN 45
+							END
+						WHEN '城市桥隧技术状况' THEN
+							CASE ts.grade
+								WHEN 'A级' THEN 95
+								WHEN 'B级' THEN 85
+								WHEN 'C级' THEN 73
+								WHEN 'D级' THEN 58
+								WHEN 'E级' THEN 45
+								WHEN '合格级' THEN 85
+								WHEN '不合格级' THEN 50
+							END
+					END
+				WHEN rs.score IS NOT NULL THEN rs.score
+			END AS score
+		FROM
+			tb_structure ts
+		LEFT JOIN(
+			SELECT
+				tb.structure_id,
+				tbs.*
+			FROM
+			(
+				SELECT
+					ta.ID,
+					ta.structure_id,
+					COUNT ( ta.ID ) AS road_num,
+					COUNT ( tbs.bridge_condition_index IS NOT NULL ) AS rank_num
+				FROM
+				(
+					SELECT
+						tbs.*,
+						mpsr.id as monitor_plan_rel_id,
+						mpsr.structure_info_id AS structure_id
+					FROM
+						tb_bridge_score tbs
+					INNER JOIN tb_monitor_plan_structure_rel mpsr ON tbs.target_id = mpsr.id
+					INNER JOIN tb_monitor_plan tmp ON tmp.id = mpsr.monitor_plan_id
+					<if test="roleId == 0 or roleId == 1">
+						INNER JOIN tb_structure ts ON ts.id = mpsr.structure_info_id
+						INNER JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+						INNER JOIN tb_project_appoint tpa ON tpa.project_id = psr.project_id
+						INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.id
+						AND papr.power_id = #{powerId}
+					</if>
+					WHERE
+						mpsr.structure_info_id = #{structureId}
+						AND ( mpsr.is_delete IS NULL OR mpsr.is_delete = 0 )
+						AND tbs.type = 1
+						<if test="roleId == 0 or roleId == 1">
+							AND tpa.receive_unit_id = #{unitId}
+							AND tmp.create_time > tpa.start_time AND tmp.create_time &lt; tpa.end_time
+						</if>
+				) ta
+				INNER JOIN tb_bridge_road tbr ON tbr.monitor_plan_structure_rel_id = ta.monitor_plan_rel_id
+				INNER JOIN tb_bridge_score tbs ON tbs.target_id = tbr.ID
+				AND tbs.TYPE = 2
+				GROUP BY
+					ta.structure_id,ta.ID
+			) AS tb
+			LEFT JOIN tb_bridge_score tbs ON tbs.ID = tb.ID
+			WHERE
+			tb.road_num = tb.rank_num
+			ORDER BY
+			tbs.evaluation_time DESC
+			LIMIT 1
+		) AS rs ON rs.structure_id = ts.ID
+		WHERE
+			ts.ID = #{structureId}
+	</select>
+
+	<!--获取结构物最新一次病害数-->
+	<select id="getStructureDisease" resultType="java.lang.Integer">
+		SELECT
+			COALESCE(SUM( COUNT ), 0)
+		FROM
+		(
+			(
+				SELECT COUNT
+					( mpsr.ID )
+				FROM
+					tb_monitor_plan_structure_rel mpsr
+					INNER JOIN tb_bridge_road tbr ON tbr.monitor_plan_structure_rel_id = mpsr."id"
+					INNER JOIN tb_bridge_span tbs ON tbs.bridge_road_id = tbr.
+					ID INNER JOIN tb_bridge_deck_system bds ON bds.bridge_span_id = tbs.
+					ID INNER JOIN tb_bridge_deck_component bdc ON bdc.bridge_deck_system_id = bds.
+					ID INNER JOIN tb_disease_instance tdi ON tdi.target_id = bdc.ID
+					AND tdi.part_type = 1
+				WHERE
+					mpsr.ID = #{monitorPlanRelId}
+				GROUP BY
+					mpsr.ID
+			) UNION
+			(
+				SELECT COUNT
+					( mpsr.ID )
+				FROM
+					tb_monitor_plan_structure_rel mpsr
+					INNER JOIN tb_bridge_road tbr ON tbr.monitor_plan_structure_rel_id = mpsr."id"
+					INNER JOIN tb_bridge_span tbs ON tbs.bridge_road_id = tbr.
+					ID INNER JOIN tb_bridge_supstructure bds ON bds.bridge_span_id = tbs.
+					ID INNER JOIN tb_bridge_supcomponent tbc ON tbc.supstructure_id = bds.
+					ID INNER JOIN tb_disease_instance tdi ON tdi.target_id = tbc.ID
+					AND tdi.part_type = 2
+				WHERE
+					mpsr.ID = #{monitorPlanRelId}
+				GROUP BY
+					mpsr.ID
+			) UNION
+			(
+				SELECT COUNT
+					( mpsr.ID )
+				FROM
+					tb_monitor_plan_structure_rel mpsr
+					INNER JOIN tb_bridge_road tbr ON tbr.monitor_plan_structure_rel_id = mpsr."id"
+					INNER JOIN tb_bridge_span tbs ON tbs.bridge_road_id = tbr.
+					ID INNER JOIN tb_bridge_substructure bds ON bds.bridge_span_id = tbs.
+					ID INNER JOIN tb_bridge_subcomponent tbc ON tbc.bridge_substructure_id = bds.
+					ID INNER JOIN tb_disease_instance tdi ON tdi.target_id = tbc.ID
+					AND tdi.part_type = 3
+				WHERE
+					mpsr.ID = #{monitorPlanRelId}
+				GROUP BY
+					mpsr.ID
+			)
+	) AS T
+	</select>
+
+	<!--获取结构物最新一次巡查记录-->
+	<select id="getLastPlanDetail" resultType="com.iware.bridge.model.entity.inspection.PlanDetail">
+		SELECT
+			tpi.ID AS plan_id,
+			tpd.ID AS id
+		FROM
+			tb_plan_info tpi
+		INNER JOIN tb_plan_detail tpd ON tpd.plan_id = tpi.ID AND tpd.structure_id = #{structureId}
+		<if test="roleId == 0 or roleId == 1">
+			INNER JOIN tb_project_appoint tpa ON tpa.project_id = tpi.project_id
+			INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.id
+			AND papr.power_id = #{powerId}
+		</if>
+		WHERE
+		tpd.status = 1
+		<if test="roleId == 0 or roleId == 1">
+			AND tpa.receive_unit_id = #{unitId}
+			AND tpi.create_time > tpa.start_time AND tpi.create_time &lt; tpa.end_time
+		</if>
+		ORDER BY
+			tpd.modify_time DESC
+		LIMIT 1
+	</select>
+
+	<!--获取结构物最新一次巡查病害状况-->
+	<select id="getInspectionLastInfo" resultType="java.util.Map">
+		SELECT SUM
+			( rs.quantity ) AS count,
+			to_char(inspection_time,'yyyy-MM-dd') AS time
+		FROM
+			(
+			SELECT
+				idi.quantity,
+				tpd.inspection_time
+			FROM
+				tb_plan_detail tpd
+				LEFT JOIN tb_inspection_disease_instance idi ON idi.plan_detail_id = tpd.ID
+			WHERE
+				tpd.ID = #{planDetailId}
+				AND idi.inspection_disease_id != 26
+				AND idi.inspection_disease_id != 64
+			) AS rs
+		GROUP BY
+			inspection_time
+	</select>
+
+	<!--获取结构物最新一次维养状况-->
+	<select id="getAllRepair" resultType="java.lang.Integer">
+			SELECT COUNT(tmi.id)
+			FROM
+				tb_structure ts
+			INNER JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+			INNER JOIN tb_project tp ON tp.id = psr.project_id AND ts.id = #{structureId}
+			INNER JOIN tb_plan_info tpi ON tpi.project_id = tp.id
+			INNER JOIN tb_maintain_item tmi ON tmi.plan_id = tpi.id AND tmi.structure_id = ts.id AND tmi.status = 1
+			<if test="roleId == 0 or roleId == 1">
+				INNER JOIN tb_project_appoint tpa ON tpa.project_id = tp.id
+				INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.id AND papr.power_id = #{powerId}
+				WHERE
+				tpa.receive_unit_id = #{unitId}
+				AND tpi.create_time > tpa.start_time
+				AND tpi.create_time &lt; tpa.end_time
+			</if>
+	</select>
+
+	<!--获取结构物最新一次维养状况-->
+	<select id="getMaintainLastInfo" resultType="com.iware.bridge.info.vo.EchartMap">
+		SELECT
+			r.status AS status,
+			COUNT ( r.status )
+		FROM
+			(
+			SELECT
+			CASE
+					idi.status
+					WHEN 2 THEN
+					'已修复' ELSE'未修复'
+				END AS status
+			FROM
+				tb_inspection_disease_instance idi
+			WHERE
+				idi.plan_detail_id = #{planDetailId}
+				AND idi.inspection_disease_id != 26
+				AND idi.inspection_disease_id != 64
+				AND idi.strategy != 4
+			) r
+		GROUP BY
+			r.status
+	</select>
+
+	<!--获取用户结构物历史维养记录-->
+	<select id="getMainEvaHistory" resultType="com.iware.bridge.info.vo.EchartMap">
+		SELECT
+			a.concat AS name,
+			a.time AS status
+		FROM
+		(
+			(
+				SELECT
+					concat ( '维修-', tid.check_item, ido.NAME ),
+					to_char(tmi.modify_time, 'YYYY.MM.DD') AS time
+				FROM
+					tb_structure ts
+				INNER JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+				INNER JOIN tb_project tp ON tp.id = psr.project_id AND ts.id = #{structureId}
+				INNER JOIN tb_plan_info tpi ON tpi.project_id = tp.id
+				INNER JOIN tb_maintain_item tmi ON tmi.plan_id = tpi.id AND tmi.structure_id = ts.id AND tmi.status = 1
+				INNER JOIN tb_inspection_disease_instance idi ON idi.id = tmi.disease_instance_id
+				INNER JOIN tb_inspection_disease tid ON tid.id = idi.inspection_disease_id
+				INNER JOIN tb_disease_instance_option_rel dior ON dior.inspection_disease_instance_id = idi.id
+				INNER JOIN tb_inspection_disease_option ido ON ido.id = dior.inspection_disease_option_id
+				<if test="roleId == 0 or roleId == 1">
+					INNER JOIN tb_project_appoint tpa ON tpa.project_id = tp.id
+					INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.id AND papr.power_id = #{powerId}
+					WHERE
+						tpa.receive_unit_id = #{unitId}
+						AND tpi.create_time > tpa.start_time
+						AND tpi.create_time &lt; tpa.end_time
+				</if>
+			) UNION ALL
+			(
+				SELECT
+					concat ( rs.type_name, rs.rating_level, '-', ROUND(CAST(rs.score as numeric), 1), '分' ),
+					to_char(rs.modify_time, 'YYYY.MM.DD') AS time
+				FROM
+				(
+					SELECT
+						CASE tmp.type
+							WHEN 1 THEN '定期检测-'
+							WHEN 2 THEN '特殊检测-'
+							WHEN 3 THEN '静载实验-'
+						END AS type_name,
+						tbs.rating_level,
+						tbs.score,
+						tbs.evaluation_time,
+						tmp.modify_time
+					FROM
+						tb_bridge_score tbs
+					INNER JOIN tb_monitor_plan_structure_rel mpsr ON tbs.target_id = mpsr.id AND mpsr.structure_info_id = #{structureId}
+					INNER JOIN tb_monitor_plan tmp ON tmp.id = mpsr.monitor_plan_id
+					<if test="roleId == 0 or roleId == 1">
+						INNER JOIN tb_project tp ON tp.id = tmp.project_info_id
+						INNER JOIN tb_project_appoint tpa ON tpa.project_id = tp.id
+						INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.id
+						AND papr.power_id = #{powerId}
+					</if>
+					<where>
+						( mpsr.is_delete IS NULL OR mpsr.is_delete = 0 )
+						AND tbs.type = 1
+						<if test="roleId == 0 or roleId == 1">
+							AND tpa.receive_unit_id = #{unitId}
+							AND tmp.create_time > tpa.start_time
+							AND tmp.create_time &lt; tpa.end_time
+						</if>
+					</where>
+				) AS rs
+			)
+		) AS A
+		ORDER BY
+			time DESC
+	</select>
+
+	<select id="getSensorData" resultType="java.util.HashMap">
+		SELECT
+			array_to_string( ARRAY ( SELECT UNNEST ( ARRAY_AGG ( rs.sampling_time ORDER BY rs.sampling_time ) ) ), ',' ) AS times,
+			array_to_string( ARRAY ( SELECT UNNEST ( ARRAY_AGG ( CAST ( rs.value AS DECIMAL ( 18, 2 ) ) ORDER BY rs.sampling_time ) ) ), ',') AS datas
+		FROM
+		(
+			<if test="type == 1">
+				SELECT
+					sensor_coding,
+					sampling_time,
+					CAST(total_weight/1000::numeric AS DECIMAL(10,2)) AS value
+				FROM
+					tb_sensor_weight
+				WHERE
+					sensor_coding = #{sensorCoding}
+					AND sampling_time > (now() - INTERVAL '7 H')
+			</if>
+			<if test="type == 2">
+				SELECT
+				paraid AS sensor_coding,
+				collecttime AS sampling_time,
+				CAST (paravalue AS DECIMAL(18, 2)) AS value
+				FROM
+				composedata
+				WHERE
+				paraid = #{sensorCoding}
+				AND collecttime > (now()  - INTERVAL '1 D')
+			</if>
+			<if test="type == 3">
+				SELECT
+					sensor_coding,
+					time AS sampling_time,
+				CAST (avg_value AS DECIMAL(18, 2)) AS value
+				FROM
+					tb_sensor_minute
+				WHERE
+					sensor_coding = #{sensorCoding}
+					AND time > (now() - INTERVAL '1 D')
+			</if>
+		) AS rs GROUP BY rs.sensor_coding
+	</select>
+</mapper>

@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.global.ProjectDao">
+
+    <resultMap type="com.iware.bridge.model.entity.global.Project" id="projectMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="synopsis" column="synopsis"/>
+        <result property="unitId" column="unit_id"/>
+        <result property="createUserId" column="create_user_id"/>
+        <result property="chargePerson" column="charge_person"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       name,
+       synopsis,
+       unit_id,
+       create_user_id,
+       charge_person,
+       status,
+       create_time,
+       modify_time
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.global.Project">
+        insert into tb_project
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            name,
+            synopsis,
+            unit_id,
+            create_user_id,
+            charge_person,
+            status,
+        </trim>
+        )
+        values
+        (
+        now(),
+        now(),
+        <trim prefix="" suffix="" suffixOverrides=",">
+            #{name},
+            #{synopsis},
+            #{unitId},
+            #{createUserId},
+            #{chargePerson},
+            #{status},
+        </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询Project -->
+    <select id="findById" parameterType="Integer" resultMap="projectMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_project
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.global.Project">
+        UPDATE
+        tb_project
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="name != null and name != ''">
+                    name = #{name},
+                </if>
+                <if test="synopsis != null and synopsis != ''">
+                    synopsis = #{synopsis},
+                </if>
+                <if test="unitId != null">
+                    unit_id = #{unitId},
+                </if>
+                <if test="createUserId != null">
+                    create_user_id = #{createUserId},
+                </if>
+                <if test="chargePerson != null and chargePerson != ''">
+                    charge_person = #{chargePerson},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_project
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_project
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            name,
+            synopsis,
+            unit_id,
+            create_user_id,
+            charge_person,
+            status,
+        </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+            (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.name},
+                #{it.synopsis},
+                #{it.unitId},
+                #{it.createUserId},
+                #{it.chargePerson},
+                #{it.status},
+            </trim>
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+        tb_project
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="projectMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_project
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件查询Project -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.global.Project" resultMap="projectMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_project
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="name != null and name != ''">
+                AND name = #{name}
+            </if>
+            <if test="synopsis != null and synopsis != ''">
+                AND synopsis = #{synopsis}
+            </if>
+            <if test="unitId != null">
+                AND unit_id = #{unitId}
+            </if>
+            <if test="createUserId != null">
+                AND create_user_id = #{createUserId}
+            </if>
+            <if test="chargePerson != null and chargePerson != ''">
+                AND charge_person = #{chargePerson}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件模糊查询Project -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.global.Project" resultMap="projectMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_project
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT ('%', #{name}, '%')
+            </if>
+            <if test="synopsis != null and synopsis != ''">
+                AND synopsis LIKE CONCAT ('%', #{synopsis}, '%')
+            </if>
+            <if test="unitId != null">
+                AND unit_id = #{unitId}
+            </if>
+            <if test="createUserId != null">
+                AND create_user_id = #{createUserId}
+            </if>
+            <if test="chargePerson != null and chargePerson != ''">
+                AND charge_person LIKE CONCAT ('%', #{chargePerson}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+</mapper>

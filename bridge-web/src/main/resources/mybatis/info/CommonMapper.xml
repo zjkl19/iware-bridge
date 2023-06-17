@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.info.dao.CommonDao">
+
+    <resultMap id="areaListMap" type="com.iware.bridge.info.vo.AreaVO">
+        <result column="id" property="id"></result>
+        <result column="name" property="name"></result>
+        <result column="parent" property="parent"></result>
+        <result column="code" property="code"></result>
+        <collection property="children" javaType="java.util.List" ofType="com.iware.bridge.info.vo.AreaVO" select="getAreaList" column="id">
+        </collection>
+    </resultMap>
+
+    <resultMap id="structureAreaMap" type="com.iware.bridge.info.vo.AreaVO">
+        <result column="province_id" property="id"></result>
+        <result column="province_name" property="name"></result>
+        <collection property="children" javaType="java.util.List" ofType="com.iware.bridge.info.vo.AreaVO">
+            <result column="city_id" property="id"></result>
+            <result column="city_name" property="name"></result>
+            <collection property="children" javaType="java.util.List" ofType="com.iware.bridge.info.vo.AreaVO">
+                <result column="county_id" property="id"></result>
+                <result column="county_name" property="name"></result>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <!--获取省市区-->
+    <select id="getAreaList" resultMap="areaListMap">
+        SELECT
+            id,
+            name,
+            parent,
+            code
+        FROM
+            tb_area
+        WHERE
+            parent = #{id}
+    </select>
+
+    <!--获取结构物省市区-->
+    <select id="listAreaByStructure" resultMap="structureAreaMap">
+        SELECT
+            province.id AS province_id,
+            province.name AS province_name,
+            city.id AS city_id,
+            city.name AS city_name,
+            county.id AS county_id,
+            county.name AS county_name
+        FROM
+            (
+            SELECT CAST(regexp_split_to_table( #{ids}, ',' ) as int) AS id ) AS tt
+            INNER JOIN tb_structure AS ts ON tt.id = ts.ID
+            LEFT JOIN  tb_area AS province ON ts.province_id = province.id
+            LEFT JOIN tb_area AS city ON city.parent = province.id AND city.id = ts.city_id
+            INNER JOIN tb_area AS county ON county.parent = city.ID  AND county.id = ts.county_id
+        ORDER BY
+            province.ID,
+            city.ID,
+            county.ID
+    </select>
+
+    <!--获取用户项目-->
+    <select id="listUserProject"
+            resultType="com.iware.bridge.model.entity.global.Project">
+        SELECT DISTINCT
+            tp.*
+        FROM tb_project tp
+        <if test="type != null">
+            <if test="type == 1">
+                INNER JOIN tb_project_structure_rel psr ON psr.project_id = tp.id
+                INNER JOIN tb_structure ts ON psr.structure_id = ts.id
+                INNER JOIN tb_means_point tmp ON tmp.structure_id = ts.id
+            </if>
+            <if test="type == 2 or type == 3">
+                INNER JOIN tb_plan_info tpi ON tpi.project_id = tp.id
+            </if>
+            <if test="type == 4">
+                INNER JOIN tb_monitor_plan tmp ON tmp.project_info_id = tp.id
+            </if>
+            <if test="type == 5">
+                INNER JOIN tb_project_structure_rel psr ON psr.project_id = tp.id
+                INNER JOIN tb_structure ts ON psr.structure_id = ts.id
+                INNER JOIN tb_video tv ON tv.structure_id = ts.id
+            </if>
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            INNER JOIN tb_project_appoint tpa ON tpa.project_id = tp.id
+            <if test="type != null">
+                INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.ID
+            </if>
+        </if>
+        <where>
+            <if test="roleId == 2">
+                tp.unit_id = #{unitId}
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                tpa.receive_unit_id = #{unitId}
+                <if test="type != null">
+                    AND papr.power_id = #{powerId}
+                </if>
+            </if>
+            <if test="type != null">
+                <if test="type == 2">
+                    AND tpi.type = 1
+                </if>
+                <if test="type == 3">
+                    AND tpi.type = 4
+                </if>
+            </if>
+        </where>
+    </select>
+
+    <select id="listUserInspectionProject" resultType="com.iware.bridge.model.entity.global.Project">
+        SELECT
+            T.id,T.name,T.synopsis,T.unit_id,T.create_user_id,T.charge_person,T.status,T.create_time,T.modify_time
+        FROM
+            (
+                SELECT DISTINCT
+                    tp.*, MAX (tpd.inspection_time) as lasttime
+                FROM
+                    tb_project tp
+                        INNER JOIN tb_plan_info tpi ON tpi.project_id = tp. ID
+                        LEFT JOIN tb_plan_detail tpd ON tpd.plan_id = tpi. ID
+                <if test="roleId == 1 or roleId == 0">
+                    INNER JOIN tb_project_appoint tpa ON tpa.project_id = tp.id
+                        INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.ID
+                </if>
+                <where>
+                <if test="roleId == 2">
+                    tp.unit_id = #{unitId}
+                </if>
+                <if test="roleId == 1 or roleId == 0">
+                    tpa.receive_unit_id = #{unitId}
+                    AND papr.power_id = #{powerId}
+                </if>
+                  AND tpi.TYPE = 1
+                  --AND tpd.status = 1
+                </where>
+                GROUP BY
+                    (tp. ID)
+                ORDER BY
+                lasttime DESC
+            )T
+    </select>
+
+    <!--获取单位结构物-->
+    <select id="listUnitStructure"
+            resultType="com.iware.bridge.model.entity.global.Structure">
+        SELECT DISTINCT ts.id,ts.code,ts.name,ts.number,ts.province_id,ts.city_id,ts.county_id,
+        ts.charge_name,ts.charge_phone,ts.road_name,ts.build_time,ts.maintain_category,
+        ts.maintain_grade,ts.maintain_department,ts.maintain_depart_phone,ts.design_load,ts.span_type,
+        ts.longitude,ts.latitude,ts.structure_type,ts.bridge_type,ts.supervision_department,
+        ts.building_department,ts.construction_department,ts.design_department,ts.unit_id,ts.create_user_id,ts.technology,
+        ts.grade,ts.status,ts.create_time,ts.modify_time,
+        (SELECT name FROM tb_unit tu WHERE tu.id = ts.unit_id) AS  running_department
+        FROM
+        tb_structure ts
+        INNER JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+        <if test="filter.undertakeId != null or roleId == 1 or roleId == 0">
+            INNER JOIN tb_project tp ON psr.project_id = tp.id
+            INNER JOIN tb_project_appoint tpa ON tpa.project_id = tp.id
+            <if test="filter.powerId != null">
+                INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.id
+            </if>
+        </if>
+        <where>
+            <if test="roleId == 2">
+                ts.unit_id = #{unitId}
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                <if test="filter.projectId == null">
+                    tpa.receive_unit_id = #{unitId}
+                </if>
+            </if>
+            <if test="filter.provinceId != null">
+                AND ts.province_id = #{filter.provinceId}
+            </if>
+            <if test="filter.cityId != null">
+                AND ts.city_id = #{filter.cityId}
+            </if>
+            <if test="filter.countyId != null">
+                AND ts.county_id = #{filter.countyId}
+            </if>
+            <if test="filter.unitId != null">
+                AND ts.unit_id = #{filter.unitId}
+            </if>
+            <if test="filter.projectId != null">
+                AND psr.project_id = #{filter.projectId}
+            </if>
+            <if test="filter.undertakeId != null">
+                AND tpa.receive_unit_id = #{filter.undertakeId}
+            </if>
+            <if test="(filter.undertakeId != null or roleId == 1 or roleId == 0) and filter.powerId != null">
+                AND papr.power_id = #{filter.powerId}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <!--获取用户有传感器结构物-->
+    <select id="listStructureByOnline"
+            resultType="com.iware.bridge.model.entity.global.Structure">
+        SELECT
+            DISTINCT ts.*
+        FROM
+            tb_structure ts
+        INNER JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+        <if test="filter.undertakeId != null or roleId == 1 or roleId == 0">
+            INNER JOIN tb_project tp ON psr.project_id = tp.id
+            INNER JOIN tb_project_appoint tpa ON tpa.project_id = tp.id
+            <if test="filter.powerId != null">
+                INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.id
+            </if>
+        </if>
+        INNER JOIN tb_means_point tmp ON tmp.structure_id = ts.id
+        <where>
+            <if test="roleId == 2">
+                ts.unit_id = #{unitId}
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                tpa.receive_unit_id = #{unitId}
+                <if test="filter.powerId != null">
+                    AND papr.power_id = #{filter.powerId}
+                </if>
+            </if>
+            <if test="filter.provinceId != null">
+                AND ts.province_id = #{filter.provinceId}
+            </if>
+            <if test="filter.cityId != null">
+                AND ts.city_id = #{filter.cityId}
+            </if>
+            <if test="filter.countyId != null">
+                AND ts.county_id = #{filter.countyId}
+            </if>
+            <if test="filter.unitId != null">
+                AND ts.unit_id = #{filter.unitId}
+            </if>
+            <if test="filter.projectId != null">
+                AND psr.project_id = #{filter.projectId}
+            </if>
+            <if test="filter.undertakeId != null">
+                AND tpa.receive_unit_id = #{filter.undertakeId}
+            </if>
+            <if test="(filter.undertakeId != null or roleId == 1 or roleId == 0) and filter.powerId != null">
+                AND papr.power_id = #{filter.powerId}
+            </if>
+        </where>
+        ORDER BY ts.create_time DESC
+    </select>
+
+    <!--获取用户有巡查/维养结构物-->
+    <select id="listStructureByInspMain"
+            resultType="com.iware.bridge.model.entity.global.Structure">
+        SELECT DISTINCT
+            ts.*
+        FROM
+            tb_structure ts
+        INNER JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+        INNER JOIN tb_project tp ON psr.project_id = tp.id
+        <if test="filter.undertakeId != null or roleId == 1 or roleId == 0">
+            INNER JOIN tb_project_appoint tpa ON tpa.project_id = tp.id
+            <if test="filter.powerId != null">
+                INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.id
+            </if>
+        </if>
+        INNER JOIN tb_plan_info tpi ON tpi.project_id = tp.id
+        <where>
+            tpi.type = #{type}
+            <if test="roleId == 2">
+                AND tp.unit_id = #{unitId}
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                AND tpa.receive_unit_id = #{unitId}
+                <if test="filter.powerId != null">
+                    AND papr.power_id = #{filter.powerId}
+                </if>
+            </if>
+            <if test="filter.provinceId != null">
+                AND ts.province_id = #{filter.provinceId}
+            </if>
+            <if test="filter.cityId != null">
+                AND ts.city_id = #{filter.cityId}
+            </if>
+            <if test="filter.countyId != null">
+                AND ts.county_id = #{filter.countyId}
+            </if>
+            <if test="filter.unitId != null">
+                AND ts.unit_id = #{filter.unitId}
+            </if>
+            <if test="filter.projectId != null">
+                AND psr.project_id = #{filter.projectId}
+            </if>
+            <if test="filter.undertakeId != null">
+                AND tpa.receive_unit_id = #{filter.undertakeId}
+            </if>
+            <if test="(filter.undertakeId != null) and filter.powerId != null">
+                AND papr.power_id = #{filter.powerId}
+            </if>
+        </where>
+        ORDER BY ts.create_time DESC
+    </select>
+
+    <!--获取用户有检测计划结构物-->
+    <select id="listStructureByEvaluation"
+            resultType="com.iware.bridge.model.entity.global.Structure">
+        SELECT *
+        FROM
+        (
+            SELECT
+            * ,
+            ROW_NUMBER () OVER ( PARTITION BY ID ORDER BY seq_num DESC ) rank
+            FROM
+            (
+                SELECT
+                    ts.ID,
+                    ts.NAME,
+                    ts.longitude,
+                    ts.latitude,
+                    tmp.create_time,
+                    CASE
+                        WHEN tbs.ID IS NOT NULL THEN 3
+                        WHEN upload IS NOT NULL THEN 2
+                        ELSE 1
+                    END AS seq_num
+                FROM
+                tb_structure ts
+                INNER JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+                INNER JOIN tb_project tp ON psr.project_id = tp.id
+                <if test="filter.undertakeId != null or roleId == 1 or roleId == 0">
+                    INNER JOIN tb_project_appoint tpa ON tpa.project_id = tp.id
+                    <if test="filter.powerId != null">
+                        INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.id
+                    </if>
+                </if>
+                INNER JOIN tb_monitor_plan tmp ON tmp.project_info_id = tp.id
+                INNER JOIN tb_monitor_plan_structure_rel mpsr ON mpsr.monitor_plan_id = tmp.ID AND mpsr.structure_info_id = ts.id
+                LEFT JOIN tb_bridge_score tbs ON tbs.target_id = mpsr.ID AND tbs.TYPE = 1
+                <where>
+                    <if test="roleId == 2">
+                        tp.unit_id = #{unitId}
+                    </if>
+                    <if test="roleId == 1 or roleId == 0">
+                        tpa.receive_unit_id = #{unitId}
+                        <if test="filter.powerId != null">
+                            AND papr.power_id = #{filter.powerId}
+                        </if>
+                    </if>
+
+                    <if test="filter.provinceId != null">
+                        AND ts.province_id = #{filter.provinceId}
+                    </if>
+                    <if test="filter.cityId != null">
+                        AND ts.city_id = #{filter.cityId}
+                    </if>
+                    <if test="filter.countyId != null">
+                        AND ts.county_id = #{filter.countyId}
+                    </if>
+                    <if test="filter.unitId != null">
+                        AND ts.unit_id = #{filter.unitId}
+                    </if>
+                    <if test="filter.projectId != null">
+                        AND psr.project_id = #{filter.projectId}
+                    </if>
+                    <if test="filter.undertakeId != null">
+                        AND tpa.receive_unit_id = #{filter.undertakeId}
+                    </if>
+                    <if test="(filter.undertakeId != null or roleId == 1 or roleId == 0) and filter.powerId != null">
+                        AND papr.power_id = #{filter.powerId}
+                    </if>
+                </where>
+            ) AS tb
+        ) AS rs
+        WHERE
+            rank = 1
+        ORDER BY
+            seq_num DESC,
+            create_time DESC
+    </select>
+
+    <!--获取承接单位项目指派时间-->
+    <select id="getUnitAppointTime"
+            resultType="com.iware.bridge.info.vo.AppointTime">
+        SELECT
+            tpa.start_time,
+            tpa.end_time
+        FROM
+            tb_project_appoint tpa
+        INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.id
+        WHERE
+            tpa.project_id = #{projectId}
+            AND papr.power_id = #{powerId}
+            AND receive_unit_id = #{unitId}
+        ORDER BY
+            tpa.end_time DESC
+    </select>
+</mapper>

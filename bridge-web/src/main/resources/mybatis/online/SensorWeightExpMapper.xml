@@ -1,0 +1,679 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.online.dao.SensorWeightExpDao">
+    <insert id="addHourModel">
+        INSERT INTO
+        tb_sensor_weight_hour_model(time,structure_id,means_point_id,two_model,three_model,four_model,five_model,six_model,six_up_model)
+        VALUES
+        <foreach collection="model" item="model" separator="," close=";">
+            (to_timestamp(#{model.time},'yyyy-mm-dd hh24:mi-ss'),#{model.structureId},#{model.meansPointId},
+            #{model.twoModel},#{model.threeModel},#{model.fourModel},#{model.fiveModel},#{model.sixModel},#{model.sixUpModel})
+        </foreach>
+    </insert>
+    <insert id="addHourSpeed">
+        INSERT INTO
+        tb_sensor_weight_hour_speed(time,structure_id,means_point_id,twenty_speed,twenty_forty_speed,forty_sixty_speed,sixty_eighty_speed,eighty_hundred_speed,hundred_speed)
+        VALUES
+        <foreach collection="model" item="model" separator="," close=";">
+            (to_timestamp(#{model.time},'yyyy-mm-dd hh24:mi-ss'),#{model.structureId},#{model.meansPointId},
+            #{model.twentySpeed},#{model.twentyFortySpeed},#{model.fortySixtySpeed},#{model.sixtyEightySpeed},#{model.eightyHundredSpeed},#{model.hundredSpeed})
+        </foreach>
+    </insert>
+    <insert id="addHourWeight">
+        INSERT INTO
+        tb_sensor_weight_hour_weight(time,structure_id,means_point_id,max_weight,ten_weight,ten_thirty_weight,thirty_fifty_weight,fifty_weight,sixty_weight,seventy_weight,eighty_weight,ninety_weight,hundred_weight,two_model_weight,three_model_weight,four_model_weight,five_model_weight,six_model_weight,six_up_model_weight,two_model_weight_not,three_model_weight_not,four_model_weight_not,five_model_weight_not,six_model_weight_not,six_up_model_weight_not)
+        VALUES
+        <foreach collection="model" item="model" separator="," close=";">
+            (to_timestamp(#{model.time},'yyyy-mm-dd hh24:mi-ss'),#{model.structureId},#{model.meansPointId},
+            #{model.maxWeight},#{model.tenWeight},#{model.tenThirtyWeight},#{model.thirtyFiftyWeight},#{model.fiftyWeight},#{model.sixtyWeight},
+            #{model.seventyWeight},#{model.eightyWeight},#{model.ninetyWeight},#{model.hundredWeight},#{model.twoModelWeight},#{model.threeModelWeight},
+            #{model.fourModelWeight},#{model.fiveModelWeight},#{model.sixModelWeight},#{model.sixUpModelWeight},#{model.twoModelWeightNot},#{model.threeModelWeightNot},
+            #{model.fourModelWeightNot},#{model.fiveModelWeightNot},#{model.sixModelWeightNot},#{model.sixUpModelWeightNot})
+        </foreach>
+    </insert>
+
+
+    <select id="selectTrafficFlowHour" resultType="com.iware.bridge.online.dto.SensorWeightDto">
+        SELECT means.NAME
+        ,
+        speed.time,
+        speed.twenty_speed + speed.twenty_forty_speed + speed.forty_sixty_speed + speed.sixty_eighty_speed +
+        speed.eighty_hundred_speed +
+        speed.hundred_speed AS count
+        FROM
+        tb_sensor_weight_hour_speed as speed
+        join tb_means_point as means on speed.means_point_id = means.id
+        where
+        speed.structure_id = #{filter.structureId}
+        <if test="filter.carNo != null and !''.equals(filter.carNo)">
+            and speed.means_point_id = #{filter.carNo}
+        </if>
+        AND to_char(speed.time,'yyyy-mm-dd hh24:mi:ss') BETWEEN #{filter.startTime}
+        AND #{filter.endTime}
+        <if test="time.size() != 0">
+            and
+            (
+            <foreach collection="time" item="item" separator="or">
+                speed.time BETWEEN #{item.startTime} AND #{item.endTime}
+            </foreach>
+            )
+        </if>
+        ORDER BY means.name,to_char(speed.time,'yyyy-mm-dd hh24:00:00')
+    </select>
+
+    <select id="selectTrafficFlowDay" resultType="com.iware.bridge.online.dto.SensorWeightDto">
+        SELECT a.name,a.time,sum(a.count) as count FROM (
+        SELECT means.NAME
+        ,
+        to_char(speed.time,'yyyy-mm-dd') as time,
+        speed.twenty_speed + speed.twenty_forty_speed + speed.forty_sixty_speed + speed.sixty_eighty_speed +
+        speed.eighty_hundred_speed +
+        speed.hundred_speed AS count
+        FROM
+        tb_sensor_weight_hour_speed as speed
+        join tb_means_point as means on speed.means_point_id = means.id
+        where
+        speed.structure_id = #{filter.structureId}
+        <if test="filter.carNo != null and !''.equals(filter.carNo)">
+            and speed.means_point_id = #{filter.carNo}
+        </if>
+        AND to_char(speed.time,'yyyy-mm-dd hh24:mi:ss') BETWEEN #{filter.startTime}
+        AND #{filter.endTime}
+        <if test="time.size() != 0">
+            and
+            (
+            <foreach collection="time" item="item" separator="or">
+                speed.time BETWEEN #{item.startTime} AND #{item.endTime}
+            </foreach>
+            )
+        </if>
+        ORDER BY means.name,to_char(speed.time,'yyyy-mm-dd')
+        ) as a
+
+        GROUP BY a.name,a.time
+    </select>
+
+
+    <select id="selectTrafficFlowMonth" resultType="com.iware.bridge.online.dto.SensorWeightDto">
+        SELECT a.name,a.time,sum(a.count) as count FROM (
+        SELECT means.NAME
+        ,
+        to_char(speed.time,'yyyy-mm') as time,
+        speed.twenty_speed + speed.twenty_forty_speed + speed.forty_sixty_speed + speed.sixty_eighty_speed +
+        speed.eighty_hundred_speed +
+        speed.hundred_speed AS count
+        FROM
+        tb_sensor_weight_hour_speed as speed
+        join tb_means_point as means on speed.means_point_id = means.id
+        where
+        speed.structure_id = #{filter.structureId}
+        <if test="filter.carNo != null and !''.equals(filter.carNo)">
+            and speed.means_point_id = #{filter.carNo}
+        </if>
+        AND to_char(speed.time,'yyyy-mm-dd hh24:mi:ss') BETWEEN #{filter.startTime}
+        AND #{filter.endTime}
+        <if test="time.size() != 0">
+            and
+            (
+            <foreach collection="time" item="item" separator="or">
+                speed.time BETWEEN #{item.startTime} AND #{item.endTime}
+            </foreach>
+            )
+        </if>
+        ORDER BY means.name,to_char(speed.time,'yyyy-mm')
+        ) as a
+
+        GROUP BY a.name,a.time
+    </select>
+
+    <select id="selectCarModel" resultType="com.iware.bridge.online.vo.SensorWeightModel">
+        SELECT
+        sum(a.two_model) as twoModel,
+        sum(a.three_model) as threeModel,
+        sum(a.four_model) as fourModel,
+        sum(a.five_model) as fiveModel,
+        sum(a.six_model) as sixModel,
+        sum(a.six_up_model) as sixUpModel FROM (
+        SELECT
+        *
+        FROM
+        tb_sensor_weight_hour_model
+        where
+        structure_id = #{filter.structureId}
+        AND to_char(time,'yyyy-mm-dd hh24:mi:ss') BETWEEN #{filter.startTime}
+        AND #{filter.endTime}
+        <if test="filter.carNo != null and !''.equals(filter.carNo)">
+            and means_point_id = #{filter.carNo}
+        </if>
+        <if test="time.size() != 0">
+            and
+            (
+            <foreach collection="time" item="item" separator="or">
+                time BETWEEN #{item.startTime} AND #{item.endTime}
+            </foreach>
+            )
+        </if>
+        ) as a
+
+    </select>
+    <select id="selectCarSpeed" resultType="com.iware.bridge.online.vo.SensorWeightSpeed">
+        SELECT
+        sum(a.twenty_speed) as twenty_speed,
+        sum(a.twenty_forty_speed) as twenty_forty_speed,
+        sum(a.forty_sixty_speed) as forty_sixty_speed,
+        sum(a.sixty_eighty_speed) as sixty_eighty_speed,
+        sum(a.eighty_hundred_speed) as eighty_hundred_speed,
+        sum(a.hundred_speed) as hundred_speed FROM (
+        SELECT
+        *
+        FROM
+        tb_sensor_weight_hour_speed
+        where
+        structure_id = #{filter.structureId}
+        AND to_char(time,'yyyy-mm-dd hh24:mi:ss') BETWEEN #{filter.startTime}
+        AND #{filter.endTime}
+        <if test="filter.carNo != null and !''.equals(filter.carNo)">
+            and means_point_id = #{filter.carNo}
+        </if>
+        <if test="time.size() != 0">
+            and
+            (
+            <foreach collection="time" item="item" separator="or">
+                time BETWEEN #{item.startTime} AND #{item.endTime}
+            </foreach>
+            )
+        </if>
+        ) as a
+
+
+    </select>
+    <select id="selectSensorWeightStructure" resultType="com.iware.bridge.model.entity.global.Structure">
+        SELECT
+        DISTINCT structure.*
+        FROM
+        tb_means_point AS means
+        LEFT JOIN tb_sensor_type AS type ON means.sensor_type_id = type.id
+        LEFT JOIN tb_structure AS structure ON structure.id = means.structure_id
+        <if test="roleId == 1 or roleId == 0">
+            left join tb_project_structure_rel as psr on psr.structure_id = structure.id
+            left join tb_project as project on project.id = psr.project_id
+            left join tb_project_appoint as appoint on appoint.project_id = project.id
+            left join tb_project_appoint_power_rel as power on power.project_appoint_id = appoint.id
+        </if>
+        WHERE 1=1
+
+        <if test="type == 1">
+            and type.name = '称重传感器'
+        </if>
+        <if test="type == 2">
+            and type.name = '加速度传感器'
+        </if>
+        <if test="type == 3">
+            and type.name = '索力传感器'
+        </if>
+        <if test="type == 5">
+            and means.company_id != 3
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            and appoint.receive_unit_id = #{unitId}
+            and power.power_id = #{powerId}
+        </if>
+        <if test="roleId == 2">
+            and structure.unit_id = #{unitId}
+        </if>
+
+        order by id desc
+    </select>
+
+
+    <select id="selectMaxWeightHour" resultType="com.iware.bridge.online.dto.SensorWeightDto">
+        SELECT means.NAME
+        ,
+        weight.time,
+        weight.max_weight AS count
+        FROM
+        tb_sensor_weight_hour_weight as weight
+        join tb_means_point as means on weight.means_point_id = means.id
+        where
+        weight.structure_id = #{filter.structureId}
+        <if test="filter.carNo != null and !''.equals(filter.carNo)">
+            and weight.means_point_id = #{filter.carNo}
+        </if>
+        AND to_char(weight.time,'yyyy-mm-dd hh24:mi:ss') BETWEEN #{filter.startTime}
+        AND #{filter.endTime}
+        <if test="time.size() != 0">
+            and
+            (
+            <foreach collection="time" item="item" separator="or">
+                weight.time BETWEEN #{item.startTime} AND #{item.endTime}
+            </foreach>
+            )
+        </if>
+        ORDER BY means.name,to_char(weight.time,'yyyy-mm-dd hh24:00:00')
+    </select>
+
+    <select id="selectMaxWeightDay" resultType="com.iware.bridge.online.dto.SensorWeightDto">
+        SELECT a.name,a.time,max(a.count) as count FROM (
+        SELECT means.NAME
+        ,
+        to_char(weight.time,'yyyy-mm-dd') as time,
+        weight.max_weight AS count
+        FROM
+        tb_sensor_weight_hour_weight as weight
+        join tb_means_point as means on weight.means_point_id = means.id
+        where
+        weight.structure_id = #{filter.structureId}
+        <if test="filter.carNo != null and !''.equals(filter.carNo)">
+            and weight.means_point_id = #{filter.carNo}
+        </if>
+        AND to_char(weight.time,'yyyy-mm-dd hh24:mi:ss') BETWEEN #{filter.startTime}
+        AND #{filter.endTime}
+        <if test="time.size() != 0">
+            and
+            (
+            <foreach collection="time" item="item" separator="or">
+                weight.time BETWEEN #{item.startTime} AND #{item.endTime}
+            </foreach>
+            )
+        </if>
+        ORDER BY means.name,to_char(weight.time,'yyyy-mm-dd')
+        ) as a
+        GROUP BY a.name,a.time
+    </select>
+
+    <select id="selectMaxWeightMonth" resultType="com.iware.bridge.online.dto.SensorWeightDto">
+        SELECT a.name,a.time,max(a.count) as count FROM (
+        SELECT means.NAME
+        ,
+        to_char(weight.time,'yyyy-mm') as time,
+        weight.max_weight AS count
+        FROM
+        tb_sensor_weight_hour_weight as weight
+        join tb_means_point as means on weight.means_point_id = means.id
+        where
+        weight.structure_id = #{filter.structureId}
+        <if test="filter.carNo != null and !''.equals(filter.carNo)">
+            and weight.means_point_id = #{filter.carNo}
+        </if>
+        AND to_char(weight.time,'yyyy-mm-dd hh24:mi:ss') BETWEEN #{filter.startTime}
+        AND #{filter.endTime}
+        <if test="time.size() != 0">
+            and
+            (
+            <foreach collection="time" item="item" separator="or">
+                weight.time BETWEEN #{item.startTime} AND #{item.endTime}
+            </foreach>
+            )
+        </if>
+        ORDER BY means.name,to_char(weight.time,'yyyy-mm')
+        ) as a
+        GROUP BY a.name,a.time
+    </select>
+    <select id="selectCarWeight" resultType="com.iware.bridge.online.vo.SensorWeightWeight">
+        SELECT
+        a.name,
+        sum(a.ten_weight) as tenWeight,
+        sum(a.ten_thirty_weight) as tenThirtyWeight,
+        sum(a.thirty_fifty_weight) as thirtyFiftyWeight,
+        sum(a.fifty_weight) as fiftyWeight FROM (
+        SELECT
+        weight.*,means.name
+        FROM
+        tb_sensor_weight_hour_weight as weight
+        join tb_means_point as means on means.id = weight.means_point_id
+        where
+        weight.structure_id = #{filter.structureId}
+        AND to_char(weight.time,'yyyy-mm-dd hh24:mi:ss') BETWEEN #{filter.startTime}
+        AND #{filter.endTime}
+        <if test="filter.carNo != null and !''.equals(filter.carNo)">
+            and weight.means_point_id = #{filter.carNo}
+        </if>
+        <if test="time.size() != 0">
+            and
+            (
+            <foreach collection="time" item="item" separator="or">
+                weight.time BETWEEN #{item.startTime} AND #{item.endTime}
+            </foreach>
+            )
+        </if>
+        ORDER BY means.name
+        ) as a
+        GROUP BY a.name
+    </select>
+
+    <select id="selectCarWeightHour" resultType="com.iware.bridge.online.dto.SensorWeightDto">
+        SELECT means.NAME
+        ,
+        weight.time,
+        <if test="filter.weight == 50000">
+            weight.fifty_weight
+        </if>
+        <if test="filter.weight == 60000">
+            weight.sixty_weight
+        </if>
+        <if test="filter.weight == 70000">
+            weight.seventy_weight
+        </if>
+        <if test="filter.weight == 80000">
+            weight.eighty_weight
+        </if>
+        <if test="filter.weight == 90000">
+            weight.ninety_weight
+        </if>
+        <if test="filter.weight == 100000">
+            weight.hundred_weight
+        </if>
+        as count
+        FROM
+        tb_sensor_weight_hour_weight as weight
+        join tb_means_point as means on means.id = weight.means_point_id
+        where
+        weight.structure_id = #{filter.structureId}
+        <if test="filter.carNo != null and !''.equals(filter.carNo)">
+            and weight.means_point_id = #{filter.carNo}
+        </if>
+        AND to_char(weight.time,'yyyy-mm-dd hh24:mi:ss') BETWEEN #{filter.startTime}
+        AND #{filter.endTime}
+        <if test="time.size() != 0">
+            and
+            (
+            <foreach collection="time" item="item" separator="or">
+                weight.time BETWEEN #{item.startTime} AND #{item.endTime}
+            </foreach>
+            )
+        </if>
+        ORDER BY means.name,to_char(weight.time,'yyyy-mm-dd hh24:00:00')
+    </select>
+
+    <select id="selectCarWeightDay" resultType="com.iware.bridge.online.dto.SensorWeightDto">
+        SELECT a.name,a.time,sum(a.count) as count FROM (
+        SELECT means.NAME
+        ,
+        to_char(weight.time,'yyyy-mm-dd') as time,
+        <if test="filter.weight == 50000">
+            weight.fifty_weight
+        </if>
+        <if test="filter.weight == 60000">
+            weight.sixty_weight
+        </if>
+        <if test="filter.weight == 70000">
+            weight.seventy_weight
+        </if>
+        <if test="filter.weight == 80000">
+            weight.eighty_weight
+        </if>
+        <if test="filter.weight == 90000">
+            weight.ninety_weight
+        </if>
+        <if test="filter.weight == 100000">
+            weight.hundred_weight
+        </if>
+        as count
+        FROM
+        tb_sensor_weight_hour_weight as weight
+        join tb_means_point as means on means.id = weight.means_point_id
+        where
+        weight.structure_id = #{filter.structureId}
+        <if test="filter.carNo != null and !''.equals(filter.carNo)">
+            and weight.means_point_id = #{filter.carNo}
+        </if>
+        AND to_char(weight.time,'yyyy-mm-dd hh24:mi:ss') BETWEEN #{filter.startTime}
+        AND #{filter.endTime}
+        <if test="time.size() != 0">
+            and
+            (
+            <foreach collection="time" item="item" separator="or">
+                weight.time BETWEEN #{item.startTime} AND #{item.endTime}
+            </foreach>
+            )
+        </if>
+        ORDER BY means.name,to_char(weight.time,'yyyy-mm-dd')
+        ) as a
+        GROUP BY a.name,a.time
+    </select>
+
+    <select id="selectCarWeightMonth" resultType="com.iware.bridge.online.dto.SensorWeightDto">
+        SELECT a.name,a.time,sum(a.count) as count FROM (
+        SELECT means.NAME
+        ,
+        to_char(weight.time,'yyyy-mm') as time,
+        <if test="filter.weight == 50000">
+            weight.fifty_weight
+        </if>
+        <if test="filter.weight == 60000">
+            weight.sixty_weight
+        </if>
+        <if test="filter.weight == 70000">
+            weight.seventy_weight
+        </if>
+        <if test="filter.weight == 80000">
+            weight.eighty_weight
+        </if>
+        <if test="filter.weight == 90000">
+            weight.ninety_weight
+        </if>
+        <if test="filter.weight == 100000">
+            weight.hundred_weight
+        </if>
+        as count
+        FROM
+        tb_sensor_weight_hour_weight as weight
+        join tb_means_point as means on means.id = weight.means_point_id
+        where
+        weight.structure_id = #{filter.structureId}
+        <if test="filter.carNo != null and !''.equals(filter.carNo)">
+            and weight.means_point_id = #{filter.carNo}
+        </if>
+        AND to_char(weight.time,'yyyy-mm-dd hh24:mi:ss') BETWEEN #{filter.startTime}
+        AND #{filter.endTime}
+        <if test="time.size() != 0">
+            and
+            (
+            <foreach collection="time" item="item" separator="or">
+                weight.time BETWEEN #{item.startTime} AND #{item.endTime}
+            </foreach>
+            )
+        </if>
+        ORDER BY means.name,to_char(weight.time,'yyyy-mm')
+        ) as a
+        GROUP BY a.name,a.time
+    </select>
+    <select id="selecttransfiniteCar" resultType="com.iware.bridge.online.vo.SensorWeightWeight">
+        SELECT
+        <if test="filter.axleId == 1">
+            sum(a.two_model_weight) as twoModelWeight,
+            sum(a.two_model_weight_not) as twoModelWeightNot
+        </if>
+        <if test="filter.axleId == 2">
+            sum(a.three_model_weight) as threeModelWeight,
+            sum(a.three_model_weight_not) as threeModelWeightNot
+        </if>
+        <if test="filter.axleId == 3">
+            sum(a.four_model_weight) as fourModelWeight,
+            sum(a.four_model_weight_not) as fourModelWeightNot
+        </if>
+        <if test="filter.axleId == 4">
+            sum(a.five_model_weight) as fiveModelWeight,
+            sum(a.five_model_weight_not) as fiveModelWeightNot
+        </if>
+        <if test="filter.axleId == 5">
+            sum(a.six_model_weight) as sixModelWeight,
+            sum(a.six_model_weight_not) as sixModelWeightNot
+        </if>
+        <if test="filter.axleId == 6">
+            sum(a.six_up_model_weight) as sixUpModelWeight,
+            sum(a.six_up_model_weight_not) as sixUpModelWeightNot
+        </if>
+        FROM (
+        SELECT
+        *
+        FROM
+        tb_sensor_weight_hour_weight
+        where
+        structure_id = #{filter.structureId}
+        AND to_char(time,'yyyy-mm-dd hh24:mi:ss') BETWEEN #{filter.startTime}
+        AND #{filter.endTime}
+        <if test="filter.carNo != null and !''.equals(filter.carNo)">
+            and means_point_id = #{filter.carNo}
+        </if>
+        <if test="time.size() != 0">
+            and
+            (
+            <foreach collection="time" item="item" separator="or">
+                time BETWEEN #{item.startTime} AND #{item.endTime}
+            </foreach>
+            )
+        </if>
+        ) as a
+    </select>
+    <select id="selectTimeZero" resultType="java.lang.String">
+        <if test="type == 1">
+            SELECT
+            to_char ( b, 'YYYY-MM-DD hh24:00:00' ) AS TIME
+            FROM
+            generate_series ( to_timestamp ( #{filter.startTime} , 'YYYY-MM-DD hh24:00:00'), to_timestamp
+            (#{filter.endTime} , 'YYYY-MM-DD hh24:00:00' ), '1 hour' ) AS b
+            GROUP BY
+            TIME
+            ORDER BY
+            TIME ASC
+        </if>
+
+        <if test="type == 2">
+            SELECT
+            to_char ( b, 'YYYY-MM-DD' ) AS TIME
+            FROM
+            generate_series ( to_timestamp ( #{filter.startTime} , 'YYYY-MM-DD'), to_timestamp ( #{filter.endTime}
+            ,'YYYY-MM-DD' ), '1 day' ) AS b
+            GROUP BY
+            TIME
+            ORDER BY
+            TIME ASC
+        </if>
+
+        <if test="type == 3">
+            SELECT
+            to_char ( b, 'YYYY-MM' ) AS TIME
+            FROM
+            generate_series ( to_timestamp ( #{filter.startTime} , 'YYYY-MM'), to_timestamp ( #{filter.endTime}
+            ,'YYYY-MM' ), '1 month' ) AS b
+            GROUP BY
+            TIME
+            ORDER BY
+            TIME ASC
+        </if>
+
+    </select>
+    <select id="selectCarNo" resultType="com.iware.bridge.model.entity.online.Sensor">
+        SELECT
+        *
+        FROM
+        tb_sensor
+        <where>
+            <if test="structureId != null">
+                AND structure_id = #{structureId}
+            </if>
+            <if test="sensorTypeId != null">
+                AND sensor_type_id = #{sensorTypeId}
+            </if>
+        </where>
+        ORDER BY
+        name desc
+    </select>
+
+    <select id="selectQuery" resultType="com.iware.bridge.model.entity.global.ProjectAppoint">
+        SELECT appoint.start_time,appoint.end_time FROM tb_structure as structure
+        join tb_project_structure_rel as psr on psr.structure_id = structure.id
+        join tb_project as project on project.id = psr.project_id
+        join tb_project_appoint as appoint on appoint.project_id = project.id
+        join tb_project_appoint_power_rel as power on appoint.id = power.project_appoint_id
+        WHERE appoint.receive_unit_id = #{unitId}
+        and structure.id = #{structureId}
+        and power.power_id = #{powerId}
+    </select>
+    <select id="selectOnlineWeight" resultType="com.iware.bridge.online.vo.SensorMeansVO">
+        SELECT
+            sensor.*,means.name,means.structure_id
+        FROM
+            tb_means_point AS means
+            JOIN tb_sensor AS sensor ON sensor.means_point_id = means.id
+        WHERE
+            sensor.sensor_details_id = 7
+            AND means.STATUS = 1
+    </select>
+    <select id="selectHourWeightData" resultType="com.iware.bridge.online.vo.SensorWeightWeight">
+        select other.time,means.structure_id,means.id as means_point_id,other.max_weight,other.ten_weight,other.ten_thirty_weight,other.thirty_fifty_weight,other.fifty_weight,other.sixty_weight,other.seventy_weight,other.eighty_weight,other.ninety_weight,other.hundred_weight,other.two_model_weight,other.three_model_weight,other.four_model_weight,other.five_model_weight,other.six_model_weight,other.six_up_model_weight,other.two_model_weight_not,other.three_model_weight_not,other.four_model_weight_not,other.five_model_weight_not,other.six_model_weight_not,other.six_up_model_weight_not
+        FROM tb_means_point as means
+        join tb_sensor as sensor on sensor.means_point_id = means.id and sensor_details_id = 7
+        join (
+        SELECT date_trunc('hour', sampling_time) + interval '1 H' as time, sensor_coding,
+        max(CAST(total_weight/1000::numeric AS DECIMAL(10,2))) as max_weight,
+        sum(case when total_weight is null or total_weight &lt; 10000 then 1 else 0 end) as ten_weight,
+        sum(case when total_weight >= 10000 and total_weight &lt; 30000 then 1 else 0 end) as ten_thirty_weight,
+        sum(case when total_weight >= 30000 and total_weight &lt; 50000 then 1 else 0 end) as thirty_fifty_weight,
+        sum(case when total_weight >= 50000 then 1 else 0 end) as fifty_weight,
+        sum(case when total_weight >= 60000 then 1 else 0 end) as sixty_weight,
+        sum(case when total_weight >= 70000 then 1 else 0 end) as seventy_weight,
+        sum(case when total_weight >= 80000 then 1 else 0 end) as eighty_weight,
+        sum(case when total_weight >= 90000 then 1 else 0 end) as ninety_weight,
+        sum(case when total_weight >= 100000 then 1 else 0 end) as hundred_weight,
+        sum(case when single_shaft_nuber = 2 and transfinite_labeled = '1' then 1 else 0 end) as two_model_weight,
+        sum(case when single_shaft_nuber = 2 and transfinite_labeled = '0' then 1 else 0 end) as two_model_weight_not,
+        sum(case when single_shaft_nuber = 3 and transfinite_labeled = '1' then 1 else 0 end) as three_model_weight,
+        sum(case when single_shaft_nuber = 3 and transfinite_labeled = '0' then 1 else 0 end) as three_model_weight_not,
+        sum(case when single_shaft_nuber = 4 and transfinite_labeled = '1' then 1 else 0 end) as four_model_weight,
+        sum(case when single_shaft_nuber = 4 and transfinite_labeled = '0' then 1 else 0 end) as four_model_weight_not,
+        sum(case when single_shaft_nuber = 5 and transfinite_labeled = '1' then 1 else 0 end) as five_model_weight,
+        sum(case when single_shaft_nuber = 5 and transfinite_labeled = '0' then 1 else 0 end) as five_model_weight_not,
+        sum(case when single_shaft_nuber = 6 and transfinite_labeled = '1' then 1 else 0 end) as six_model_weight,
+        sum(case when single_shaft_nuber = 6 and transfinite_labeled = '0' then 1 else 0 end) as six_model_weight_not,
+        sum(case when single_shaft_nuber > 6 and transfinite_labeled = '1' then 1 else 0 end) as six_up_model_weight,
+        sum(case when single_shaft_nuber > 6 and transfinite_labeled = '0' then 1 else 0 end) as six_up_model_weight_not
+        FROM tb_sensor_weight
+        WHERE sampling_time BETWEEN #{startTime}::TIMESTAMP and  #{endTime}::TIMESTAMP
+        GROUP BY time, sensor_coding
+        ORDER BY time DESC, sensor_coding
+        ) as other on other.sensor_coding = sensor.sensor_coding
+    </select>
+    <select id="selectHourModelData" resultType="com.iware.bridge.online.vo.SensorWeightModel">
+        select other.time,means.structure_id,other.two_model,other.three_model,other.four_model,other.five_model,other.six_model,other.six_up_model,means.id as means_point_id
+        FROM tb_means_point as means
+        join tb_sensor as sensor on sensor.means_point_id = means.id and sensor_details_id = 7
+        join (
+        select sensor_coding, hour as time,
+        sum(case when single_shaft_nuber=2 then cnt else 0 end) as two_model,
+        sum(case when single_shaft_nuber=3 then cnt else 0 end) as three_model,
+        sum(case when single_shaft_nuber=4 then cnt else 0 end) as four_model,
+        sum(case when single_shaft_nuber=5 then cnt else 0 end) as five_model,
+        sum(case when single_shaft_nuber=6 then cnt else 0 end) as six_model,
+        sum(case when single_shaft_nuber>6 then cnt else 0 end) as six_up_model
+        from (
+        SELECT date_trunc('hour', sampling_time) + interval '1 H' as hour, sensor_coding, single_shaft_nuber,
+        COUNT(1) as cnt FROM tb_sensor_weight
+        WHERE sampling_time BETWEEN #{startTime}::TIMESTAMP and  #{endTime}::TIMESTAMP
+        GROUP BY hour, sensor_coding, single_shaft_nuber
+        ORDER BY hour DESC, sensor_coding, single_shaft_nuber
+        ) as rs group by sensor_coding, hour
+        order by hour desc
+        ) as other on other.sensor_coding = sensor.sensor_coding
+    </select>
+    <select id="selectHourSpeedData" resultType="com.iware.bridge.online.vo.SensorWeightSpeed">
+        select other.hour as time,means.structure_id,means.id as means_point_id,other.twenty_speed,other.twenty_forty_speed,other.forty_sixty_speed,other.sixty_eighty_speed,other.eighty_hundred_speed,other.hundred_speed
+        FROM tb_means_point as means
+        join tb_sensor as sensor on sensor.means_point_id = means.id and sensor_details_id = 7
+        join (
+        SELECT date_trunc('hour', sampling_time) + interval '1 H' as hour, sensor_coding,
+        sum(case when car_speed is null or car_speed &lt; 20 then 1 else 0 end) as twenty_speed,
+        sum(case when car_speed >= 20 and car_speed &lt; 40 then 1 else 0 end) as twenty_forty_speed,
+        sum(case when car_speed >= 40 and car_speed &lt; 60 then 1 else 0 end) as forty_sixty_speed,
+        sum(case when car_speed >= 60 and car_speed &lt; 80 then 1 else 0 end) as sixty_eighty_speed,
+        sum(case when car_speed >= 80 and car_speed &lt; 100 then 1 else 0 end) as eighty_hundred_speed,
+        sum(case when car_speed >= 100 then 1 else 0 end) as hundred_speed
+        FROM tb_sensor_weight
+        WHERE sampling_time BETWEEN #{startTime}::TIMESTAMP and  #{endTime}::TIMESTAMP
+        GROUP BY hour, sensor_coding
+        ORDER BY hour DESC, sensor_coding
+        ) as other on other.sensor_coding = sensor.sensor_coding
+    </select>
+</mapper>

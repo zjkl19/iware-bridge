@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.info.dao.UserExpDao">
+
+    <!--获取用户角色信息-->
+    <select id="getRoleByUserId" parameterType="java.lang.Integer" resultType="com.iware.bridge.model.entity.user.Role">
+        SELECT
+            tr.*
+        FROM
+            tb_user_role_rel urr
+            INNER JOIN tb_role tr ON urr.role_id = tr."id"
+        WHERE
+            urr.user_id = #{userId}
+    </select>
+
+    <!--根据角色获取用户-->
+    <select id="getUserListByRole" resultType="com.iware.bridge.model.entity.user.User">
+		SELECT
+			tu.id, tu.username, tu.real_name
+		FROM tb_user tu
+			INNER JOIN tb_user_role_rel urr ON tu."id" = urr.user_id
+		WHERE
+			urr.role_id = #{roleId}
+		ORDER BY tu.create_time DESC
+	</select>
+
+    <!--查看用户名是否存在-->
+    <select id="existUser" resultType="com.iware.bridge.model.entity.user.User">
+        SELECT * FROM tb_user
+        <where>
+            username = #{username}
+            <if test="userId != null">
+                AND id != #{userId}
+            </if>
+        </where>
+    </select>
+
+    <!--删除用户app权限-->
+    <delete id="delAppRoleRelByUserId" >
+		DELETE FROM tb_user_app_role_rel WHERE user_id = #{userId}
+	</delete>
+
+    <!--删除用户角色-->
+    <delete id="deleteRoleRelByUserId" parameterType="java.lang.Integer">
+        DELETE FROM tb_user_role_rel WHERE user_id = #{userId}
+    </delete>
+
+    <!--获取用户列表-->
+    <select id="getUserList" resultType="com.iware.bridge.info.vo.UserVO">
+        SELECT * FROM
+        (
+            SELECT DISTINCT ON (tu.id)
+            tu.*,
+            tr.id AS role_id,
+            tr.name AS role_name,
+            tn.name AS unit_name,
+            array_to_string(ARRAY (
+                SELECT uarr.app_role_id FROM tb_user_app_role_rel uarr
+                WHERE uarr.user_id = tu.id
+                ), ','
+            ) AS app_role_str,
+            (SELECT u.real_name FROM tb_user AS u WHERE u.id = tu.create_user_id) AS creator
+            FROM tb_user AS tu
+            LEFT JOIN tb_user_role_rel AS urr ON tu.id = urr.user_id
+            LEFT JOIN tb_role AS tr ON tr.id = urr.role_id
+            LEFT JOIN tb_unit tn ON tn.id = tu.unit_id
+            <where>
+                tu.id != #{userId}
+                <if test="roleId == 2 or roleId == 0">
+                    AND tu.unit_id = #{unitId}
+                </if>
+                <if test="roleId == 1">
+                    AND (tu.unit_id = #{unitId} OR tn.parent_id = #{unitId})
+                </if>
+                <if test="filter.keyword != null and filter.keyword != ''">
+                    AND (
+                        tu.username LIKE concat('%',#{filter.keyword},'%')
+                        OR tu.real_name LIKE concat('%',#{filter.keyword},'%')
+                        OR tn.name LIKE concat('%',#{filter.keyword},'%')
+                    )
+                </if>
+            </where>
+        ) AS rs
+        ORDER BY create_time DESC
+    </select>
+
+    <!--获取业主搜索栏-->
+    <select id="listOwnerByPower" resultType="com.iware.bridge.model.entity.user.Unit">
+        SELECT distinct tu.* FROM tb_project tp
+        INNER JOIN tb_project_structure_rel psr ON psr.project_id = tp.id
+        INNER JOIN tb_structure ts ON ts.id = psr.structure_id
+        INNER JOIN tb_unit tu ON tu.id = tp.unit_id
+        <if test="roleId == 0 or roleId == 1">
+            INNER JOIN tb_project_appoint tpa ON tpa.project_id = tp.id
+            <if test="type != null">
+                INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.id
+            </if>
+        </if>
+        <if test="type != null">
+            <if test="type == 2 or type == 3">
+                INNER JOIN tb_plan_info tpi ON tpi.project_id = tp.id
+            </if>
+            <if test="type == 4">
+                INNER JOIN tb_monitor_plan tmp ON tmp.project_info_id = tp.id
+            </if>
+        </if>
+        <where>
+            <if test="roleId == 3">
+                AND tu.role_id = 2
+            </if>
+            <if test="roleId == 0 or roleId == 1">
+                <if test="roleId == 1">
+                    AND tpa.receive_unit_id = #{unitId}
+                </if>
+                <if test="roleId == 0">
+                    AND tpa.receive_unit_id = (SELECT parent_id FROM tb_unit u WHERE u.id = #{unitId})
+                </if>
+                <if test="type != null">
+                    AND papr.power_id = #{powerId}
+                </if>
+            </if>
+            <if test="type == 2">
+                AND tpi.type = 1
+            </if>
+            <if test="type == 3">
+                AND tpi.type = 4
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <!--获取承接单位主用户搜索栏-->
+    <select id="listMainByPower" resultType="com.iware.bridge.model.entity.user.Unit">
+        SELECT distinct tu.* FROM tb_project tp
+        INNER JOIN tb_project_structure_rel psr ON psr.project_id = tp.id
+        INNER JOIN tb_structure ts ON ts.id = psr.structure_id
+        INNER JOIN tb_project_appoint tpa ON tpa.project_id = tp.id
+        INNER JOIN tb_unit tu ON tu.id = tpa.receive_unit_id
+        <if test="type != null">
+            <if test="type == 2 or type == 3">
+                INNER JOIN tb_plan_info tpi ON tpi.project_id = tp.id
+            </if>
+            <if test="type == 4">
+                INNER JOIN tb_monitor_plan tmp ON tmp.project_info_id = tp.id
+            </if>
+        </if>
+        <where>
+            <if test="roleId == 3">
+                AND tu.role_id = 1
+            </if>
+            <if test="roleId == 2">
+                AND tpa.appoint_unit_id = #{unitId}
+            </if>
+
+            <if test="type == 2">
+                AND tpi.type = 1
+            </if>
+            <if test="type == 3">
+                AND tpi.type = 4
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <!--设置用户的设备id为空-->
+    <update id="updateDeviceIdNull">
+        UPDATE tb_user
+        SET device_id = NULL
+        WHERE id = #{userId}
+    </update>
+
+    <resultMap id="projectUserVOMap" type="com.iware.bridge.online.vo.ProjectUserVO">
+        <result column="project_name" property="name"/>
+        <collection property="userList" ofType="com.iware.bridge.model.entity.user.User">
+            <result column="id" property="id"/>
+            <result column="email" property="email"/>
+        </collection>
+    </resultMap>
+    <!--获取项目下的承接单位列表-->
+    <select id="getUserListByStructure" resultMap="projectUserVOMap">
+        SELECT
+            DISTINCT *
+        FROM
+        (
+            SELECT
+                tmp.project_name, u.*
+            FROM
+                (
+                    SELECT
+                        tp.name AS project_name, appoint_unit_id
+                    FROM
+                        tb_project_structure_rel psr
+                    INNER JOIN tb_project_appoint tpa ON psr.project_id = tpa.project_id
+                    INNER JOIN tb_project_appoint_power_rel papr ON tpa.ID = papr.project_appoint_id AND papr.power_id = #{powerId}
+                    INNER JOIN tb_project tp ON tp.id = psr.project_id
+                    WHERE
+                        psr.structure_id = #{structureId}
+                        AND tpa.start_time &lt; now()
+                        AND tpa.end_time > now()
+                ) AS tmp
+            INNER JOIN tb_unit AS tu ON tu.ID = tmp.appoint_unit_id
+            INNER JOIN tb_user AS u ON u.unit_id = tu.id
+            WHERE
+                tu.role_id != 2
+            UNION ALL
+            SELECT
+                tmp.project_name, u.*
+            FROM
+                (
+                    SELECT
+                        tp.name AS project_name, receive_unit_id
+                    FROM
+                        tb_project_structure_rel psr
+                    INNER JOIN tb_project_appoint tpa ON psr.project_id = tpa.project_id
+                    INNER JOIN tb_project_appoint_power_rel papr ON tpa.ID = papr.project_appoint_id AND papr.power_id = #{powerId}
+                    INNER JOIN tb_project tp ON tp.id = psr.project_id
+                    WHERE
+                        psr.structure_id = #{structureId}
+                        AND tpa.start_time &lt; now()
+                        AND tpa.end_time > now()
+                ) AS tmp
+            INNER JOIN tb_unit AS tu ON tu.ID = tmp.receive_unit_id
+            INNER JOIN tb_user AS u ON u.unit_id = tu.id
+        ) AS rs
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.user.User">
+        UPDATE
+        tb_user
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                phone = #{phone},
+                email = #{email},
+                <if test="username != null and username != ''">
+                    username = #{username},
+                </if>
+                <if test="password != null and password != ''">
+                    password = #{password},
+                </if>
+                <if test="gender != null">
+                    gender = #{gender},
+                </if>
+                <if test="realName != null and realName != ''">
+                    real_name = #{realName},
+                </if>
+                <if test="petName != null and petName != ''">
+                    pet_name = #{petName},
+                </if>
+                <if test="unitId != null">
+                    unit_id = #{unitId},
+                </if>
+                <if test="createUserId != null">
+                    create_user_id = #{createUserId},
+                </if>
+                <if test="deviceId != null and deviceId != ''">
+                    device_id = #{deviceId},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+</mapper>

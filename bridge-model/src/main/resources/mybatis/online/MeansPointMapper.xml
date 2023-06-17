@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.online.MeansPointDao">
+
+    <resultMap type="com.iware.bridge.model.entity.online.MeansPoint" id="meansPointMap">
+        <result property="id" column="id"/>
+        <result property="componentId" column="component_id"/>
+        <result property="companyId" column="company_id"/>
+        <result property="structureId" column="structure_id"/>
+        <result property="sensorTypeId" column="sensor_type_id"/>
+        <result property="name" column="name"/>
+        <result property="describe" column="describe"/>
+        <result property="deploymentDate" column="deployment_date"/>
+        <result property="sectionPosition" column="section_position"/>
+        <result property="collectorInformation" column="collector_information"/>
+        <result property="xAxis" column="x_axis"/>
+        <result property="yAxis" column="y_axis"/>
+        <result property="zAxis" column="z_axis"/>
+        <result property="samplingFrequency" column="sampling_frequency"/>
+        <result property="referenceFrequency" column="reference_frequency"/>
+        <result property="floatRange" column="float_range"/>
+        <result property="cableLength" column="cable_length"/>
+        <result property="unitCableLength" column="unit_cable_length"/>
+        <result property="productionDate" column="production_date"/>
+        <result property="productionCoding" column="production_coding"/>
+        <result property="photoUrl" column="photo_url"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       component_id,
+       company_id,
+       structure_id,
+       sensor_type_id,
+       name,
+       describe,
+       deployment_date,
+       section_position,
+       collector_information,
+       x_axis,
+       y_axis,
+       z_axis,
+       sampling_frequency,
+       reference_frequency,
+       float_range,
+       cable_length,
+       unit_cable_length,
+       production_date,
+       production_coding,
+       photo_url,
+       status,
+       create_time,
+       modify_time
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.online.MeansPoint">
+        insert into tb_means_point
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            component_id,
+            company_id,
+            structure_id,
+            sensor_type_id,
+            name,
+            describe,
+            deployment_date,
+            section_position,
+            collector_information,
+            x_axis,
+            y_axis,
+            z_axis,
+            sampling_frequency,
+            reference_frequency,
+            float_range,
+            cable_length,
+            unit_cable_length,
+            production_date,
+            production_coding,
+            photo_url,
+            status,
+        </trim>
+        )
+        values
+        (
+        now(),
+        now(),
+        <trim prefix="" suffix="" suffixOverrides=",">
+            #{componentId},
+            #{companyId},
+            #{structureId},
+            #{sensorTypeId},
+            #{name},
+            #{describe},
+            #{deploymentDate},
+            #{sectionPosition},
+            #{collectorInformation},
+            #{xAxis},
+            #{yAxis},
+            #{zAxis},
+            #{samplingFrequency},
+            #{referenceFrequency},
+            #{floatRange},
+            #{cableLength},
+            #{unitCableLength},
+            #{productionDate},
+            #{productionCoding},
+            #{photoUrl},
+            #{status},
+        </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询MeansPoint -->
+    <select id="findById" parameterType="Integer" resultMap="meansPointMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_means_point
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.online.MeansPoint">
+        UPDATE
+        tb_means_point
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="componentId != null">
+                    component_id = #{componentId},
+                </if>
+                <if test="companyId != null">
+                    company_id = #{companyId},
+                </if>
+                <if test="structureId != null">
+                    structure_id = #{structureId},
+                </if>
+                <if test="sensorTypeId != null">
+                    sensor_type_id = #{sensorTypeId},
+                </if>
+                <if test="name != null and name != ''">
+                    name = #{name},
+                </if>
+                <if test="describe != null and describe != ''">
+                    describe = #{describe},
+                </if>
+                <if test="deploymentDate != null">
+                    deployment_date = #{deploymentDate},
+                </if>
+                <if test="sectionPosition != null and sectionPosition != ''">
+                    section_position = #{sectionPosition},
+                </if>
+                <if test="collectorInformation != null and collectorInformation != ''">
+                    collector_information = #{collectorInformation},
+                </if>
+                <if test="xAxis != null">
+                    x_axis = #{xAxis},
+                </if>
+                <if test="yAxis != null">
+                    y_axis = #{yAxis},
+                </if>
+                <if test="zAxis != null">
+                    z_axis = #{zAxis},
+                </if>
+                <if test="samplingFrequency != null and samplingFrequency != ''">
+                    sampling_frequency = #{samplingFrequency},
+                </if>
+                <if test="referenceFrequency != null">
+                    reference_frequency = #{referenceFrequency},
+                </if>
+                <if test="floatRange != null">
+                    float_range = #{floatRange},
+                </if>
+                <if test="cableLength != null">
+                    cable_length = #{cableLength},
+                </if>
+                <if test="unitCableLength != null">
+                    unit_cable_length = #{unitCableLength},
+                </if>
+                <if test="productionDate != null">
+                    production_date = #{productionDate},
+                </if>
+                <if test="productionCoding != null and productionCoding != ''">
+                    production_coding = #{productionCoding},
+                </if>
+                <if test="photoUrl != null and photoUrl != ''">
+                    photo_url = #{photoUrl},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_means_point
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_means_point
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            component_id,
+            company_id,
+            structure_id,
+            sensor_type_id,
+            name,
+            describe,
+            deployment_date,
+            section_position,
+            collector_information,
+            x_axis,
+            y_axis,
+            z_axis,
+            sampling_frequency,
+            reference_frequency,
+            float_range,
+            cable_length,
+            unit_cable_length,
+            production_date,
+            production_coding,
+            photo_url,
+            status,
+        </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+            (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.componentId},
+                #{it.companyId},
+                #{it.structureId},
+                #{it.sensorTypeId},
+                #{it.name},
+                #{it.describe},
+                #{it.deploymentDate},
+                #{it.sectionPosition},
+                #{it.collectorInformation},
+                #{it.xAxis},
+                #{it.yAxis},
+                #{it.zAxis},
+                #{it.samplingFrequency},
+                #{it.referenceFrequency},
+                #{it.floatRange},
+                #{it.cableLength},
+                #{it.unitCableLength},
+                #{it.productionDate},
+                #{it.productionCoding},
+                #{it.photoUrl},
+                #{it.status},
+            </trim>
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+        tb_means_point
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="meansPointMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_means_point
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件查询MeansPoint -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.online.MeansPoint" resultMap="meansPointMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_means_point
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="componentId != null">
+                AND component_id = #{componentId}
+            </if>
+            <if test="companyId != null">
+                AND company_id = #{companyId}
+            </if>
+            <if test="structureId != null">
+                AND structure_id = #{structureId}
+            </if>
+            <if test="sensorTypeId != null">
+                AND sensor_type_id = #{sensorTypeId}
+            </if>
+            <if test="name != null and name != ''">
+                AND name = #{name}
+            </if>
+            <if test="describe != null and describe != ''">
+                AND describe = #{describe}
+            </if>
+            <if test="deploymentDate != null">
+                AND deployment_date = #{deploymentDate}
+            </if>
+            <if test="sectionPosition != null and sectionPosition != ''">
+                AND section_position = #{sectionPosition}
+            </if>
+            <if test="collectorInformation != null and collectorInformation != ''">
+                AND collector_information = #{collectorInformation}
+            </if>
+            <if test="xAxis != null">
+                AND x_axis = #{xAxis}
+            </if>
+            <if test="yAxis != null">
+                AND y_axis = #{yAxis}
+            </if>
+            <if test="zAxis != null">
+                AND z_axis = #{zAxis}
+            </if>
+            <if test="samplingFrequency != null and samplingFrequency != ''">
+                AND sampling_frequency = #{samplingFrequency}
+            </if>
+            <if test="referenceFrequency != null">
+                AND reference_frequency = #{referenceFrequency}
+            </if>
+            <if test="floatRange != null">
+                AND float_range = #{floatRange}
+            </if>
+            <if test="cableLength != null">
+                AND cable_length = #{cableLength}
+            </if>
+            <if test="unitCableLength != null">
+                AND unit_cable_length = #{unitCableLength}
+            </if>
+            <if test="productionDate != null">
+                AND production_date = #{productionDate}
+            </if>
+            <if test="productionCoding != null and productionCoding != ''">
+                AND production_coding = #{productionCoding}
+            </if>
+            <if test="photoUrl != null and photoUrl != ''">
+                AND photo_url = #{photoUrl}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件模糊查询MeansPoint -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.online.MeansPoint" resultMap="meansPointMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_means_point
+        <where>
+            <if test="componentId != null">
+                AND component_id = #{componentId}
+            </if>
+            <if test="companyId != null">
+                AND company_id = #{companyId}
+            </if>
+            <if test="structureId != null">
+                AND structure_id = #{structureId}
+            </if>
+            <if test="sensorTypeId != null">
+                AND sensor_type_id = #{sensorTypeId}
+            </if>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT ('%', #{name}, '%')
+            </if>
+            <if test="describe != null and describe != ''">
+                AND describe LIKE CONCAT ('%', #{describe}, '%')
+            </if>
+            <if test="deploymentDate != null">
+                AND deployment_date LIKE CONCAT ('%', #{deploymentDate}, '%')
+            </if>
+            <if test="sectionPosition != null and sectionPosition != ''">
+                AND section_position LIKE CONCAT ('%', #{sectionPosition}, '%')
+            </if>
+            <if test="collectorInformation != null and collectorInformation != ''">
+                AND collector_information LIKE CONCAT ('%', #{collectorInformation}, '%')
+            </if>
+            <if test="xAxis != null">
+                AND x_axis = #{xAxis}
+            </if>
+            <if test="yAxis != null">
+                AND y_axis = #{yAxis}
+            </if>
+            <if test="zAxis != null">
+                AND z_axis = #{zAxis}
+            </if>
+            <if test="samplingFrequency != null and samplingFrequency != ''">
+                AND sampling_frequency LIKE CONCAT ('%', #{samplingFrequency}, '%')
+            </if>
+            <if test="referenceFrequency != null">
+                AND reference_frequency = #{referenceFrequency}
+            </if>
+            <if test="floatRange != null">
+                AND float_range = #{floatRange}
+            </if>
+            <if test="cableLength != null">
+                AND cable_length = #{cableLength}
+            </if>
+            <if test="unitCableLength != null">
+                AND unit_cable_length = #{unitCableLength}
+            </if>
+            <if test="productionDate != null">
+                AND production_date LIKE CONCAT ('%', #{productionDate}, '%')
+            </if>
+            <if test="productionCoding != null and productionCoding != ''">
+                AND production_coding LIKE CONCAT ('%', #{productionCoding}, '%')
+            </if>
+            <if test="photoUrl != null and photoUrl != ''">
+                AND photo_url LIKE CONCAT ('%', #{photoUrl}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+</mapper>

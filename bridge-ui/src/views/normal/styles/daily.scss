@@ -1,0 +1,31 @@
+@import "./default.scss";
+
+@import "./clickable.scss";
+@import "./table.scss";
+
+/* el-dialog 自定义类名 的 自定义样式*/
+
+.daily__dialog {
+  @include daily__dialog-mixin(".el-dialog__header");
+}
+
+/* 以下是杂乱的东西*/
+
+//表单里控件会更长
+
+.daily__ {
+  //表单label颜色重置
+  .el-form-item__label {
+    color: #fafafb;
+    font-weight: normal;
+  }
+
+  .el-form,
+  div.cell {
+    .el-input,
+    .el-select {
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+}

@@ -1,0 +1,104 @@
+swagger:
+  enable: true
+
+#登录配置信息
+login:
+  #是否需要登录校验
+  enable: true
+  # session  token
+  type: token
+
+power:
+  online: 3
+  inspection: 31
+  maintain: 50
+  evaluation: 69
+  video: 86
+
+remote-connect:
+  username: fjjzgcjc
+  password: fjjzgcjc888
+
+file:
+  # 注意以/结束
+  upload-path: c://file//
+  script-path: /home/bridgeModel/script/
+  template-path:
+    inspection-word: c://file//inspection_model_v133.docx
+    inspection-word-tunnel: c://file//inspection_model_tunnel_v133.docx
+    maintain-word: c://file//maintain_model.docx
+
+common:
+  schedule:
+    day:
+      #每天执行小时数据保存
+      cron: 0 0 0 0/1 * ?
+    hour:
+      #每小时执行10分、1分数据保存
+      cron: 0 0 0/1 * * ?
+    minute:
+      #每2分执行3秒、1秒数据保存
+      cron: 0 0/2 * * * ?
+    sensorStatus:
+      #每小时传感器状态更新
+      cron: 0 0 0/1 * * ?
+
+spring:
+  datasource:
+    url: jdbc:postgresql://172.16.6.156:5432/bridge_1.3.3?useUnicode=true&characterEncoding=utf8
+    username: postgres
+    password: pgadmin123
+    driver-class-name: org.postgresql.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    initialSize: 10
+    minIdle: 10
+    maxActive: 50
+    maxWait: 60000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 30000
+    validationQuery: SELECT 1
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+    maxPoolPreparedStatementPerConnectionSize: 20
+    filters: stat,wall,slf4j
+    connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+    useGlobalDataSourceStat: true
+  mail:
+    #邮件服务地址
+    host: smtp.qiye.aliyun.com
+    #服务协议
+    protocol: smtp
+    #端口，可不写默认
+    port: 465
+    #编码格式
+    default-encoding: UTF-8
+    #用户名
+    username: bridge@zrwlkj.com.cn
+    #授权码，非密码
+    password: Zr123456
+    #其他参数
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          # 如果是用 SSL 方式，需要配置如下属性,使用qq邮箱的话需要开启
+          ssl:
+            enable: true
+            required: true
+          # 邮件接收时间的限制，单位毫秒
+          timeout: 10000
+          # 连接时间的限制，单位毫秒
+          connectiontimeout: 10000
+          # 邮件发送时间的限制，单位毫秒
+          writetimeout: 10000
+
+logging:
+  config: classpath:logback-dev.xml
+  level:
+    org.springframework.web: ERROR
+    io.swagger.models.parameters.AbstractSerializableParameter: error

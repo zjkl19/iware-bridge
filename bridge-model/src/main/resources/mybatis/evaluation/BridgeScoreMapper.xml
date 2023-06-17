@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.evaluation.BridgeScoreDao">
+
+    <resultMap type="com.iware.bridge.model.entity.evaluation.BridgeScore" id="bridgeScoreMap">
+        <result property="id" column="id"/>
+        <result property="targetId" column="target_id"/>
+        <result property="type" column="type"/>
+        <result property="bridgeConditionIndex" column="bridge_condition_index"/>
+        <result property="bridgeStructureIndex" column="bridge_structure_index"/>
+        <result property="ratingLevel" column="rating_level"/>
+        <result property="evaluationUnit" column="evaluation_unit"/>
+        <result property="evaluationTime" column="evaluation_time"/>
+        <result property="evaluatorId" column="evaluator_id"/>
+        <result property="score" column="score"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       target_id,
+       type,
+       bridge_condition_index,
+       bridge_structure_index,
+       rating_level,
+       evaluation_unit,
+       evaluation_time,
+       evaluator_id,
+       score,
+       create_time,
+       modify_time,
+       status
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.evaluation.BridgeScore">
+        insert into tb_bridge_score
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                target_id,
+                type,
+                bridge_condition_index,
+                bridge_structure_index,
+                rating_level,
+                evaluation_unit,
+                evaluation_time,
+                evaluator_id,
+                score,
+                status
+            </trim>
+        )
+        values
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{targetId},
+                #{type},
+                #{bridgeConditionIndex},
+                #{bridgeStructureIndex},
+                #{ratingLevel},
+                #{evaluationUnit},
+                #{evaluationTime},
+                #{evaluatorId},
+                #{score},
+                #{status}
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询BridgeScore -->
+    <select id="findById" parameterType="Integer" resultMap="bridgeScoreMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_score
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.evaluation.BridgeScore">
+        UPDATE
+            tb_bridge_score
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="targetId != null">
+                    target_id = #{targetId},
+                </if>
+                <if test="type != null">
+                    type = #{type},
+                </if>
+                <if test="bridgeConditionIndex != null and bridgeConditionIndex != ''">
+                    bridge_condition_index = #{bridgeConditionIndex},
+                </if>
+                <if test="bridgeStructureIndex != null and bridgeStructureIndex != ''">
+                    bridge_structure_index = #{bridgeStructureIndex},
+                </if>
+                <if test="ratingLevel != null and ratingLevel != ''">
+                    rating_level = #{ratingLevel},
+                </if>
+                <if test="evaluationUnit != null and evaluationUnit != ''">
+                    evaluation_unit = #{evaluationUnit},
+                </if>
+                <if test="evaluationTime != null">
+                    evaluation_time = #{evaluationTime},
+                </if>
+                <if test="evaluatorId != null">
+                    evaluator_id = #{evaluatorId},
+                </if>
+                <if test="score != null and score != ''">
+                    score = #{score},
+                </if>
+                <if test="status != null">
+                    status = #{status}
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_bridge_score
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_bridge_score
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                target_id,
+                type,
+                bridge_condition_index,
+                bridge_structure_index,
+                rating_level,
+                evaluation_unit,
+                evaluation_time,
+                evaluator_id,
+                score,
+                status
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.targetId},
+                #{it.type},
+                #{it.bridgeConditionIndex},
+                #{it.bridgeStructureIndex},
+                #{it.ratingLevel},
+                #{it.evaluationUnit},
+                #{it.evaluationTime},
+                #{it.evaluatorId},
+                #{it.score},
+                #{it.status}
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_bridge_score
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="bridgeScoreMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_score
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询BridgeScore -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.evaluation.BridgeScore" resultMap="bridgeScoreMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_score
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="targetId != null">
+                AND target_id = #{targetId}
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+            <if test="bridgeConditionIndex != null and bridgeConditionIndex != ''">
+                AND bridge_condition_index = #{bridgeConditionIndex}
+            </if>
+            <if test="bridgeStructureIndex != null and bridgeStructureIndex != ''">
+                AND bridge_structure_index = #{bridgeStructureIndex}
+            </if>
+            <if test="ratingLevel != null and ratingLevel != ''">
+                AND rating_level = #{ratingLevel}
+            </if>
+            <if test="evaluationUnit != null and evaluationUnit != ''">
+                AND evaluation_unit = #{evaluationUnit}
+            </if>
+            <if test="evaluationTime != null">
+                AND evaluation_time = #{evaluationTime}
+            </if>
+            <if test="evaluatorId != null">
+                AND evaluator_id = #{evaluatorId}
+            </if>
+            <if test="score != null and score != ''">
+                AND score = #{score}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询BridgeScore -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.evaluation.BridgeScore" resultMap="bridgeScoreMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_score
+        <where>
+            <if test="targetId != null">
+                AND target_id = #{targetId}
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+            <if test="bridgeConditionIndex != null and bridgeConditionIndex != ''">
+                AND bridge_condition_index LIKE CONCAT ('%', #{bridgeConditionIndex}, '%')
+            </if>
+            <if test="bridgeStructureIndex != null and bridgeStructureIndex != ''">
+                AND bridge_structure_index LIKE CONCAT ('%', #{bridgeStructureIndex}, '%')
+            </if>
+            <if test="ratingLevel != null and ratingLevel != ''">
+                AND rating_level LIKE CONCAT ('%', #{ratingLevel}, '%')
+            </if>
+            <if test="evaluationUnit != null and evaluationUnit != ''">
+                AND evaluation_unit LIKE CONCAT ('%', #{evaluationUnit}, '%')
+            </if>
+            <if test="evaluationTime != null">
+                AND evaluation_time LIKE CONCAT ('%', #{evaluationTime}, '%')
+            </if>
+            <if test="evaluatorId != null">
+                AND evaluator_id = #{evaluatorId}
+            </if>
+            <if test="score != null and score != ''">
+                AND score LIKE CONCAT ('%', #{score}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

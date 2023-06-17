@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.online.SensorPrincipleDao">
+
+    <resultMap type="com.iware.bridge.model.entity.online.SensorPrinciple" id="sensorPrincipleMap">
+        <result property="id" column="id"/>
+        <result property="principle" column="principle"/>
+        <result property="remarks" column="remarks"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       principle,
+       remarks
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.online.SensorPrinciple">
+        insert into tb_sensor_principle
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                principle,
+                remarks
+            </trim>
+        )
+        values
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{principle},
+                #{remarks}
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询SensorPrinciple -->
+    <select id="findById" parameterType="Integer" resultMap="sensorPrincipleMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_sensor_principle
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.online.SensorPrinciple">
+        UPDATE
+            tb_sensor_principle
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                <if test="principle != null and principle != ''">
+                    principle = #{principle},
+                </if>
+                <if test="remarks != null and remarks != ''">
+                    remarks = #{remarks}
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_sensor_principle
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_sensor_principle
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                principle,
+                remarks
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.principle},
+                #{it.remarks}
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_sensor_principle
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="sensorPrincipleMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_sensor_principle
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询SensorPrinciple -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.online.SensorPrinciple" resultMap="sensorPrincipleMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_sensor_principle
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="principle != null and principle != ''">
+                AND principle = #{principle}
+            </if>
+            <if test="remarks != null and remarks != ''">
+                AND remarks = #{remarks}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询SensorPrinciple -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.online.SensorPrinciple" resultMap="sensorPrincipleMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_sensor_principle
+        <where>
+            <if test="principle != null and principle != ''">
+                AND principle LIKE CONCAT ('%', #{principle}, '%')
+            </if>
+            <if test="remarks != null and remarks != ''">
+                AND remarks LIKE CONCAT ('%', #{remarks}, '%')
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

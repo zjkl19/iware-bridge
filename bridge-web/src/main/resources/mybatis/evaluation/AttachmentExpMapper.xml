@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+        namespace="com.iware.bridge.evaluation.dao.AttachmentExpDao">
+    <update id="updatePhotoStatusTo0DK">
+        update tb_attachment set status = #{state} WHERE target_id in (select system.id FROM tb_bridge_deck_system as
+        system
+        join tb_bridge_deck_component as component on system.id = component.bridge_deck_system_id
+        WHERE component.id = #{id}
+        ) and part_type = 1 and type = 6
+        <if test="time != null and time != ''">
+            and to_char(modify_time,'yyyy-mm-dd hh24:mi:ss') = #{time}
+        </if>
+    </update>
+    <update id="updatePhotoStatusTo0SUB">
+        update tb_attachment set status = #{state} WHERE target_id = #{id} and part_type = 3 and type = 6
+        <if test="time != null and time != ''">
+            and to_char(modify_time,'yyyy-mm-dd hh24:mi:ss') = #{time}
+        </if>
+    </update>
+    <update id="updatePhotoStatusToSUP">
+        update tb_attachment set status = #{state} WHERE target_id = #{id} and part_type = 2 and type = 6
+        <if test="time != null and time != ''">
+            and to_char(modify_time,'yyyy-mm-dd hh24:mi:ss') = #{time}
+        </if>
+    </update>
+
+
+    <select id="getStrunctPhotoBySelfFilter" resultType="com.iware.bridge.evaluation.vo.StructPhoto">
+        SELECT id,
+        name,
+        path,
+        type,
+        part_type,
+        status,
+        create_time,
+        target_id
+        FROM
+        tb_attachment
+        WHERE
+        create_time is not NULL
+        <if test="structPhotoFilter.status != null">
+            and status in
+            <foreach item="item" index="index" collection="structPhotoFilter.status"
+                     open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="structPhotoFilter.type != null">
+            AND type = #{structPhotoFilter.type}
+        </if>
+        <if test="structPhotoFilter.partType != null">
+            AND part_type = #{structPhotoFilter.partType}
+        </if>
+        <if test="structPhotoFilter.targetId != null">
+            AND target_id = #{structPhotoFilter.targetId}
+        </if>
+
+        ORDER BY
+        create_time DESC
+        <if test="limit !=null">LIMIT #{limit}</if>
+    </select>
+    <select id="getCountForFilter" resultType="java.lang.Integer">
+        select count(id) from  tb_attachment
+        where 1=1
+        <if test="status !=null">
+            and status in
+            <foreach item="item" index="index" collection="status"
+                     open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="type != null">
+            and type =#{type}
+        </if>
+        <if test="partType != null">
+            and part_type =#{partType}
+        </if>
+        <if test="targetId != null">
+            and target_id =#{targetId}
+        </if>
+    </select>
+    <select id="selectPhotoUrl" resultType="com.iware.bridge.evaluation.vo.PhotoUrl">
+        SELECT id,name,path,type,part_type,target_id,create_time,status FROM tb_attachment
+        WHERE type = 5 and  target_id = #{targetId}
+        ORDER BY status desc,create_time DESC
+    </select>
+
+    <select id="selectAttachmentByDK" resultType="com.iware.bridge.evaluation.vo.PhotoUrl">
+        SELECT attachment.id,attachment.name,attachment.path,attachment.type,attachment.part_type,attachment.target_id,attachment.status,road.name as road_name,span.span_code as span_name FROM tb_attachment as attachment
+
+        join tb_bridge_deck_system as system on system.id = attachment.target_id
+
+        join tb_bridge_span as span on system.bridge_span_id = span.id
+
+        join tb_bridge_road  as road on road.id = span.bridge_road_id
+
+        join tb_monitor_plan_structure_rel as rel on rel.id = road.monitor_plan_structure_rel_id
+
+        WHERE attachment.type = 6  and attachment.part_type = 1 and rel.id = #{structureId} and attachment.status = 1 and road.status = 1
+    </select>
+    <select id="selectAttachmentBySUP" resultType="com.iware.bridge.evaluation.vo.PhotoUrl">
+        SELECT attachment.id,attachment.name,attachment.path,attachment.type,attachment.part_type,attachment.target_id,attachment.status,road.name as road_name,span.span_code as span_name FROM tb_attachment as attachment
+
+        join tb_bridge_supcomponent as component on component.id = attachment.target_id
+
+        join tb_bridge_supstructure as sup on sup.id = component.supstructure_id
+
+        join tb_bridge_span as span on sup.bridge_span_id = span.id
+
+        join tb_bridge_road  as road on road.id = span.bridge_road_id
+
+        join tb_monitor_plan_structure_rel as rel on rel.id = road.monitor_plan_structure_rel_id
+
+        WHERE attachment.type = 6  and attachment.part_type = 2 and rel.id = #{structureId}  and attachment.status = 1 and road.status = 1
+    </select>
+    <select id="selectAttachmentBySUB" resultType="com.iware.bridge.evaluation.vo.PhotoUrl">
+        SELECT attachment.id,attachment.name,attachment.path,attachment.type,attachment.part_type,attachment.target_id,attachment.status,road.name as road_name,span.span_code as span_name FROM tb_attachment as attachment
+
+    	join tb_bridge_subcomponent as component on component.id = attachment.target_id
+
+        join tb_bridge_substructure as sub on sub.id = component.bridge_substructure_id
+
+        join tb_bridge_span as span on sub.bridge_span_id = span.id
+
+        join tb_bridge_road  as road on road.id = span.bridge_road_id
+
+		join tb_monitor_plan_structure_rel as rel on rel.id = road.monitor_plan_structure_rel_id
+
+        WHERE attachment.type = 6  and attachment.part_type = 3 and rel.id = #{structureId} and attachment.status = 1 and road.status = 1
+    </select>
+    <select id="selectPhotoByRoadId" resultType="com.iware.bridge.evaluation.vo.PhotoUrl">
+        SELECT name,path FROM tb_attachment WHERE type = 1 and target_id = #{id} and status = 2 ORDER BY id
+    </select>
+    <select id="selectAttachmentByDKByRoadId" resultType="com.iware.bridge.evaluation.vo.PhotoUrl">
+    SELECT attachment.id,attachment.name,attachment.path,attachment.type,attachment.part_type,attachment.target_id,attachment.status FROM tb_attachment as attachment
+
+    join tb_bridge_deck_system as system on system.id = attachment.target_id
+
+    join tb_bridge_span as span on system.bridge_span_id = span.id
+
+    join (SELECT id FROM tb_bridge_road WHERE  id = #{roadId})  as road on road.id = span.bridge_road_id
+
+    WHERE attachment.type = 6  and attachment.part_type = 1 and attachment.status = 1
+    </select>
+    <select id="selectAttachmentBySUBByRoadId" resultType="com.iware.bridge.evaluation.vo.PhotoUrl">
+    SELECT attachment.id,attachment.name,attachment.path,attachment.type,attachment.part_type,attachment.target_id,attachment.status FROM tb_attachment as attachment
+
+	join tb_bridge_subcomponent as component on component.id = attachment.target_id
+
+    join tb_bridge_substructure as sub on sub.id = component.bridge_substructure_id
+
+    join tb_bridge_span as span on sub.bridge_span_id = span.id
+
+    join (SELECT id FROM tb_bridge_road WHERE  id = #{roadId})  as road on road.id = span.bridge_road_id
+
+    WHERE attachment.type = 6  and attachment.part_type = 3 and attachment.status = 1
+    </select>
+    <select id="selectAttachmentBySUPByRoadId" resultType="com.iware.bridge.evaluation.vo.PhotoUrl">
+    SELECT attachment.id,attachment.name,attachment.path,attachment.type,attachment.part_type,attachment.target_id,attachment.status FROM tb_attachment as attachment
+
+    join tb_bridge_supcomponent as component on component.id = attachment.target_id
+
+    join tb_bridge_supstructure as sup on sup.id = component.supstructure_id
+
+    join tb_bridge_span as span on sup.bridge_span_id = span.id
+
+    join (SELECT id FROM tb_bridge_road WHERE  id = #{roadId})  as road on road.id = span.bridge_road_id
+
+    WHERE attachment.type = 6  and attachment.part_type = 2 and attachment.status = 1
+    </select>
+</mapper>

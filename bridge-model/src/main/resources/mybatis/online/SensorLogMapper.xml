@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.online.SensorLogDao">
+
+    <resultMap type="com.iware.bridge.model.entity.online.SensorLog" id="maintainLogMap">
+        <result property="id" column="id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="describe" column="describe"/>
+        <result property="maintainTime" column="maintain_time"/>
+        <result property="solution" column="solution"/>
+        <result property="remarks" column="remarks"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       project_id,
+       describe,
+       maintain_time,
+       solution,
+       remarks,
+       status,
+       create_time,
+       modify_time
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.online.SensorLog">
+        insert into tb_sensor_log
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                project_id,
+                describe,
+                maintain_time,
+                solution,
+                remarks,
+                status,
+            </trim>
+        )
+        values
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{projectId},
+                #{describe},
+                #{maintainTime},
+                #{solution},
+                #{remarks},
+                #{status},
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询MaintainLog -->
+    <select id="findById" parameterType="Integer" resultMap="maintainLogMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_sensor_log
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.online.SensorLog">
+        UPDATE
+            tb_sensor_log
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="projectId != null and projectId != ''">
+                    project_id = #{projectId},
+                </if>
+                <if test="describe != null and describe != ''">
+                    describe = #{describe},
+                </if>
+                <if test="maintainTime != null">
+                    maintain_time = #{maintainTime},
+                </if>
+                <if test="solution != null and solution != ''">
+                    solution = #{solution},
+                </if>
+                <if test="remarks != null and remarks != ''">
+                    remarks = #{remarks},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_sensor_log
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_sensor_log
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                project_id,
+                describe,
+                maintain_time,
+                solution,
+                remarks,
+                status,
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.projectId}
+                #{it.describe},
+                #{it.maintainTime},
+                #{it.solution},
+                #{it.remarks},
+                #{it.status},
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_sensor_log
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="maintainLogMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_sensor_log
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询MaintainLog -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.online.SensorLog" resultMap="maintainLogMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_sensor_log
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="projectId != null">
+                AND project_id = #{projectId}
+            </if>
+            <if test="describe != null and describe != ''">
+                AND describe = #{describe}
+            </if>
+            <if test="maintainTime != null">
+                AND maintain_time = #{maintainTime}
+            </if>
+            <if test="solution != null and solution != ''">
+                AND solution = #{solution}
+            </if>
+            <if test="remarks != null and remarks != ''">
+                AND remarks = #{remarks}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询MaintainLog -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.online.SensorLog" resultMap="maintainLogMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_sensor_log
+        <where>
+            <if test="projectId != null and projectId != ''">
+                AND project_id LIKE CONCAT ('%', #{projectId}, '%')
+            </if>
+            <if test="describe != null and describe != ''">
+                AND describe LIKE CONCAT ('%', #{describe}, '%')
+            </if>
+            <if test="maintainTime != null">
+                AND maintain_time LIKE CONCAT ('%', #{maintainTime}, '%')
+            </if>
+            <if test="solution != null and solution != ''">
+                AND solution LIKE CONCAT ('%', #{solution}, '%')
+            </if>
+            <if test="remarks != null and remarks != ''">
+                AND remarks LIKE CONCAT ('%', #{remarks}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

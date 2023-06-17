@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.evaluation.PropertyGroupOptionRelDao">
+
+    <resultMap type="com.iware.bridge.model.entity.evaluation.PropertyGroupOptionRel" id="propertyGroupOptionRelMap">
+        <result property="id" column="id"/>
+        <result property="propertyGroupId" column="property_group_id"/>
+        <result property="propertyOptionId" column="property_option_id"/>
+        <result property="componentDiseaseRel" column="component_disease_rel"/>
+        <result property="seqNum" column="seq_num"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       property_group_id,
+       property_option_id,
+       component_disease_rel,
+       seq_num
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.evaluation.PropertyGroupOptionRel">
+        insert into tb_property_group_option_rel
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                property_group_id,
+                property_option_id,
+                component_disease_rel,
+                seq_num
+            </trim>
+        )
+        values
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{propertyGroupId},
+                #{propertyOptionId},
+                #{componentDiseaseRel},
+                #{seqNum}
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询PropertyGroupOptionRel -->
+    <select id="findById" parameterType="Integer" resultMap="propertyGroupOptionRelMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_property_group_option_rel
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.evaluation.PropertyGroupOptionRel">
+        UPDATE
+            tb_property_group_option_rel
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                <if test="propertyGroupId != null">
+                    property_group_id = #{propertyGroupId},
+                </if>
+                <if test="propertyOptionId != null">
+                    property_option_id = #{propertyOptionId},
+                </if>
+                <if test="componentDiseaseRel != null">
+                    component_disease_rel = #{componentDiseaseRel},
+                </if>
+                <if test="seqNum != null">
+                    seq_num = #{seqNum}
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_property_group_option_rel
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_property_group_option_rel
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                property_group_id,
+                property_option_id,
+                component_disease_rel,
+                seq_num
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.propertyGroupId},
+                #{it.propertyOptionId},
+                #{it.componentDiseaseRel},
+                #{it.seqNum}
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_property_group_option_rel
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="propertyGroupOptionRelMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_property_group_option_rel
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询PropertyGroupOptionRel -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.evaluation.PropertyGroupOptionRel" resultMap="propertyGroupOptionRelMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_property_group_option_rel
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="propertyGroupId != null">
+                AND property_group_id = #{propertyGroupId}
+            </if>
+            <if test="propertyOptionId != null">
+                AND property_option_id = #{propertyOptionId}
+            </if>
+            <if test="componentDiseaseRel != null">
+                AND component_disease_rel = #{componentDiseaseRel}
+            </if>
+            <if test="seqNum != null">
+                AND seq_num = #{seqNum}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询PropertyGroupOptionRel -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.evaluation.PropertyGroupOptionRel" resultMap="propertyGroupOptionRelMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_property_group_option_rel
+        <where>
+            <if test="propertyGroupId != null">
+                AND property_group_id = #{propertyGroupId}
+            </if>
+            <if test="propertyOptionId != null">
+                AND property_option_id = #{propertyOptionId}
+            </if>
+            <if test="componentDiseaseRel != null">
+                AND component_disease_rel = #{componentDiseaseRel}
+            </if>
+            <if test="seqNum != null">
+                AND seq_num = #{seqNum}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.evaluation.BridgeRoadDao">
+
+    <resultMap type="com.iware.bridge.model.entity.evaluation.BridgeRoad" id="bridgeRoadMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="monitorPlanStructureRelId" column="monitor_plan_structure_rel_id"/>
+        <result property="bridgeTypeId" column="bridge_type_id"/>
+        <result property="spanNumber" column="span_number"/>
+        <result property="mainSpanNumber" column="main_span_number"/>
+        <result property="stairwayNumber" column="stairway_number"/>
+        <result property="stairwaySpanNumber" column="stairway_span_number"/>
+        <result property="reportPath" column="report_path"/>
+        <result property="creator" column="creator"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       name,
+       monitor_plan_structure_rel_id,
+       bridge_type_id,
+       span_number,
+       main_span_number,
+       stairway_number,
+       stairway_span_number,
+       report_path,
+       creator,
+       create_time,
+       modify_time,
+       status
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.evaluation.BridgeRoad">
+        insert into tb_bridge_road
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                name,
+                monitor_plan_structure_rel_id,
+                bridge_type_id,
+                span_number,
+                main_span_number,
+                stairway_number,
+                stairway_span_number,
+                report_path,
+                creator,
+                status
+            </trim>
+        )
+        values
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{name},
+                #{monitorPlanStructureRelId},
+                #{bridgeTypeId},
+                #{spanNumber},
+                #{mainSpanNumber},
+                #{stairwayNumber},
+                #{stairwaySpanNumber},
+                #{reportPath},
+                #{creator},
+                #{status}
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询BridgeRoad -->
+    <select id="findById" parameterType="Integer" resultMap="bridgeRoadMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_road
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.evaluation.BridgeRoad">
+        UPDATE
+            tb_bridge_road
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="name != null and name != ''">
+                    name = #{name},
+                </if>
+                <if test="monitorPlanStructureRelId != null">
+                    monitor_plan_structure_rel_id = #{monitorPlanStructureRelId},
+                </if>
+                <if test="bridgeTypeId != null">
+                    bridge_type_id = #{bridgeTypeId},
+                </if>
+                <if test="spanNumber != null">
+                    span_number = #{spanNumber},
+                </if>
+                <if test="mainSpanNumber != null">
+                    main_span_number = #{mainSpanNumber},
+                </if>
+                <if test="stairwayNumber != null">
+                    stairway_number = #{stairwayNumber},
+                </if>
+                <if test="stairwaySpanNumber != null">
+                    stairway_span_number = #{stairwaySpanNumber},
+                </if>
+                <if test="reportPath != null and reportPath != ''">
+                    report_path = #{reportPath},
+                </if>
+                <if test="creator != null and creator != ''">
+                    creator = #{creator},
+                </if>
+                <if test="status != null">
+                    status = #{status}
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_bridge_road
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_bridge_road
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                name,
+                monitor_plan_structure_rel_id,
+                bridge_type_id,
+                span_number,
+                main_span_number,
+                stairway_number,
+                stairway_span_number,
+                report_path,
+                creator,
+                status
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.name},
+                #{it.monitorPlanStructureRelId},
+                #{it.bridgeTypeId},
+                #{it.spanNumber},
+                #{it.mainSpanNumber},
+                #{it.stairwayNumber},
+                #{it.stairwaySpanNumber},
+                #{it.reportPath},
+                #{it.creator},
+                #{it.status}
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_bridge_road
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="bridgeRoadMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_road
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询BridgeRoad -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.evaluation.BridgeRoad" resultMap="bridgeRoadMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_road
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="name != null and name != ''">
+                AND name = #{name}
+            </if>
+            <if test="monitorPlanStructureRelId != null">
+                AND monitor_plan_structure_rel_id = #{monitorPlanStructureRelId}
+            </if>
+            <if test="bridgeTypeId != null">
+                AND bridge_type_id = #{bridgeTypeId}
+            </if>
+            <if test="spanNumber != null">
+                AND span_number = #{spanNumber}
+            </if>
+            <if test="mainSpanNumber != null">
+                AND main_span_number = #{mainSpanNumber}
+            </if>
+            <if test="stairwayNumber != null">
+                AND stairway_number = #{stairwayNumber}
+            </if>
+            <if test="stairwaySpanNumber != null">
+                AND stairway_span_number = #{stairwaySpanNumber}
+            </if>
+            <if test="reportPath != null and reportPath != ''">
+                AND report_path = #{reportPath}
+            </if>
+            <if test="creator != null and creator != ''">
+                AND creator = #{creator}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询BridgeRoad -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.evaluation.BridgeRoad" resultMap="bridgeRoadMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_road
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT ('%', #{name}, '%')
+            </if>
+            <if test="monitorPlanStructureRelId != null">
+                AND monitor_plan_structure_rel_id = #{monitorPlanStructureRelId}
+            </if>
+            <if test="bridgeTypeId != null">
+                AND bridge_type_id = #{bridgeTypeId}
+            </if>
+            <if test="spanNumber != null">
+                AND span_number = #{spanNumber}
+            </if>
+            <if test="mainSpanNumber != null">
+                AND main_span_number = #{mainSpanNumber}
+            </if>
+            <if test="stairwayNumber != null">
+                AND stairway_number = #{stairwayNumber}
+            </if>
+            <if test="stairwaySpanNumber != null">
+                AND stairway_span_number = #{stairwaySpanNumber}
+            </if>
+            <if test="reportPath != null and reportPath != ''">
+                AND report_path LIKE CONCAT ('%', #{reportPath}, '%')
+            </if>
+            <if test="creator != null and creator != ''">
+                AND creator LIKE CONCAT ('%', #{creator}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

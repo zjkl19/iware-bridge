@@ -1,0 +1,560 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.anheng.iware</groupId>
+    <artifactId>iware-bridge</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <name>zr-bridge-parent-maven</name>
+    <url>http://maven.apache.org</url>
+
+    <!-- 参与人员信息 -->
+    <developers>
+        <developer>
+            <id>1</id>
+            <name>*</name>
+            <email>*</email>
+            <url></url>
+        </developer>
+    </developers>
+
+    <!-- multiple Module  -->
+    <modules>
+        <module>bridge-db-script</module>
+		<module>bridge-common</module>
+        <module>bridge-model</module>
+		<module>bridge-web</module>
+        <module>bridge-permission</module>
+        <module>bridge-cache</module>
+    </modules>
+
+    <properties>
+        <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <iware-base.version>1.0.0</iware-base.version>
+
+
+        <commons-lang3.version>3.5</commons-lang3.version>
+        <commons-io.version>2.5</commons-io.version>
+        <commons-net.version>3.0</commons-net.version>
+
+        <alibaba-druid.version>1.0.15</alibaba-druid.version>
+        <fastjson.version>1.2.32</fastjson.version>
+        <guava.version>26.0-jre</guava.version>
+        <mail.version>1.4.7</mail.version>
+        <websocket.version>1.3.7</websocket.version>
+        <joda-time.version>2.9.8</joda-time.version>
+
+        <postgresql.version>9.4.1212</postgresql.version>
+        <mybatis.version>3.4.2</mybatis.version>
+        <mybatis-spring.version>1.3.1</mybatis-spring.version>
+
+        <mybatis-spring-boot-starter.version>1.2.0</mybatis-spring-boot-starter.version>
+        <pagehelper.version>5.0.0</pagehelper.version>
+        <pagehelper-spring-boot-starter.version>1.1.0</pagehelper-spring-boot-starter.version>
+        <springfox-swagger.version>2.9.2</springfox-swagger.version>
+        <swagger-bootstrap-ui.version>1.8.8</swagger-bootstrap-ui.version>
+        <spring-restdocs-mockmvc.version>1.1.2.RELEASE</spring-restdocs-mockmvc.version>
+        <springfox-staticdocs.version>2.6.1</springfox-staticdocs.version>
+        <java-uuid-generator.version>3.1.4</java-uuid-generator.version>
+
+        <java-jwt.version>3.8.1</java-jwt.version>
+        <commons-fileupload.version>1.3.3</commons-fileupload.version>
+    </properties>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>1.5.16.RELEASE</version>
+        <relativePath/>
+    </parent>
+
+    <!-- jar包发布配置，与maven配置对应 -->
+    <distributionManagement>
+        <repository>
+            <id>releases</id>
+            <url>http://nexus-server:8081/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>User Project Snapshot</name>
+            <url>http://nexus-server:8081/repository/maven-snapshots/</url>
+            <uniqueVersion>true</uniqueVersion>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <dependencyManagement>
+        <dependencies>
+        	<!-- 用户中心相关 -->
+		    <dependency>
+			    <groupId>com.auth0</groupId>
+			    <artifactId>java-jwt</artifactId>
+			    <version>${java-jwt.version}</version>
+			</dependency>
+			<dependency>
+			    <groupId>commons-fileupload</groupId>
+			    <artifactId>commons-fileupload</artifactId>
+			    <version>${commons-fileupload.version}</version>
+			</dependency>
+		    <dependency>
+		  		<groupId>com.anheng.iware</groupId>
+		  		<artifactId>bridge-common</artifactId>
+		  		<version>${iware-base.version}</version>
+		  	</dependency>
+		  	<dependency>
+		  		<groupId>com.anheng.iware</groupId>
+		  		<artifactId>bridge-model</artifactId>
+		  		<version>${iware-base.version}</version>
+		  	</dependency>
+            <dependency>
+                <groupId>com.anheng.iware</groupId>
+                <artifactId>bridge-cache</artifactId>
+                <version>${iware-base.version}</version>
+            </dependency>
+		  	<dependency>
+		  		<groupId>com.anheng.iware</groupId>
+		  		<artifactId>bridge-web</artifactId>
+		  		<version>${iware-base.version}</version>
+		  	</dependency>
+            <dependency>
+                <groupId>com.anheng.iware</groupId>
+                <artifactId>bridge-permission</artifactId>
+                <version>${iware-base.version}</version>
+            </dependency>
+
+	        <!--在线文档-->
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-swagger2</artifactId>
+                <version>${springfox-swagger.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-swagger-ui</artifactId>
+                <version>${springfox-swagger.version}</version>
+            </dependency>
+            <!--离线文档-->
+            <dependency>
+                <groupId>org.springframework.restdocs</groupId>
+                <artifactId>spring-restdocs-mockmvc</artifactId>
+                <version>${spring-restdocs-mockmvc.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <!--springfox-staticdocs 生成静态文档-->
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-staticdocs</artifactId>
+                <version>${springfox-staticdocs.version}</version>
+            </dependency>
+            <!-- swagger-ui增强版 -->
+            <dependency>
+				 <groupId>com.github.xiaoymin</groupId>
+				 <artifactId>swagger-bootstrap-ui</artifactId>
+				 <version>${swagger-bootstrap-ui.version}</version>
+			</dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.uuid</groupId>
+                <artifactId>java-uuid-generator</artifactId>
+                <version>${java-uuid-generator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>druid</artifactId>
+                <version>${alibaba-druid.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
+            </dependency>
+            <dependency>
+				<groupId>commons-net</groupId>
+				<artifactId>commons-net</artifactId>
+				<version>${commons-net.version}</version>
+			</dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.pagehelper</groupId>
+                <artifactId>pagehelper-spring-boot-starter</artifactId>
+                <version>${pagehelper-spring-boot-starter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mybatis.spring.boot</groupId>
+                <artifactId>mybatis-spring-boot-starter</artifactId>
+                <version>${mybatis-spring-boot-starter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mybatis</groupId>
+                <artifactId>mybatis-spring</artifactId>
+                <version>${mybatis-spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mybatis</groupId>
+                <artifactId>mybatis</artifactId>
+                <version>${mybatis.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgresql.version}</version>
+            </dependency>
+            <!-- pagehelper分页 start -->
+            <dependency>
+                <groupId>com.github.pagehelper</groupId>
+                <artifactId>pagehelper</artifactId>
+                <version>${pagehelper.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.mail</groupId>
+                <artifactId>mail</artifactId>
+                <version>${mail.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.java-websocket</groupId>
+                <artifactId>Java-WebSocket</artifactId>
+                <version>${websocket.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+        <!-- Test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+       </dependency>
+
+        <!--热启动：每自修改后， 程序自动启动spring Application上下文。 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+		<dependency>
+	  		<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-logging</artifactId>
+	  	</dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}-${project.version}</finalName>
+        <plugins>
+            <!--用于编译Maven项目的Java源代码-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                </configuration>
+            </plugin>
+            <!--surefire 插件用来在maven构建生命周期的test phase执行一个应用的单元测试。它会产生两种不同形式
+                    的测试结果报告：纯文本、XML格式,它可以运行任何testNG,Junit,pojo写的单元测试-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <!--跳过测试-->
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+            </plugin>
+            <!--用于打包可执行jar包-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
+            <!--maven打成源码包-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+            <!--默认绑定在maven的生命周期install阶段-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+            </plugin>
+            <!--maven项目部署到Repository(Nexus)-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <fork>true</fork>
+                </configuration>
+            </plugin>
+            <!--
+            <plugin>
+                   <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+            </plugin> -->
+        </plugins>
+
+        <pluginManagement>
+            <plugins>
+                <!--用于编译Maven项目的Java源代码-->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                        <maxmem>512m</maxmem>
+                        <compilerArgs>
+                            <arg>-Xlint:none</arg>
+                        </compilerArgs>
+                    </configuration>
+                </plugin>
+                <!-- 拷贝依赖的jar包到lib目录 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>2.10</version>
+                    <executions>
+                        <execution>
+                            <id>copy-dependencies</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>copy-dependencies</goal>
+                            </goals>
+                            <configuration>
+                                <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                                <excludeTransitive>false</excludeTransitive>
+                                <stripVersion>false</stripVersion>
+                                <includeScope>runtime</includeScope>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <!--用于打包可执行jar包-->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.1.0</version>
+                    <configuration>
+                        <excludes>
+                            <exclude>*.properties</exclude>
+                            <exclude>*.yml</exclude>
+                        </excludes>
+                        <archive>
+                            <!-- 生成的jar中，不要包含pom.xml和pom.properties这两个文件-->
+                            <addMavenDescriptor>false</addMavenDescriptor>
+                            <manifest>
+                                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                                <addClasspath>true</addClasspath>
+                                <mainClass>${project.main.class}</mainClass>
+                                <classpathPrefix>lib/</classpathPrefix>
+                                <!--jar包不包含唯一版本标识-->
+                                <useUniqueVersions>false</useUniqueVersions>
+                            </manifest>
+                            <manifestEntries>
+                                <X-Compile-Source-JDK>${java.version}</X-Compile-Source-JDK>
+                                <X-Compile-Target-JDK>${java.version}</X-Compile-Target-JDK>
+                                <Class-Path>resources/</Class-Path>
+                            </manifestEntries>
+                        </archive>
+                        <outputDirectory>${project.build.directory}</outputDirectory>
+                    </configuration>
+                </plugin>
+                <!--maven打成源码包-->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <configuration>
+                        <attach>true</attach>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>jar-no-fork</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <!--生成JavaDoc-->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <aggregate>true</aggregate>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <!--生成可直接运行jar-->
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>repackage</goal>
+                            </goals>
+                            <configuration>
+                                <classifier>exec</classifier>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin-ext</artifactId>
+                    <version>1.5.2.RELEASE</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>repackage</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>2.5.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.spotify</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                    	<forceTags>true</forceTags>
+                        <imageName>cii.harbor.com/${docker.image.prefix}/${project.artifactId}:${project.version}</imageName>
+                        <serverId>docker-hub</serverId>
+      					<registryUrl>http://cii.harbor.com/v2/</registryUrl>
+                        <dockerDirectory>docker</dockerDirectory>
+                        <dockerHost>http://172.16.6.132:2375</dockerHost>
+                        <resources>
+                            <resource>
+                                <targetPath>/</targetPath>
+                                <directory>${project.build.directory}</directory>
+                                <include>${project.build.finalName}.jar</include>
+                                <include>lib/</include>
+                                <include>resources/</include>
+                            </resource>
+                        </resources>
+                    </configuration>
+                </plugin>
+
+                <!-- copy the generated documents -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.1.0</version>
+                    <configuration>
+                        <encoding>UTF-8</encoding>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>copy-resources</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>copy-resources</goal>
+                            </goals>
+                            <configuration>
+                                <outputDirectory>${project.build.directory}/resources/</outputDirectory>
+                                <resources>
+                                    <resource>
+                                        <directory>src/main/resources</directory>
+                                        <excludes>
+                                        	<exclude>mybatis/*</exclude>
+                                        </excludes>
+                                    </resource>
+                                </resources>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+
+
+				<!-- sonar集成 -->
+                <plugin>
+                 <groupId>org.sonarsource.scanner.maven</groupId>
+                 <artifactId>sonar-maven-plugin</artifactId>
+				 <version>3.4.0.905</version>
+						</plugin>
+						<!-- owasp集成 -->
+						<plugin>
+				   <groupId>org.owasp</groupId>
+				   <artifactId>dependency-check-maven</artifactId>
+				   <version>4.0.2</version>
+				   <configuration>
+					<!-- 在target目录中创建dependency-check-report.html -->
+					<autoUpdate>true</autoUpdate>
+					<!-- 设置当风险指数（CVSS）大于等于8时（CVSS分数为0-10）则项目编译失败
+					   <failBuildOnCVSS>8</failBuildOnCVSS> -->
+				   </configuration>
+				   <executions>
+					   <execution>
+						   <goals>
+							   <goal>check</goal>
+							   <!-- 仅更新NVD（漏洞库）数据，而不执行检查
+							   <goal>update-only</goal> -->
+						   </goals>
+					   </execution>
+				   </executions>
+			   </plugin>
+
+            </plugins>
+        </pluginManagement>
+    </build>
+
+
+
+</project>

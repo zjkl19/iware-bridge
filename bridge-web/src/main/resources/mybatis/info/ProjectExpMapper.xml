@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.info.dao.ProjectExpDao">
+
+    <resultMap id="StructureResultMap" type="com.iware.bridge.info.vo.StructureVO">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <collection property="photoList" javaType="java.util.ArrayList"
+                    ofType="com.iware.bridge.model.entity.global.Photo"
+                    select="getStructurePhoto" column="{structureId=id}">
+        </collection>
+    </resultMap>
+
+    <!--获取结构图图片-->
+    <select id="getStructurePhoto" resultType="com.iware.bridge.model.entity.global.Photo">
+        SELECT
+            id,
+            type,
+            target_id,
+            PATH,
+            remarks
+        FROM
+            tb_photo
+        WHERE
+            target_id = #{structureId}
+            AND ( TYPE = 1 OR TYPE = 2 )
+    </select>
+
+    <!--获取项目列表-->
+    <select id="listProjectByPage" resultType="com.iware.bridge.info.vo.ProjectVO">
+        SELECT * FROM (
+            SELECT DISTINCT ON (tp.id) tp.id,
+            tp.name,
+            tp.create_time,
+            tp.modify_time,
+            tp.synopsis,
+            tp.unit_id,
+            ( SELECT name FROM tb_unit WHERE ID = tp.unit_id
+            ) AS unit_name,
+            tp.create_user_id,
+            tp.charge_person,
+            array_to_string(
+            ARRAY (
+                    SELECT ts.id FROM tb_structure ts INNER JOIN tb_project_structure_rel psr ON ts.id = psr.structure_id
+                    WHERE psr.project_id = tp.ID
+                ), ','
+            ) AS id_str,
+            array_to_string(
+                ARRAY (
+                    SELECT ts.NAME FROM tb_structure ts INNER JOIN tb_project_structure_rel psr ON ts.id = psr.structure_id
+                    WHERE psr.project_id = tp.ID
+                ), ','
+            ) AS structure_names
+            --,ts.id AS structure_id
+            FROM
+            tb_project tp
+            <if test="roleId == 1 or roleId == 0">
+                INNER JOIN tb_project_appoint tpa ON tp.id = tpa.project_id
+            </if>
+            LEFT JOIN tb_unit tu ON tu.id = tp.unit_id
+            LEFT JOIN  tb_project_structure_rel psr ON psr.project_id = tp.id
+            LEFT JOIN tb_structure ts ON ts.id = psr.structure_id
+            <where>
+                <if test="roleId == 2">
+                    tp.unit_id = #{unitId}
+                </if>
+                <if test="roleId == 1 or roleId == 0">
+                    AND tpa.receive_unit_id = #{unitId}
+                </if>
+                <if test="filter.keyword != null and filter.keyword != ''">
+                    AND (tp.name LIKE CONCAT('%', #{filter.keyword}, '%')
+                    OR tu.name LIKE CONCAT('%', #{filter.keyword}, '%')
+                    OR ts.name LIKE CONCAT('%', #{filter.keyword}, '%')
+                    )
+                </if>
+            </where>
+        ) AS rs
+        ORDER BY rs.create_time DESC
+    </select>
+
+    <!--获取单位结构物-->
+    <select id="listStructureByUnit" resultType="com.iware.bridge.model.entity.global.Structure">
+        SELECT ts.id, ts.name
+        FROM tb_structure ts
+        <where>
+            ts.unit_id = #{unitId}
+        </where>
+        ORDER BY ts.create_time DESC
+    </select>
+
+    <!--根据名称查询项目-->
+    <select id="getProjectByName" resultType="com.iware.bridge.model.entity.global.Project">
+        SELECT * FROM tb_project
+        WHERE name = #{name}
+        <if test="id != null">
+            AND id != #{id}
+        </if>
+    </select>
+
+    <delete id="delProjectStructureRel">
+        DELETE FROM tb_project_structure_rel WHERE project_id = #{projectId}
+    </delete>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.global.Project">
+        UPDATE
+        tb_project
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                synopsis = #{synopsis},
+                <if test="name != null">
+                    name = #{name},
+                </if>
+                <if test="unitId != null">
+                    unit_id = #{unitId},
+                </if>
+                <if test="createUserId != null">
+                    create_user_id = #{createUserId},
+                </if>
+                <if test="chargePerson != null">
+                    charge_person = #{chargePerson},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+
+    <!--获取业务-->
+    <select id="getBusinessByUnit" resultType="com.iware.bridge.model.entity.user.Power">
+        SELECT DISTINCT
+            tp.id,
+            name
+        FROM
+            tb_power tp
+        <if test="roleId == 1">
+            INNER JOIN tb_project_appoint_power_rel papr ON tp.id = papr.power_id
+            INNER JOIN tb_project_appoint tpa ON tpa.id = papr.project_appoint_id
+            WHERE tpa.receive_unit_id = #{unitId}
+            AND project_id = #{projectId}
+            AND tpa.end_time > now()
+        </if>
+        <if test="roleId == 2">
+            WHERE business = 1
+        </if>
+    </select>
+
+    <!--根据单位id,角色id获取项目id列表-->
+    <select id="getUnitProjectIds" resultType="java.lang.Integer">
+        <if test="roleId == 1 or roleId == 0">
+            SELECT DISTINCT tp.id FROM tb_project tp
+            INNER JOIN tb_project_appoint tpa ON tpa.project_id = tp.id
+            WHERE tpa.receive_unit_id = #{unitId}
+        </if>
+        <if test="roleId == 2 or roleId == 3">
+            SELECT DISTINCT tp.id FROM tb_project tp
+            <if test="roleId == 2">
+                WHERE tp.unit_id = #{unitId}
+            </if>
+        </if>
+    </select>
+
+    <!--根据结构物id查询关联项目 -->
+    <select id="getProjectByStructureId" resultType="com.iware.bridge.model.entity.global.Project">
+	SELECT
+	    tp.id,
+	    tp.name
+	FROM
+	    tb_project tp
+	INNER JOIN tb_project_structure_rel psr ON psr.project_id = tp.ID
+	INNER JOIN tb_structure ts ON ts.id = psr.structure_id
+	WHERE ts.id = #{structureId}
+	</select>
+
+    <!--获取承接单位用户某个模块的项目-->
+    <select id="getProjectByPower" resultType="com.iware.bridge.model.entity.global.Project">
+        SELECT DISTINCT tp.* FROM tb_project tp
+        INNER JOIN tb_project_appoint tpa ON tpa.project_id = tp.id
+        INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.id
+        <where>
+         tpa.receive_unit_id = #{unitId}
+            <if test="powerId != null">
+                AND papr.power_id = #{powerId}
+            </if>
+            <if test="onTime != null">
+                AND tpa.end_time >= now()
+            </if>
+        </where>
+        order by tp.create_time desc
+    </select>
+
+    <!--获取单位项目-->
+    <select id="selectProjectByUserId" resultType="com.iware.bridge.evaluation.vo.AppointProjectVO">
+		SELECT
+		tpi.ID AS ID,
+		tpi.NAME AS NAME,
+		tupr.start_time AS projectStartTime,
+		tupr.end_time AS projectEndTime
+		FROM
+		tb_project AS tpi
+		LEFT JOIN tb_project_appoint AS tupr ON tupr.project_id = tpi.id
+		LEFT JOIN tb_project_appoint_power_rel AS tprpr ON tprpr.project_appoint_id = tupr.ID
+		WHERE
+		tupr.receive_unit_id = #{unitId}
+		AND tprpr.power_id = #{powerId}
+
+		ORDER BY
+		tpi.create_time DESC
+	</select>
+    <select id="selectProjectAll" resultType="com.iware.bridge.evaluation.vo.AppointProjectVO">
+    SELECT
+		tpi.ID AS ID,
+		tpi.NAME AS NAME
+		FROM
+		tb_project AS tpi
+		WHERE 1 =1
+		<if test="roleId != 3">
+		 and tpi.unit_id = #{unitId}
+        </if>
+		ORDER BY
+		tpi.create_time DESC
+    </select>
+</mapper>

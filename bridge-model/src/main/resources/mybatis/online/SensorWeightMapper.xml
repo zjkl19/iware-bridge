@@ -1,0 +1,662 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.online.SensorWeightDao">
+
+    <resultMap type="com.iware.bridge.model.entity.online.SensorWeight" id="sensorWeightMap">
+        <result property="messageType" column="message_type"/>
+        <result property="reserved" column="reserved"/>
+        <result property="direction" column="direction"/>
+        <result property="computerNumber" column="computer_number"/>
+        <result property="commandCode" column="command_code"/>
+        <result property="dataType" column="data_type"/>
+        <result property="imgNumber" column="img_number"/>
+        <result property="trackNumber" column="track_number"/>
+        <result property="samplingTime" column="sampling_time"/>
+        <result property="lastrow" column="lastrow"/>
+        <result property="singleShaftNuber" column="single_shaft_nuber"/>
+        <result property="setsShaftNuber" column="sets_shaft_nuber"/>
+        <result property="totalWeight" column="total_weight"/>
+        <result property="overrunRate" column="overrun_rate"/>
+        <result property="models" column="models"/>
+        <result property="leftWheelOne" column="left_wheel_one"/>
+        <result property="leftWheelTwo" column="left_wheel_two"/>
+        <result property="leftWheelThree" column="left_wheel_three"/>
+        <result property="leftWheelFour" column="left_wheel_four"/>
+        <result property="leftWheelFive" column="left_wheel_five"/>
+        <result property="leftWheelSix" column="left_wheel_six"/>
+        <result property="leftWheelSeven" column="left_wheel_seven"/>
+        <result property="leftWheelEight" column="left_wheel_eight"/>
+        <result property="rightWheelOne" column="right_wheel_one"/>
+        <result property="rightWheelTwo" column="right_wheel_two"/>
+        <result property="rightWheelThree" column="right_wheel_three"/>
+        <result property="rightWheelFour" column="right_wheel_four"/>
+        <result property="rightWheelFive" column="right_wheel_five"/>
+        <result property="rightWheelSix" column="right_wheel_six"/>
+        <result property="rightWheelSeven" column="right_wheel_seven"/>
+        <result property="rightWheelEight" column="right_wheel_eight"/>
+        <result property="spacingOneTwo" column="spacing_one_two"/>
+        <result property="spacingTwoThree" column="spacing_two_three"/>
+        <result property="spacingThreeFour" column="spacing_three_four"/>
+        <result property="spacingFourFive" column="spacing_four_five"/>
+        <result property="spacingFiveSix" column="spacing_five_six"/>
+        <result property="spacingSixSeven" column="spacing_six_seven"/>
+        <result property="spacingSevenEight" column="spacing_seven_eight"/>
+        <result property="transfiniteLabeled" column="transfinite_labeled"/>
+        <result property="violationCode" column="violation_code"/>
+        <result property="carSpeed" column="car_speed"/>
+        <result property="acceleration" column="acceleration"/>
+        <result property="equivalentShaft" column="equivalent_shaft"/>
+        <result property="licensePlate" column="license_plate"/>
+        <result property="sensorCoding" column="sensor_coding"/>
+        <result property="sensorDetailsId" column="sensor_details_id"/>
+        <result property="licenseColor" column="license_color"/>
+        <result property="bridgeCode" column="bridge_code"/>
+        <result property="vehicleLength" column="vehicle_length"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       message_type,
+       reserved,
+       direction,
+       computer_number,
+       command_code,
+       data_type,
+       img_number,
+       track_number,
+       sampling_time,
+       lastrow,
+       single_shaft_nuber,
+       sets_shaft_nuber,
+       total_weight,
+       overrun_rate,
+       models,
+       left_wheel_one,
+       left_wheel_two,
+       left_wheel_three,
+       left_wheel_four,
+       left_wheel_five,
+       left_wheel_six,
+       left_wheel_seven,
+       left_wheel_eight,
+       right_wheel_one,
+       right_wheel_two,
+       right_wheel_three,
+       right_wheel_four,
+       right_wheel_five,
+       right_wheel_six,
+       right_wheel_seven,
+       right_wheel_eight,
+       spacing_one_two,
+       spacing_two_three,
+       spacing_three_four,
+       spacing_four_five,
+       spacing_five_six,
+       spacing_six_seven,
+       spacing_seven_eight,
+       transfinite_labeled,
+       violation_code,
+       car_speed,
+       acceleration,
+       equivalent_shaft,
+       license_plate,
+       sensor_coding,
+       sensor_details_id,
+       license_color,
+       bridge_code,
+       vehicle_length
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" parameterType="com.iware.bridge.model.entity.online.SensorWeight">
+        insert into tb_sensor_weight
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                message_type,
+                reserved,
+                direction,
+                computer_number,
+                command_code,
+                data_type,
+                img_number,
+                track_number,
+                sampling_time,
+                lastrow,
+                single_shaft_nuber,
+                sets_shaft_nuber,
+                total_weight,
+                overrun_rate,
+                models,
+                left_wheel_one,
+                left_wheel_two,
+                left_wheel_three,
+                left_wheel_four,
+                left_wheel_five,
+                left_wheel_six,
+                left_wheel_seven,
+                left_wheel_eight,
+                right_wheel_one,
+                right_wheel_two,
+                right_wheel_three,
+                right_wheel_four,
+                right_wheel_five,
+                right_wheel_six,
+                right_wheel_seven,
+                right_wheel_eight,
+                spacing_one_two,
+                spacing_two_three,
+                spacing_three_four,
+                spacing_four_five,
+                spacing_five_six,
+                spacing_six_seven,
+                spacing_seven_eight,
+                transfinite_labeled,
+                violation_code,
+                car_speed,
+                acceleration,
+                equivalent_shaft,
+                license_plate,
+                sensor_coding,
+                sensor_details_id,
+                license_color,
+                bridge_code,
+                vehicle_length,
+            </trim>
+        )
+        values
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{messageType},
+                #{reserved},
+                #{direction},
+                #{computerNumber},
+                #{commandCode},
+                #{dataType},
+                #{imgNumber},
+                #{trackNumber},
+                #{samplingTime},
+                #{lastrow},
+                #{singleShaftNuber},
+                #{setsShaftNuber},
+                #{totalWeight},
+                #{overrunRate},
+                #{models},
+                #{leftWheelOne},
+                #{leftWheelTwo},
+                #{leftWheelThree},
+                #{leftWheelFour},
+                #{leftWheelFive},
+                #{leftWheelSix},
+                #{leftWheelSeven},
+                #{leftWheelEight},
+                #{rightWheelOne},
+                #{rightWheelTwo},
+                #{rightWheelThree},
+                #{rightWheelFour},
+                #{rightWheelFive},
+                #{rightWheelSix},
+                #{rightWheelSeven},
+                #{rightWheelEight},
+                #{spacingOneTwo},
+                #{spacingTwoThree},
+                #{spacingThreeFour},
+                #{spacingFourFive},
+                #{spacingFiveSix},
+                #{spacingSixSeven},
+                #{spacingSevenEight},
+                #{transfiniteLabeled},
+                #{violationCode},
+                #{carSpeed},
+                #{acceleration},
+                #{equivalentShaft},
+                #{licensePlate},
+                #{sensorCoding},
+                #{sensorDetailsId},
+                #{licenseColor},
+                #{bridgeCode},
+                #{vehicleLength},
+            </trim>
+        )
+    </insert>
+
+    <!--批量保存 -->
+    <insert id="batchSave" parameterType="java.util.List">
+        insert into tb_sensor_weight
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                message_type,
+                reserved,
+                direction,
+                computer_number,
+                command_code,
+                data_type,
+                img_number,
+                track_number,
+                sampling_time,
+                lastrow,
+                single_shaft_nuber,
+                sets_shaft_nuber,
+                total_weight,
+                overrun_rate,
+                models,
+                left_wheel_one,
+                left_wheel_two,
+                left_wheel_three,
+                left_wheel_four,
+                left_wheel_five,
+                left_wheel_six,
+                left_wheel_seven,
+                left_wheel_eight,
+                right_wheel_one,
+                right_wheel_two,
+                right_wheel_three,
+                right_wheel_four,
+                right_wheel_five,
+                right_wheel_six,
+                right_wheel_seven,
+                right_wheel_eight,
+                spacing_one_two,
+                spacing_two_three,
+                spacing_three_four,
+                spacing_four_five,
+                spacing_five_six,
+                spacing_six_seven,
+                spacing_seven_eight,
+                transfinite_labeled,
+                violation_code,
+                car_speed,
+                acceleration,
+                equivalent_shaft,
+                license_plate,
+                sensor_coding,
+                sensor_details_id,
+                license_color,
+                bridge_code,
+                vehicle_length,
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.messageType},
+                #{it.reserved},
+                #{it.direction},
+                #{it.computerNumber},
+                #{it.commandCode},
+                #{it.dataType},
+                #{it.imgNumber},
+                #{it.trackNumber},
+                #{it.samplingTime},
+                #{it.lastrow},
+                #{it.singleShaftNuber},
+                #{it.setsShaftNuber},
+                #{it.totalWeight},
+                #{it.overrunRate},
+                #{it.models},
+                #{it.leftWheelOne},
+                #{it.leftWheelTwo},
+                #{it.leftWheelThree},
+                #{it.leftWheelFour},
+                #{it.leftWheelFive},
+                #{it.leftWheelSix},
+                #{it.leftWheelSeven},
+                #{it.leftWheelEight},
+                #{it.rightWheelOne},
+                #{it.rightWheelTwo},
+                #{it.rightWheelThree},
+                #{it.rightWheelFour},
+                #{it.rightWheelFive},
+                #{it.rightWheelSix},
+                #{it.rightWheelSeven},
+                #{it.rightWheelEight},
+                #{it.spacingOneTwo},
+                #{it.spacingTwoThree},
+                #{it.spacingThreeFour},
+                #{it.spacingFourFive},
+                #{it.spacingFiveSix},
+                #{it.spacingSixSeven},
+                #{it.spacingSevenEight},
+                #{it.transfiniteLabeled},
+                #{it.violationCode},
+                #{it.carSpeed},
+                #{it.acceleration},
+                #{it.equivalentShaft},
+                #{it.licensePlate},
+                #{it.sensorCoding},
+                #{it.sensorDetailsId},
+                #{it.licenseColor},
+                #{it.bridgeCode},
+                #{it.vehicleLength},
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="sensorWeightMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_sensor_weight
+        ORDER BY
+            sampling_time DESC
+    </select>
+
+    <!-- 根据条件查询SensorWeight -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.online.SensorWeight" resultMap="sensorWeightMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_sensor_weight
+        <where>
+            <if test="messageType != null">
+                AND message_type = #{messageType}
+            </if>
+            <if test="reserved != null">
+                AND reserved = #{reserved}
+            </if>
+            <if test="direction != null">
+                AND direction = #{direction}
+            </if>
+            <if test="computerNumber != null">
+                AND computer_number = #{computerNumber}
+            </if>
+            <if test="commandCode != null">
+                AND command_code = #{commandCode}
+            </if>
+            <if test="dataType != null">
+                AND data_type = #{dataType}
+            </if>
+            <if test="imgNumber != null and imgNumber != ''">
+                AND img_number = #{imgNumber}
+            </if>
+            <if test="trackNumber != null">
+                AND track_number = #{trackNumber}
+            </if>
+            <if test="samplingTime != null">
+                AND sampling_time = #{samplingTime}
+            </if>
+            <if test="lastrow != null">
+                AND lastrow = #{lastrow}
+            </if>
+            <if test="singleShaftNuber != null">
+                AND single_shaft_nuber = #{singleShaftNuber}
+            </if>
+            <if test="setsShaftNuber != null">
+                AND sets_shaft_nuber = #{setsShaftNuber}
+            </if>
+            <if test="totalWeight != null">
+                AND total_weight = #{totalWeight}
+            </if>
+            <if test="overrunRate != null">
+                AND overrun_rate = #{overrunRate}
+            </if>
+            <if test="models != null">
+                AND models = #{models}
+            </if>
+            <if test="leftWheelOne != null">
+                AND left_wheel_one = #{leftWheelOne}
+            </if>
+            <if test="leftWheelTwo != null">
+                AND left_wheel_two = #{leftWheelTwo}
+            </if>
+            <if test="leftWheelThree != null">
+                AND left_wheel_three = #{leftWheelThree}
+            </if>
+            <if test="leftWheelFour != null">
+                AND left_wheel_four = #{leftWheelFour}
+            </if>
+            <if test="leftWheelFive != null">
+                AND left_wheel_five = #{leftWheelFive}
+            </if>
+            <if test="leftWheelSix != null">
+                AND left_wheel_six = #{leftWheelSix}
+            </if>
+            <if test="leftWheelSeven != null">
+                AND left_wheel_seven = #{leftWheelSeven}
+            </if>
+            <if test="leftWheelEight != null">
+                AND left_wheel_eight = #{leftWheelEight}
+            </if>
+            <if test="rightWheelOne != null">
+                AND right_wheel_one = #{rightWheelOne}
+            </if>
+            <if test="rightWheelTwo != null">
+                AND right_wheel_two = #{rightWheelTwo}
+            </if>
+            <if test="rightWheelThree != null">
+                AND right_wheel_three = #{rightWheelThree}
+            </if>
+            <if test="rightWheelFour != null">
+                AND right_wheel_four = #{rightWheelFour}
+            </if>
+            <if test="rightWheelFive != null">
+                AND right_wheel_five = #{rightWheelFive}
+            </if>
+            <if test="rightWheelSix != null">
+                AND right_wheel_six = #{rightWheelSix}
+            </if>
+            <if test="rightWheelSeven != null">
+                AND right_wheel_seven = #{rightWheelSeven}
+            </if>
+            <if test="rightWheelEight != null">
+                AND right_wheel_eight = #{rightWheelEight}
+            </if>
+            <if test="spacingOneTwo != null">
+                AND spacing_one_two = #{spacingOneTwo}
+            </if>
+            <if test="spacingTwoThree != null">
+                AND spacing_two_three = #{spacingTwoThree}
+            </if>
+            <if test="spacingThreeFour != null">
+                AND spacing_three_four = #{spacingThreeFour}
+            </if>
+            <if test="spacingFourFive != null">
+                AND spacing_four_five = #{spacingFourFive}
+            </if>
+            <if test="spacingFiveSix != null">
+                AND spacing_five_six = #{spacingFiveSix}
+            </if>
+            <if test="spacingSixSeven != null">
+                AND spacing_six_seven = #{spacingSixSeven}
+            </if>
+            <if test="spacingSevenEight != null">
+                AND spacing_seven_eight = #{spacingSevenEight}
+            </if>
+            <if test="transfiniteLabeled != null and transfiniteLabeled != ''">
+                AND transfinite_labeled = #{transfiniteLabeled}
+            </if>
+            <if test="violationCode != null">
+                AND violation_code = #{violationCode}
+            </if>
+            <if test="carSpeed != null">
+                AND car_speed = #{carSpeed}
+            </if>
+            <if test="acceleration != null">
+                AND acceleration = #{acceleration}
+            </if>
+            <if test="equivalentShaft != null">
+                AND equivalent_shaft = #{equivalentShaft}
+            </if>
+            <if test="licensePlate != null and licensePlate != ''">
+                AND license_plate = #{licensePlate}
+            </if>
+            <if test="sensorCoding != null and sensorCoding != ''">
+                AND sensor_coding = #{sensorCoding}
+            </if>
+            <if test="sensorDetailsId != null">
+                AND sensor_details_id = #{sensorDetailsId}
+            </if>
+            <if test="licenseColor != null and licenseColor != ''">
+                AND license_color = #{licenseColor}
+            </if>
+            <if test="bridgeCode != null and bridgeCode != ''">
+                AND bridge_code = #{bridgeCode}
+            </if>
+            <if test="vehicleLength != null">
+                AND vehicle_length = #{vehicleLength}
+            </if>
+        </where>
+        ORDER BY
+            sampling_time DESC
+    </select>
+
+    <!-- 根据条件模糊查询SensorWeight -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.online.SensorWeight" resultMap="sensorWeightMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_sensor_weight
+        <where>
+            <if test="messageType != null">
+                AND message_type = #{messageType}
+            </if>
+            <if test="reserved != null">
+                AND reserved = #{reserved}
+            </if>
+            <if test="direction != null">
+                AND direction = #{direction}
+            </if>
+            <if test="computerNumber != null">
+                AND computer_number = #{computerNumber}
+            </if>
+            <if test="commandCode != null">
+                AND command_code = #{commandCode}
+            </if>
+            <if test="dataType != null">
+                AND data_type = #{dataType}
+            </if>
+            <if test="imgNumber != null and imgNumber != ''">
+                AND img_number LIKE CONCAT ('%', #{imgNumber}, '%')
+            </if>
+            <if test="trackNumber != null">
+                AND track_number = #{trackNumber}
+            </if>
+            <if test="samplingTime != null">
+                AND sampling_time LIKE CONCAT ('%', #{samplingTime}, '%')
+            </if>
+            <if test="lastrow != null">
+                AND lastrow = #{lastrow}
+            </if>
+            <if test="singleShaftNuber != null">
+                AND single_shaft_nuber = #{singleShaftNuber}
+            </if>
+            <if test="setsShaftNuber != null">
+                AND sets_shaft_nuber = #{setsShaftNuber}
+            </if>
+            <if test="totalWeight != null">
+                AND total_weight = #{totalWeight}
+            </if>
+            <if test="overrunRate != null">
+                AND overrun_rate = #{overrunRate}
+            </if>
+            <if test="models != null">
+                AND models = #{models}
+            </if>
+            <if test="leftWheelOne != null">
+                AND left_wheel_one = #{leftWheelOne}
+            </if>
+            <if test="leftWheelTwo != null">
+                AND left_wheel_two = #{leftWheelTwo}
+            </if>
+            <if test="leftWheelThree != null">
+                AND left_wheel_three = #{leftWheelThree}
+            </if>
+            <if test="leftWheelFour != null">
+                AND left_wheel_four = #{leftWheelFour}
+            </if>
+            <if test="leftWheelFive != null">
+                AND left_wheel_five = #{leftWheelFive}
+            </if>
+            <if test="leftWheelSix != null">
+                AND left_wheel_six = #{leftWheelSix}
+            </if>
+            <if test="leftWheelSeven != null">
+                AND left_wheel_seven = #{leftWheelSeven}
+            </if>
+            <if test="leftWheelEight != null">
+                AND left_wheel_eight = #{leftWheelEight}
+            </if>
+            <if test="rightWheelOne != null">
+                AND right_wheel_one = #{rightWheelOne}
+            </if>
+            <if test="rightWheelTwo != null">
+                AND right_wheel_two = #{rightWheelTwo}
+            </if>
+            <if test="rightWheelThree != null">
+                AND right_wheel_three = #{rightWheelThree}
+            </if>
+            <if test="rightWheelFour != null">
+                AND right_wheel_four = #{rightWheelFour}
+            </if>
+            <if test="rightWheelFive != null">
+                AND right_wheel_five = #{rightWheelFive}
+            </if>
+            <if test="rightWheelSix != null">
+                AND right_wheel_six = #{rightWheelSix}
+            </if>
+            <if test="rightWheelSeven != null">
+                AND right_wheel_seven = #{rightWheelSeven}
+            </if>
+            <if test="rightWheelEight != null">
+                AND right_wheel_eight = #{rightWheelEight}
+            </if>
+            <if test="spacingOneTwo != null">
+                AND spacing_one_two = #{spacingOneTwo}
+            </if>
+            <if test="spacingTwoThree != null">
+                AND spacing_two_three = #{spacingTwoThree}
+            </if>
+            <if test="spacingThreeFour != null">
+                AND spacing_three_four = #{spacingThreeFour}
+            </if>
+            <if test="spacingFourFive != null">
+                AND spacing_four_five = #{spacingFourFive}
+            </if>
+            <if test="spacingFiveSix != null">
+                AND spacing_five_six = #{spacingFiveSix}
+            </if>
+            <if test="spacingSixSeven != null">
+                AND spacing_six_seven = #{spacingSixSeven}
+            </if>
+            <if test="spacingSevenEight != null">
+                AND spacing_seven_eight = #{spacingSevenEight}
+            </if>
+            <if test="transfiniteLabeled != null and transfiniteLabeled != ''">
+                AND transfinite_labeled LIKE CONCAT ('%', #{transfiniteLabeled}, '%')
+            </if>
+            <if test="violationCode != null">
+                AND violation_code = #{violationCode}
+            </if>
+            <if test="carSpeed != null">
+                AND car_speed = #{carSpeed}
+            </if>
+            <if test="acceleration != null">
+                AND acceleration = #{acceleration}
+            </if>
+            <if test="equivalentShaft != null">
+                AND equivalent_shaft = #{equivalentShaft}
+            </if>
+            <if test="licensePlate != null and licensePlate != ''">
+                AND license_plate LIKE CONCAT ('%', #{licensePlate}, '%')
+            </if>
+            <if test="sensorCoding != null and sensorCoding != ''">
+                AND sensor_coding LIKE CONCAT ('%', #{sensorCoding}, '%')
+            </if>
+            <if test="sensorDetailsId != null">
+                AND sensor_details_id = #{sensorDetailsId}
+            </if>
+            <if test="licenseColor != null and licenseColor != ''">
+                AND license_color LIKE CONCAT ('%', #{licenseColor}, '%')
+            </if>
+            <if test="bridgeCode != null and bridgeCode != ''">
+                AND bridge_code LIKE CONCAT ('%', #{bridgeCode}, '%')
+            </if>
+            <if test="vehicleLength != null">
+                AND vehicle_length = #{vehicleLength}
+            </if>
+        </where>
+        ORDER BY
+            sampling_time DESC
+    </select>
+</mapper>

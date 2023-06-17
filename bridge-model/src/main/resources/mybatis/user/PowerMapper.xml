@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.user.PowerDao">
+
+    <resultMap type="com.iware.bridge.model.entity.user.Power" id="powerMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="remarks" column="remarks"/>
+        <result property="routerUrl" column="router_url"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="active" column="is_active"/>
+        <result property="priority" column="priority"/>
+        <result property="business" column="business"/>
+        <result property="type" column="type"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       name,
+       remarks,
+       router_url,
+       parent_id,
+       is_active,
+       priority,
+       business,
+       type
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.user.Power">
+        insert into tb_power
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                name,
+                remarks,
+                router_url,
+                parent_id,
+                is_active,
+                priority,
+                business,
+                type
+            </trim>
+        )
+        values
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{name},
+                #{remarks},
+                #{routerUrl},
+                #{parentId},
+                #{active},
+                #{priority},
+                #{business},
+                #{type}
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询Power -->
+    <select id="findById" parameterType="Integer" resultMap="powerMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_power
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.user.Power">
+        UPDATE
+            tb_power
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                <if test="name != null and name != ''">
+                    name = #{name},
+                </if>
+                <if test="remarks != null and remarks != ''">
+                    remarks = #{remarks},
+                </if>
+                <if test="routerUrl != null and routerUrl != ''">
+                    router_url = #{routerUrl},
+                </if>
+                <if test="parentId != null">
+                    parent_id = #{parentId},
+                </if>
+                <if test="active != null">
+                    is_active = #{active},
+                </if>
+                <if test="priority != null">
+                    priority = #{priority},
+                </if>
+                <if test="business != null">
+                    business = #{business},
+                </if>
+                <if test="type != null and type != ''">
+                    type = #{type}
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_power
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_power
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                name,
+                remarks,
+                router_url,
+                parent_id,
+                is_active,
+                priority,
+                business,
+                type
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.name},
+                #{it.remarks},
+                #{it.routerUrl},
+                #{it.parentId},
+                #{it.active},
+                #{it.priority},
+                #{it.business},
+                #{it.type}
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_power
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="powerMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_power
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询Power -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.user.Power" resultMap="powerMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_power
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="name != null and name != ''">
+                AND name = #{name}
+            </if>
+            <if test="remarks != null and remarks != ''">
+                AND remarks = #{remarks}
+            </if>
+            <if test="routerUrl != null and routerUrl != ''">
+                AND router_url = #{routerUrl}
+            </if>
+            <if test="parentId != null">
+                AND parent_id = #{parentId}
+            </if>
+            <if test="active != null">
+                AND is_active = #{active}
+            </if>
+            <if test="priority != null">
+                AND priority = #{priority}
+            </if>
+            <if test="business != null">
+                AND business = #{business}
+            </if>
+            <if test="type != null and type != ''">
+                AND type = #{type}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询Power -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.user.Power" resultMap="powerMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_power
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT ('%', #{name}, '%')
+            </if>
+            <if test="remarks != null and remarks != ''">
+                AND remarks LIKE CONCAT ('%', #{remarks}, '%')
+            </if>
+            <if test="routerUrl != null and routerUrl != ''">
+                AND router_url LIKE CONCAT ('%', #{routerUrl}, '%')
+            </if>
+            <if test="parentId != null">
+                AND parent_id = #{parentId}
+            </if>
+            <if test="active != null">
+                AND is_active = #{active}
+            </if>
+            <if test="priority != null">
+                AND priority = #{priority}
+            </if>
+            <if test="business != null">
+                AND business = #{business}
+            </if>
+            <if test="type != null and type != ''">
+                AND type LIKE CONCAT ('%', #{type}, '%')
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

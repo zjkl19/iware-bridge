@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.user.UserDao">
+
+    <resultMap type="com.iware.bridge.model.entity.user.User" id="userMap">
+        <result property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="gender" column="gender"/>
+        <result property="phone" column="phone"/>
+        <result property="realName" column="real_name"/>
+        <result property="petName" column="pet_name"/>
+        <result property="email" column="email"/>
+        <result property="unitId" column="unit_id"/>
+        <result property="createUserId" column="create_user_id"/>
+        <result property="deviceId" column="device_id"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       username,
+       password,
+       gender,
+       phone,
+       real_name,
+       pet_name,
+       email,
+       unit_id,
+       create_user_id,
+       device_id,
+       status,
+       create_time,
+       modify_time
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.user.User">
+        insert into tb_user
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            username,
+            password,
+            gender,
+            phone,
+            real_name,
+            pet_name,
+            email,
+            unit_id,
+            create_user_id,
+            device_id,
+            status,
+        </trim>
+        )
+        values
+        (
+        now(),
+        now(),
+        <trim prefix="" suffix="" suffixOverrides=",">
+            #{username},
+            #{password},
+            #{gender},
+            #{phone},
+            #{realName},
+            #{petName},
+            #{email},
+            #{unitId},
+            #{createUserId},
+            #{deviceId},
+            #{status},
+        </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询User -->
+    <select id="findById" parameterType="Integer" resultMap="userMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_user
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.user.User">
+        UPDATE
+        tb_user
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="username != null and username != ''">
+                    username = #{username},
+                </if>
+                <if test="password != null and password != ''">
+                    password = #{password},
+                </if>
+                <if test="gender != null">
+                    gender = #{gender},
+                </if>
+                <if test="phone != null and phone != ''">
+                    phone = #{phone},
+                </if>
+                <if test="realName != null and realName != ''">
+                    real_name = #{realName},
+                </if>
+                <if test="petName != null and petName != ''">
+                    pet_name = #{petName},
+                </if>
+                <if test="email != null and email != ''">
+                    email = #{email},
+                </if>
+                <if test="unitId != null">
+                    unit_id = #{unitId},
+                </if>
+                <if test="createUserId != null">
+                    create_user_id = #{createUserId},
+                </if>
+                <if test="deviceId != null and deviceId != ''">
+                    device_id = #{deviceId},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_user
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_user
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            username,
+            password,
+            gender,
+            phone,
+            real_name,
+            pet_name,
+            email,
+            unit_id,
+            create_user_id,
+            device_id,
+            status,
+        </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+            (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.username},
+                #{it.password},
+                #{it.gender},
+                #{it.phone},
+                #{it.realName},
+                #{it.petName},
+                #{it.email},
+                #{it.unitId},
+                #{it.createUserId},
+                #{it.deviceId},
+                #{it.status},
+            </trim>
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+        tb_user
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="userMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_user
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件查询User -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.user.User" resultMap="userMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_user
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="username != null and username != ''">
+                AND username = #{username}
+            </if>
+            <if test="password != null and password != ''">
+                AND password = #{password}
+            </if>
+            <if test="gender != null">
+                AND gender = #{gender}
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone = #{phone}
+            </if>
+            <if test="realName != null and realName != ''">
+                AND real_name = #{realName}
+            </if>
+            <if test="petName != null and petName != ''">
+                AND pet_name = #{petName}
+            </if>
+            <if test="email != null and email != ''">
+                AND email = #{email}
+            </if>
+            <if test="unitId != null">
+                AND unit_id = #{unitId}
+            </if>
+            <if test="createUserId != null">
+                AND create_user_id = #{createUserId}
+            </if>
+            <if test="deviceId != null and deviceId != ''">
+                AND device_id = #{deviceId}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件模糊查询User -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.user.User" resultMap="userMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_user
+        <where>
+            <if test="username != null and username != ''">
+                AND username LIKE CONCAT ('%', #{username}, '%')
+            </if>
+            <if test="password != null and password != ''">
+                AND password LIKE CONCAT ('%', #{password}, '%')
+            </if>
+            <if test="gender != null">
+                AND gender = #{gender}
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone LIKE CONCAT ('%', #{phone}, '%')
+            </if>
+            <if test="realName != null and realName != ''">
+                AND real_name LIKE CONCAT ('%', #{realName}, '%')
+            </if>
+            <if test="petName != null and petName != ''">
+                AND pet_name LIKE CONCAT ('%', #{petName}, '%')
+            </if>
+            <if test="email != null and email != ''">
+                AND email LIKE CONCAT ('%', #{email}, '%')
+            </if>
+            <if test="unitId != null">
+                AND unit_id = #{unitId}
+            </if>
+            <if test="createUserId != null">
+                AND create_user_id = #{createUserId}
+            </if>
+            <if test="deviceId != null and deviceId != ''">
+                AND device_id LIKE CONCAT ('%', #{deviceId}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+</mapper>

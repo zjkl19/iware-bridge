@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.evaluation.BridgeDeckComponentDao">
+
+    <resultMap type="com.iware.bridge.model.entity.evaluation.BridgeDeckComponent" id="bridgeDeckComponentMap">
+        <result property="id" column="id"/>
+        <result property="bridgeDeckSystemId" column="bridge_deck_system_id"/>
+        <result property="componentId" column="component_id"/>
+        <result property="code" column="code"/>
+        <result property="initialWeight" column="initial_weight"/>
+        <result property="actualWeight" column="actual_weight"/>
+        <result property="deduct" column="deduct"/>
+        <result property="serious" column="serious"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+        <result property="creator" column="creator"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       bridge_deck_system_id,
+       component_id,
+       code,
+       initial_weight,
+       actual_weight,
+       deduct,
+       serious,
+       create_time,
+       modify_time,
+       creator,
+       status
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.evaluation.BridgeDeckComponent">
+        insert into tb_bridge_deck_component
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            bridge_deck_system_id,
+            component_id,
+            code,
+            initial_weight,
+            actual_weight,
+            deduct,
+            serious,
+            creator,
+            status
+        </trim>
+        )
+        values
+        (
+        now(),
+        now(),
+        <trim prefix="" suffix="" suffixOverrides=",">
+            #{bridgeDeckSystemId},
+            #{componentId},
+            #{code},
+            #{initialWeight},
+            #{actualWeight},
+            #{deduct},
+            #{serious},
+            #{creator},
+            #{status}
+        </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询BridgeDeckComponent -->
+    <select id="findById" parameterType="Integer" resultMap="bridgeDeckComponentMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_bridge_deck_component
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.evaluation.BridgeDeckComponent">
+        UPDATE
+        tb_bridge_deck_component
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="bridgeDeckSystemId != null">
+                    bridge_deck_system_id = #{bridgeDeckSystemId},
+                </if>
+                <if test="componentId != null">
+                    component_id = #{componentId},
+                </if>
+                <if test="code != null and code != ''">
+                    code = #{code},
+                </if>
+                <if test="initialWeight != null and initialWeight != ''">
+                    initial_weight = #{initialWeight},
+                </if>
+                <if test="actualWeight != null and actualWeight != ''">
+                    actual_weight = #{actualWeight},
+                </if>
+                <if test="deduct != null and deduct != ''">
+                    deduct = #{deduct},
+                </if>
+                <if test="serious != null">
+                    serious = #{serious},
+                </if>
+                <if test="creator != null and creator != ''">
+                    creator = #{creator},
+                </if>
+                <if test="status != null">
+                    status = #{status}
+                </if>
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_bridge_deck_component
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_bridge_deck_component
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            bridge_deck_system_id,
+            component_id,
+            code,
+            initial_weight,
+            actual_weight,
+            deduct,
+            serious,
+            creator,
+            status
+        </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+            (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.bridgeDeckSystemId},
+                #{it.componentId},
+                #{it.code},
+                #{it.initialWeight},
+                #{it.actualWeight},
+                #{it.deduct},
+                #{it.serious},
+                #{it.creator},
+                #{it.status}
+            </trim>
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+        tb_bridge_deck_component
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="bridgeDeckComponentMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_bridge_deck_component
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件查询BridgeDeckComponent -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.evaluation.BridgeDeckComponent" resultMap="bridgeDeckComponentMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_bridge_deck_component
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="bridgeDeckSystemId != null">
+                AND bridge_deck_system_id = #{bridgeDeckSystemId}
+            </if>
+            <if test="componentId != null">
+                AND component_id = #{componentId}
+            </if>
+            <if test="code != null and code != ''">
+                AND code = #{code}
+            </if>
+            <if test="initialWeight != null and initialWeight != ''">
+                AND initial_weight = #{initialWeight}
+            </if>
+            <if test="actualWeight != null and actualWeight != ''">
+                AND actual_weight = #{actualWeight}
+            </if>
+            <if test="deduct != null and deduct != ''">
+                AND deduct = #{deduct}
+            </if>
+            <if test="serious != null">
+                AND serious = #{serious}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+            <if test="creator != null and creator != ''">
+                AND creator = #{creator}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件模糊查询BridgeDeckComponent -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.evaluation.BridgeDeckComponent" resultMap="bridgeDeckComponentMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_bridge_deck_component
+        <where>
+            <if test="bridgeDeckSystemId != null">
+                AND bridge_deck_system_id = #{bridgeDeckSystemId}
+            </if>
+            <if test="componentId != null">
+                AND component_id = #{componentId}
+            </if>
+            <if test="code != null and code != ''">
+                AND code LIKE CONCAT ('%', #{code}, '%')
+            </if>
+            <if test="initialWeight != null and initialWeight != ''">
+                AND initial_weight LIKE CONCAT ('%', #{initialWeight}, '%')
+            </if>
+            <if test="actualWeight != null and actualWeight != ''">
+                AND actual_weight LIKE CONCAT ('%', #{actualWeight}, '%')
+            </if>
+            <if test="deduct != null and deduct != ''">
+                AND deduct LIKE CONCAT ('%', #{deduct}, '%')
+            </if>
+            <if test="serious != null">
+                AND serious = #{serious}
+            </if>
+            <if test="creator != null and creator != ''">
+                AND creator LIKE CONCAT ('%', #{creator}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+</mapper>

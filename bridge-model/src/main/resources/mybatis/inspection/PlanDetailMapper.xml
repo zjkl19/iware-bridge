@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.inspection.PlanDetailDao">
+
+    <resultMap type="com.iware.bridge.model.entity.inspection.PlanDetail" id="planDetailMap">
+        <result property="id" column="id"/>
+        <result property="planId" column="plan_id"/>
+        <result property="structureId" column="structure_id"/>
+        <result property="inspector" column="inspector"/>
+        <result property="inspectionUnit" column="inspection_unit"/>
+        <result property="fileSaveCollator" column="file_save_collator"/>
+        <result property="inspectionTime" column="inspection_time"/>
+        <result property="weather" column="weather"/>
+        <result property="longitude" column="longitude"/>
+        <result property="latitude" column="latitude"/>
+        <result property="location" column="location"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       plan_id,
+       structure_id,
+       inspector,
+       inspection_unit,
+       file_save_collator,
+       inspection_time,
+       weather,
+       longitude,
+       latitude,
+       location,
+       status,
+       create_time,
+       modify_time
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.inspection.PlanDetail">
+        insert into tb_plan_detail
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            plan_id,
+            structure_id,
+            inspector,
+            inspection_unit,
+            file_save_collator,
+            inspection_time,
+            weather,
+            longitude,
+            latitude,
+            location,
+            status,
+        </trim>
+        )
+        values
+        (
+        now(),
+        now(),
+        <trim prefix="" suffix="" suffixOverrides=",">
+            #{planId},
+            #{structureId},
+            #{inspector},
+            #{inspectionUnit},
+            #{fileSaveCollator},
+            #{inspectionTime},
+            #{weather},
+            #{longitude},
+            #{latitude},
+            #{location},
+            #{status},
+        </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询PlanDetail -->
+    <select id="findById" parameterType="Integer" resultMap="planDetailMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_plan_detail
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.inspection.PlanDetail">
+        UPDATE
+        tb_plan_detail
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="planId != null">
+                    plan_id = #{planId},
+                </if>
+                <if test="structureId != null">
+                    structure_id = #{structureId},
+                </if>
+                <if test="inspector != null and inspector != ''">
+                    inspector = #{inspector},
+                </if>
+                <if test="inspectionUnit != null and inspectionUnit != ''">
+                    inspection_unit = #{inspectionUnit},
+                </if>
+                <if test="fileSaveCollator != null and fileSaveCollator != ''">
+                    file_save_collator = #{fileSaveCollator},
+                </if>
+                <if test="inspectionTime != null">
+                    inspection_time = #{inspectionTime},
+                </if>
+                <if test="weather != null and weather != ''">
+                    weather = #{weather},
+                </if>
+                <if test="longitude != null">
+                    longitude = #{longitude},
+                </if>
+                <if test="latitude != null">
+                    latitude = #{latitude},
+                </if>
+                <if test="location != null and location != ''">
+                    location = #{location},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_plan_detail
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_plan_detail
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            plan_id,
+            structure_id,
+            inspector,
+            inspection_unit,
+            file_save_collator,
+            inspection_time,
+            weather,
+            longitude,
+            latitude,
+            location,
+            status,
+        </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+            (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.planId},
+                #{it.structureId},
+                #{it.inspector},
+                #{it.inspectionUnit},
+                #{it.fileSaveCollator},
+                #{it.inspectionTime},
+                #{it.weather},
+                #{it.longitude},
+                #{it.latitude},
+                #{it.location},
+                #{it.status},
+            </trim>
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+        tb_plan_detail
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="planDetailMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_plan_detail
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件查询PlanDetail -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.inspection.PlanDetail" resultMap="planDetailMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_plan_detail
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="planId != null">
+                AND plan_id = #{planId}
+            </if>
+            <if test="structureId != null">
+                AND structure_id = #{structureId}
+            </if>
+            <if test="inspector != null and inspector != ''">
+                AND inspector = #{inspector}
+            </if>
+            <if test="inspectionUnit != null and inspectionUnit != ''">
+                AND inspection_unit = #{inspectionUnit}
+            </if>
+            <if test="fileSaveCollator != null and fileSaveCollator != ''">
+                AND file_save_collator = #{fileSaveCollator}
+            </if>
+            <if test="inspectionTime != null">
+                AND inspection_time = #{inspectionTime}
+            </if>
+            <if test="weather != null and weather != ''">
+                AND weather = #{weather}
+            </if>
+            <if test="longitude != null">
+                AND longitude = #{longitude}
+            </if>
+            <if test="latitude != null">
+                AND latitude = #{latitude}
+            </if>
+            <if test="location != null and location != ''">
+                AND location = #{location}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件模糊查询PlanDetail -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.inspection.PlanDetail" resultMap="planDetailMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_plan_detail
+        <where>
+            <if test="planId != null">
+                AND plan_id = #{planId}
+            </if>
+            <if test="structureId != null">
+                AND structure_id = #{structureId}
+            </if>
+            <if test="inspector != null and inspector != ''">
+                AND inspector LIKE CONCAT ('%', #{inspector}, '%')
+            </if>
+            <if test="inspectionUnit != null and inspectionUnit != ''">
+                AND inspection_unit LIKE CONCAT ('%', #{inspectionUnit}, '%')
+            </if>
+            <if test="fileSaveCollator != null and fileSaveCollator != ''">
+                AND file_save_collator LIKE CONCAT ('%', #{fileSaveCollator}, '%')
+            </if>
+            <if test="inspectionTime != null">
+                AND inspection_time LIKE CONCAT ('%', #{inspectionTime}, '%')
+            </if>
+            <if test="weather != null and weather != ''">
+                AND weather LIKE CONCAT ('%', #{weather}, '%')
+            </if>
+            <if test="longitude != null">
+                AND longitude = #{longitude}
+            </if>
+            <if test="latitude != null">
+                AND latitude = #{latitude}
+            </if>
+            <if test="location != null and location != ''">
+                AND location LIKE CONCAT ('%', #{location}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+</mapper>

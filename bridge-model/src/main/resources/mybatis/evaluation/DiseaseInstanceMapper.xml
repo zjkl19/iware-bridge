@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.evaluation.DiseaseInstanceDao">
+
+    <resultMap type="com.iware.bridge.model.entity.evaluation.DiseaseInstance" id="diseaseInstanceMap">
+        <result property="id" column="id"/>
+        <result property="partType" column="part_type"/>
+        <result property="targetId" column="target_id"/>
+        <result property="diseaseId" column="disease_id"/>
+        <result property="length" column="length"/>
+        <result property="width" column="width"/>
+        <result property="depth" column="depth"/>
+        <result property="seamLength" column="seam_length"/>
+        <result property="seamWidth" column="seam_width"/>
+        <result property="angle" column="angle"/>
+        <result property="degree" column="degree"/>
+        <result property="xAxis" column="x_axis"/>
+        <result property="yAxis" column="y_axis"/>
+        <result property="remark" column="remark"/>
+        <result property="heightDifference" column="height_difference"/>
+        <result property="deflectionValue" column="deflection_value"/>
+        <result property="trend" column="trend"/>
+        <result property="number" column="number"/>
+        <result property="crackAxis" column="crack_axis"/>
+        <result property="deduct" column="deduct"/>
+        <result property="sort" column="sort"/>
+        <result property="creator" column="creator"/>
+        <result property="isDelete" column="is_delete"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,
+       part_type,
+       target_id,
+       disease_id,
+       length,
+       width,
+       depth,
+       seam_length,
+       seam_width,
+       angle,
+       degree,
+       x_axis,
+       y_axis,
+       remark,
+       height_difference,
+       deflection_value,
+       trend,
+       number,
+       crack_axis,
+       deduct,
+       sort,
+       creator,
+       is_delete,
+       status,
+       create_time,
+       modify_time
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.evaluation.DiseaseInstance">
+        insert into tb_disease_instance
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            part_type,
+            target_id,
+            disease_id,
+            length,
+            width,
+            depth,
+            seam_length,
+            seam_width,
+            angle,
+            degree,
+            x_axis,
+            y_axis,
+            remark,
+            height_difference,
+            deflection_value,
+            trend,
+            number,
+            crack_axis,
+            deduct,
+            sort,
+            creator,
+            is_delete,
+            status,
+        </trim>
+        )
+        values
+        (
+        now(),
+        now(),
+        <trim prefix="" suffix="" suffixOverrides=",">
+            #{partType},
+            #{targetId},
+            #{diseaseId},
+            #{length},
+            #{width},
+            #{depth},
+            #{seamLength},
+            #{seamWidth},
+            #{angle},
+            #{degree},
+            #{xAxis},
+            #{yAxis},
+            #{remark},
+            #{heightDifference},
+            #{deflectionValue},
+            #{trend},
+            #{number},
+            #{crackAxis},
+            #{deduct},
+            #{sort},
+            #{creator},
+            #{isDelete},
+            #{status},
+        </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询DiseaseInstance -->
+    <select id="findById" parameterType="Integer" resultMap="diseaseInstanceMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_disease_instance
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.evaluation.DiseaseInstance">
+        UPDATE
+        tb_disease_instance
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="partType != null">
+                    part_type = #{partType},
+                </if>
+                <if test="targetId != null">
+                    target_id = #{targetId},
+                </if>
+                <if test="diseaseId != null">
+                    disease_id = #{diseaseId},
+                </if>
+                <if test="length != null and length != ''">
+                    length = #{length},
+                </if>
+                <if test="width != null and width != ''">
+                    width = #{width},
+                </if>
+                <if test="depth != null and depth != ''">
+                    depth = #{depth},
+                </if>
+                <if test="seamLength != null and seamLength != ''">
+                    seam_length = #{seamLength},
+                </if>
+                <if test="seamWidth != null and seamWidth != ''">
+                    seam_width = #{seamWidth},
+                </if>
+                <if test="angle != null and angle != ''">
+                    angle = #{angle},
+                </if>
+                <if test="degree != null and degree != ''">
+                    degree = #{degree},
+                </if>
+                <if test="xAxis != null and xAxis != ''">
+                    x_axis = #{xAxis},
+                </if>
+                <if test="yAxis != null and yAxis != ''">
+                    y_axis = #{yAxis},
+                </if>
+                <if test="remark != null and remark != ''">
+                    remark = #{remark},
+                </if>
+                <if test="heightDifference != null and heightDifference != ''">
+                    height_difference = #{heightDifference},
+                </if>
+                <if test="deflectionValue != null and deflectionValue != ''">
+                    deflection_value = #{deflectionValue},
+                </if>
+                <if test="trend != null and trend != ''">
+                    trend = #{trend},
+                </if>
+                <if test="number != null and number != ''">
+                    number = #{number},
+                </if>
+                <if test="crackAxis != null and crackAxis != ''">
+                    crack_axis = #{crackAxis},
+                </if>
+                <if test="deduct != null and deduct != ''">
+                    deduct = #{deduct},
+                </if>
+                <if test="sort != null">
+                    sort = #{sort},
+                </if>
+                <if test="creator != null and creator != ''">
+                    creator = #{creator},
+                </if>
+                <if test="isDelete != null">
+                    is_delete = #{isDelete},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_disease_instance
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_disease_instance
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            part_type,
+            target_id,
+            disease_id,
+            length,
+            width,
+            depth,
+            seam_length,
+            seam_width,
+            angle,
+            degree,
+            x_axis,
+            y_axis,
+            remark,
+            height_difference,
+            deflection_value,
+            trend,
+            number,
+            crack_axis,
+            deduct,
+            sort,
+            creator,
+            is_delete,
+            status,
+        </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+            (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.partType},
+                #{it.targetId},
+                #{it.diseaseId},
+                #{it.length},
+                #{it.width},
+                #{it.depth},
+                #{it.seamLength},
+                #{it.seamWidth},
+                #{it.angle},
+                #{it.degree},
+                #{it.xAxis},
+                #{it.yAxis},
+                #{it.remark},
+                #{it.heightDifference},
+                #{it.deflectionValue},
+                #{it.trend},
+                #{it.number},
+                #{it.crackAxis},
+                #{it.deduct},
+                #{it.sort},
+                #{it.creator},
+                #{it.isDelete},
+                #{it.status},
+            </trim>
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+        tb_disease_instance
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="diseaseInstanceMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_disease_instance
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件查询DiseaseInstance -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.evaluation.DiseaseInstance" resultMap="diseaseInstanceMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_disease_instance
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="partType != null">
+                AND part_type = #{partType}
+            </if>
+            <if test="targetId != null">
+                AND target_id = #{targetId}
+            </if>
+            <if test="diseaseId != null">
+                AND disease_id = #{diseaseId}
+            </if>
+            <if test="length != null and length != ''">
+                AND length = #{length}
+            </if>
+            <if test="width != null and width != ''">
+                AND width = #{width}
+            </if>
+            <if test="depth != null and depth != ''">
+                AND depth = #{depth}
+            </if>
+            <if test="seamLength != null and seamLength != ''">
+                AND seam_length = #{seamLength}
+            </if>
+            <if test="seamWidth != null and seamWidth != ''">
+                AND seam_width = #{seamWidth}
+            </if>
+            <if test="angle != null and angle != ''">
+                AND angle = #{angle}
+            </if>
+            <if test="degree != null and degree != ''">
+                AND degree = #{degree}
+            </if>
+            <if test="xAxis != null and xAxis != ''">
+                AND x_axis = #{xAxis}
+            </if>
+            <if test="yAxis != null and yAxis != ''">
+                AND y_axis = #{yAxis}
+            </if>
+            <if test="remark != null and remark != ''">
+                AND remark = #{remark}
+            </if>
+            <if test="heightDifference != null and heightDifference != ''">
+                AND height_difference = #{heightDifference}
+            </if>
+            <if test="deflectionValue != null and deflectionValue != ''">
+                AND deflection_value = #{deflectionValue}
+            </if>
+            <if test="trend != null and trend != ''">
+                AND trend = #{trend}
+            </if>
+            <if test="number != null and number != ''">
+                AND number = #{number}
+            </if>
+            <if test="crackAxis != null and crackAxis != ''">
+                AND crack_axis = #{crackAxis}
+            </if>
+            <if test="deduct != null and deduct != ''">
+                AND deduct = #{deduct}
+            </if>
+            <if test="sort != null">
+                AND sort = #{sort}
+            </if>
+            <if test="creator != null and creator != ''">
+                AND creator = #{creator}
+            </if>
+            <if test="isDelete != null">
+                AND is_delete = #{isDelete}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件模糊查询DiseaseInstance -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.evaluation.DiseaseInstance" resultMap="diseaseInstanceMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_disease_instance
+        <where>
+            <if test="partType != null">
+                AND part_type = #{partType}
+            </if>
+            <if test="targetId != null">
+                AND target_id = #{targetId}
+            </if>
+            <if test="diseaseId != null">
+                AND disease_id = #{diseaseId}
+            </if>
+            <if test="length != null and length != ''">
+                AND length LIKE CONCAT ('%', #{length}, '%')
+            </if>
+            <if test="width != null and width != ''">
+                AND width LIKE CONCAT ('%', #{width}, '%')
+            </if>
+            <if test="depth != null and depth != ''">
+                AND depth LIKE CONCAT ('%', #{depth}, '%')
+            </if>
+            <if test="seamLength != null and seamLength != ''">
+                AND seam_length LIKE CONCAT ('%', #{seamLength}, '%')
+            </if>
+            <if test="seamWidth != null and seamWidth != ''">
+                AND seam_width LIKE CONCAT ('%', #{seamWidth}, '%')
+            </if>
+            <if test="angle != null and angle != ''">
+                AND angle LIKE CONCAT ('%', #{angle}, '%')
+            </if>
+            <if test="degree != null and degree != ''">
+                AND degree LIKE CONCAT ('%', #{degree}, '%')
+            </if>
+            <if test="xAxis != null and xAxis != ''">
+                AND x_axis LIKE CONCAT ('%', #{xAxis}, '%')
+            </if>
+            <if test="yAxis != null and yAxis != ''">
+                AND y_axis LIKE CONCAT ('%', #{yAxis}, '%')
+            </if>
+            <if test="remark != null and remark != ''">
+                AND remark LIKE CONCAT ('%', #{remark}, '%')
+            </if>
+            <if test="heightDifference != null and heightDifference != ''">
+                AND height_difference LIKE CONCAT ('%', #{heightDifference}, '%')
+            </if>
+            <if test="deflectionValue != null and deflectionValue != ''">
+                AND deflection_value LIKE CONCAT ('%', #{deflectionValue}, '%')
+            </if>
+            <if test="trend != null and trend != ''">
+                AND trend LIKE CONCAT ('%', #{trend}, '%')
+            </if>
+            <if test="number != null and number != ''">
+                AND number LIKE CONCAT ('%', #{number}, '%')
+            </if>
+            <if test="crackAxis != null and crackAxis != ''">
+                AND crack_axis LIKE CONCAT ('%', #{crackAxis}, '%')
+            </if>
+            <if test="deduct != null and deduct != ''">
+                AND deduct LIKE CONCAT ('%', #{deduct}, '%')
+            </if>
+            <if test="sort != null">
+                AND sort = #{sort}
+            </if>
+            <if test="creator != null and creator != ''">
+                AND creator LIKE CONCAT ('%', #{creator}, '%')
+            </if>
+            <if test="isDelete != null">
+                AND is_delete = #{isDelete}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+</mapper>

@@ -1,0 +1,652 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.online.dao.SensorExpDao">
+
+    <resultMap id="meansPointVOMap" type="com.iware.bridge.online.vo.MeansPointVO">
+        <result property="id" column="id"/>
+        <result property="partName" column="part_name"/>
+        <result property="componentId" column="component_id"/>
+        <result property="componentName" column="component_name"/>
+        <result property="companyId" column="company_id"/>
+        <result property="companyName" column="company_name"/>
+        <result property="structureId" column="structure_id"/>
+        <result property="structureName" column="structure_name"/>
+        <result property="sensorTypeId" column="sensor_type_id"/>
+        <result property="sensorTypeName" column="sensor_type_name"/>
+        <result property="name" column="name"/>
+        <result property="describe" column="describe"/>
+        <result property="deploymentDate" column="deployment_date"/>
+        <result property="sectionPosition" column="section_position"/>
+        <result property="collectorInformation" column="collector_information"/>
+        <result property="xAxis" column="x_axis"/>
+        <result property="yAxis" column="y_axis"/>
+        <result property="zAxis" column="z_axis"/>
+        <result property="samplingFrequency" column="sampling_frequency"/>
+        <result property="productionDate" column="production_date"/>
+        <result property="productionCoding" column="production_coding"/>
+        <result property="photoUrl" column="photo_url"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+        <collection property="sensorVOList" javaType="java.util.List" ofType="com.iware.bridge.online.vo.SensorVO"
+                    select="getSensorByMeansPoint" column="id">
+        </collection>
+    </resultMap>
+
+    <resultMap id="meansPointBOMap" type="com.iware.bridge.online.vo.MeansPointBO">
+        <result property="id" column="means_id"/>
+        <result property="componentId" column="component_id"/>
+        <result property="companyId" column="company_id"/>
+        <result property="structureId" column="structure_id"/>
+        <result property="sensorTypeId" column="sensor_type_id"/>
+        <result property="name" column="name"/>
+        <result property="describe" column="describe"/>
+        <result property="deploymentDate" column="deployment_date"/>
+        <result property="sectionPosition" column="section_position"/>
+        <result property="collectorInformation" column="collector_information"/>
+        <result property="xAxis" column="x_axis"/>
+        <result property="yAxis" column="y_axis"/>
+        <result property="zAxis" column="z_axis"/>
+        <result property="samplingFrequency" column="sampling_frequency"/>
+        <result property="productionDate" column="production_date"/>
+        <result property="productionCoding" column="production_coding"/>
+        <result property="photoUrl" column="photo_url"/>
+        <result property="status" column="means_status"/>
+        <result property="createTime" column="means_create_time"/>
+        <result property="modifyTime" column="means_modify_time"/>
+        <collection property="sensorList" javaType="java.util.List" ofType="com.iware.bridge.model.entity.online.Sensor">
+            <result property="id" column="id"/>
+            <result property="meansPointId" column="means_point_id"/>
+            <result property="sensorDetailsId" column="sensor_details_id"/>
+            <result property="sensorPrincipleId" column="sensor_principle_id"/>
+            <result property="sensorCoding" column="sensor_coding"/>
+            <result property="initialValue" column="initial_value"/>
+            <result property="warningInterval" column="warning_interval"/>
+            <result property="firstWarningUpper" column="first_warning_upper"/>
+            <result property="firstWarningLower" column="first_warning_lower"/>
+            <result property="secondWarningUpper" column="second_warning_upper"/>
+            <result property="secondWarningLower" column="second_warning_lower"/>
+            <result property="thirdWarningUpper" column="third_warning_upper"/>
+            <result property="thirdWarningLower" column="third_warning_lower"/>
+            <result property="unit" column="unit"/>
+            <result property="precision" column="precision"/>
+            <result property="status" column="status"/>
+            <result property="createTime" column="create_time"/>
+            <result property="modifyTime" column="modify_time"/>
+        </collection>
+    </resultMap>
+
+    <select id="getSensorByMeansPoint" resultType="com.iware.bridge.online.vo.SensorVO">
+        SELECT ts.*, tsp.principle AS sensor_principle_name, tsd.detail_name AS name FROM tb_sensor ts
+        LEFT JOIN tb_sensor_principle tsp ON ts.sensor_principle_id = ts.id
+        LEFT JOIN tb_sensor_details tsd ON tsd.id = ts.sensor_details_id
+        WHERE ts.means_point_id = #{id}
+        ORDER BY ts.id ASC
+    </select>
+
+    <!--查询传感器列表-->
+    <select id="selectSensorList" resultMap="meansPointVOMap">
+        SELECT * FROM (
+            SELECT
+                DISTINCT ON (tmp.id)
+                tmp.*, tpi.NAME AS part_name, tci.NAME AS component_name,
+                (SELECT tst.name FROM tb_sensor_type AS tst WHERE tst.id = tmp.sensor_type_id) AS sensor_type_name,
+                (SELECT tc.company FROM tb_company  AS tc WHERE tc.id = tmp.company_id) AS companyName,
+                ts.name AS structure_name
+            FROM
+                tb_means_point AS tmp
+            LEFT JOIN tb_structure AS ts ON ts.id = tmp.structure_id
+            LEFT JOIN tb_component_info tci ON tci.ID = tmp.component_id
+            LEFT JOIN tb_part_info tpi ON tpi.ID = tci.part_id
+            <if test="roleId != 3">
+                LEFT JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+                LEFT JOIN tb_project tp ON tp.id = psr.project_id
+                <if test="roleId == 1 or roleId == 0">
+                    LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = psr.project_id
+                    LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+                </if>
+            </if>
+
+            <where>
+                <if test="roleId == 1 or roleId == 0">
+                    AND tpa.receive_unit_id = #{unitId}
+                    AND papr.power_id = #{powerId}
+                </if>
+                <if test="roleId == 2">
+                    AND tp.unit_id = #{unitId}
+                </if>
+                <if test="filter != null and filter.structureId != null">
+                    AND tmp.structure_id = #{filter.structureId}
+                </if>
+                <if test="filter != null and filter.sensorTypeId != null">
+                    AND tmp.sensor_type_id = #{filter.sensorTypeId}
+                </if>
+                <if test="filter != null and filter.componentId != null">
+                    AND tmp.component_id = #{filter.componentId}
+                </if>
+            </where>
+        ) AS rs
+        ORDER BY rs.status ASC, rs.create_time DESC
+    </select>
+
+    <!--查询传感器列表-->
+    <select id="getAllMeansPoint" resultMap="meansPointBOMap">
+        SELECT tmp.id AS means_id, component_id, company_id, structure_id, sensor_type_id,
+        tmp.name,tmp.describe,deployment_date,section_position,collector_information,x_axis,y_axis,
+        z_axis,sampling_frequency,production_date,production_coding,photo_url,tmp.status AS means_status,
+        tmp.create_time AS means_create_time,tmp.modify_time AS means_modify_time, ts.*
+        FROM
+        tb_means_point AS tmp
+        INNER JOIN tb_sensor ts ON ts.means_point_id = tmp.id
+
+    </select>
+
+    <!--修改测点信息-->
+    <update id="updateMeansPoint" parameterType="com.iware.bridge.model.entity.online.MeansPoint">
+        UPDATE
+        tb_means_point
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="componentId != null">
+                    component_id = #{componentId},
+                </if>
+                <if test="companyId != null">
+                    company_id = #{companyId},
+                </if>
+                <if test="structureId != null">
+                    structure_id = #{structureId},
+                </if>
+                <if test="sensorTypeId != null">
+                    sensor_type_id = #{sensorTypeId},
+                </if>
+                <if test="name != null">
+                    name = #{name},
+                </if>
+                <if test="describe != null">
+                    describe = #{describe},
+                </if>
+                <if test="deploymentDate != null">
+                    deployment_date = #{deploymentDate},
+                </if>
+                <if test="sectionPosition != null">
+                    section_position = #{sectionPosition},
+                </if>
+                <if test="collectorInformation != null">
+                    collector_information = #{collectorInformation},
+                </if>
+                <if test="xAxis != null">
+                    x_axis = #{xAxis},
+                </if>
+                <if test="yAxis != null">
+                    y_axis = #{yAxis},
+                </if>
+                <if test="zAxis != null">
+                    z_axis = #{zAxis},
+                </if>
+                <if test="samplingFrequency != null">
+                    sampling_frequency = #{samplingFrequency},
+                </if>
+                <if test="referenceFrequency != null">
+                    reference_frequency = #{referenceFrequency},
+                </if>
+                <if test="floatRange != null">
+                    float_range = #{floatRange},
+                </if>
+                <if test="cableLength != null">
+                    cable_length = #{cableLength},
+                </if>
+                <if test="unitCableLength != null">
+                    unit_cable_length = #{unitCableLength},
+                </if>
+                <if test="productionDate != null">
+                    production_date = #{productionDate},
+                </if>
+                <if test="productionCoding != null">
+                    production_coding = #{productionCoding},
+                </if>
+                <if test="photoUrl != null">
+                    photo_url = #{photoUrl},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+
+    <!--查询用户有传感器桥隧数-->
+    <select id="selectSensorBridgeCount" resultType="java.lang.Integer">
+        SELECT
+            COUNT(DISTINCT tmp.structure_id)
+        FROM tb_means_point AS tmp
+        <if test="roleId != 3">
+            INNER JOIN tb_structure AS ts ON ts.id = tmp.structure_id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            INNER JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+            LEFT JOIN tb_project_appoint AS appoint ON appoint.project_id = psr.project_id
+            LEFT JOIN tb_project_appoint_power_rel AS power ON power.project_appoint_id = appoint.id
+        </if>
+        <where>
+            <if test="roleId == 1 or roleId == 0">
+                appoint.receive_unit_id = #{unitId}
+                AND power.power_id = #{powerId}
+            </if>
+            <if test="roleId == 2">
+                AND ts.unit_id = #{unitId}
+            </if>
+        </where>
+    </select>
+
+    <!--查询测点数-->
+    <select id="selectSensorCount" resultType="java.lang.Integer">
+        SELECT
+            COUNT(DISTINCT tmp.id)
+        FROM tb_means_point tmp
+        <if test="roleId != 3">
+            INNER JOIN tb_structure AS structure ON structure.id = tmp.structure_id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            INNER JOIN tb_project_structure_rel psr ON psr.structure_id = structure.id
+            INNER JOIN tb_project_appoint AS appoint ON appoint.project_id = psr.project_id
+            INNER JOIN tb_project_appoint_power_rel AS power ON power.project_appoint_id = appoint.id
+        </if>
+        <where>
+            <if test="roleId == 1 or roleId == 0">
+                AND appoint.receive_unit_id = #{unitId}
+                AND power.power_id = #{powerId}
+            </if>
+            <if test="roleId == 2">
+                AND structure.unit_id = #{unitId}
+            </if>
+            <if test="structureId != null">
+                AND tmp.structure_id = #{structureId}
+            </if>
+            <if test="status != null">
+                AND tmp.status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!--传感器类型统计-->
+    <select id="selectSensorTypeCount" resultType="com.iware.bridge.info.vo.EchartMap">
+        SELECT
+            type.name,
+            COUNT(DISTINCT tmp.id)
+        FROM tb_means_point AS tmp
+        LEFT JOIN tb_sensor_type AS type ON tmp.sensor_type_id = type.id
+        <if test="roleId != 3">
+            LEFT JOIN tb_structure AS structure ON structure.id = tmp.structure_id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_structure_rel psr ON psr.structure_id = structure.id
+            LEFT JOIN tb_project_appoint AS appoint ON appoint.project_id = psr.project_id
+            LEFT JOIN tb_project_appoint_power_rel AS power ON power.project_appoint_id = appoint.id
+        </if>
+        <where>
+            <if test="structureId != null">
+                and tmp.structure_id = #{structureId}
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                and appoint.receive_unit_id = #{unitId}
+                and power.power_id = #{powerId}
+            </if>
+            <if test="roleId == 2">
+                and structure.unit_id = #{unitId}
+            </if>
+        </where>
+        GROUP BY
+            type.id, type.name
+    </select>
+
+    <!--查询监测概况信息对象-->
+    <select id="selectBridgeSensorWarning" resultType="com.iware.bridge.online.dto.MonitoringSituationDto">
+        SELECT
+            *
+        FROM(
+            SELECT
+                structure.id AS structure_id,
+                structure.name AS structureName,
+                COUNT(DISTINCT c.id) AS untreatedWarningCount,
+                COUNT(DISTINCT d.id)AS dealWithWarningCount,
+                COUNT(DISTINCT c.id) + COUNT(DISTINCT d.id) AS todayWarningCount,
+                CASE COUNT(DISTINCT c.id) + COUNT(DISTINCT d.id)
+                    WHEN 0 THEN '0.00%'
+                    ELSE concat(round(count(DISTINCT d.id)::numeric/(count(DISTINCT c.id)+count(DISTINCT d.id))::numeric,2) *100,'%')
+                END AS percentageWarning
+            FROM tb_sensor AS sensor
+            INNER JOIN tb_means_point tmp ON tmp.id = sensor.means_point_id
+            INNER JOIN tb_structure AS structure ON structure.id = tmp.structure_id
+            INNER JOIN tb_project_structure_rel psr ON structure.id = psr.structure_id
+            <if test="roleId == 1 or roleId == 0">
+                LEFT JOIN tb_project_appoint AS appoint ON appoint.project_id = psr.project_id
+                LEFT JOIN tb_project_appoint_power_rel AS power ON power.project_appoint_id = appoint.id
+            </if>
+            LEFT JOIN tb_warning_record AS c ON c.sensor_coding = sensor.sensor_coding AND c.status = 0
+            AND to_char(c.warning_time,'yyyy-mm-dd') = to_char(now(),'yyyy-mm-dd')
+            <if test="roleId == 1 or roleId == 0">
+                AND c.warning_time BETWEEN appoint.start_time AND appoint.end_time
+            </if>
+            LEFT JOIN tb_warning_record AS d ON d.sensor_coding = sensor.sensor_coding AND d.status = 1
+            AND to_char(d.warning_time,'yyyy-mm-dd') = to_char(now(),'yyyy-mm-dd')
+            <if test="roleId == 1 or roleId == 0">
+                AND d.warning_time BETWEEN appoint.start_time AND appoint.end_time
+            </if>
+
+            <where>
+                <if test="projectId != -1 ">
+                    and psr.project_id = #{projectId}
+                </if>
+                <if test="roleId == 1 or roleId == 0">
+                    and appoint.receive_unit_id = #{unitId}
+                    and power.power_id = #{powerId}
+                </if>
+                <if test="roleId == 2">
+                    and structure.unit_id = #{unitId}
+                </if>
+            </where>
+            GROUP BY structure.id,structure.name
+        ) orderBy
+        ORDER BY
+            orderBy.todayWarningCount DESC
+
+    </select>
+
+    <!--获取结构物传感器-->
+    <select id="getSensorByStructureId" resultMap="meansPointVOMap">
+        SELECT
+        tmp.*,
+        tpi.NAME AS part_name,
+        tci.NAME AS component_name,
+        ts.NAME AS structure_name,
+        (SELECT tst.name FROM tb_sensor_type AS tst WHERE tst.id = tmp.sensor_type_id) AS sensor_type_name,
+        (SELECT tsd.detail_name FROM tb_sensor_details AS tsd WHERE tsd.id = tr.sensor_details_id) AS sensor_details_name,
+        tr.id AS sensor_id, tr.means_point_id, tr.sensor_details_id,
+        tr.sensor_principle_id, tr.sensor_coding, tr.initial_value, tr.warning_interval, tr.first_warning_upper,
+        tr.first_warning_lower, tr.second_warning_upper, tr.second_warning_lower, tr.third_warning_upper,
+        tr.third_warning_lower, tr.unit, tr.precision
+        FROM
+        tb_structure ts
+        INNER JOIN tb_means_point tmp ON tmp.structure_id = ts.id
+        INNER JOIN tb_sensor tr ON tr.means_point_id = tmp.id
+        LEFT JOIN tb_component_info tci ON tci.ID = tmp.component_id
+        LEFT JOIN tb_part_info tpi ON tpi.ID = tci.part_id
+        <where>
+            ts.id = #{structureId}
+        </where>
+    </select>
+
+    <resultMap id="sensorTypeMap" type="com.iware.bridge.online.dto.SensorTreeDto">
+        <result column="o_id" property="id"></result>
+        <result column="o_name" property="name"></result>
+        <collection property="sensorVOList" ofType="com.iware.bridge.online.vo.MeansPointVO">
+            <result property="id" column="id"/>
+            <result property="name" column="name"/>
+            <result property="componentId" column="component_id"/>
+            <result property="companyId" column="company_id"/>
+            <result property="structureId" column="structure_id"/>
+            <result property="sensorTypeId" column="sensor_type_id"/>
+            <result property="describe" column="describe"/>
+            <result property="deploymentDate" column="deployment_date"/>
+            <result property="sectionPosition" column="section_position"/>
+            <result property="collectorInformation" column="collector_information"/>
+            <result property="xAxis" column="x_axis"/>
+            <result property="yAxis" column="y_axis"/>
+            <result property="zAxis" column="z_axis"/>
+            <result property="samplingFrequency" column="sampling_frequency"/>
+            <result property="productionDate" column="production_date"/>
+            <result property="productionCoding" column="production_coding"/>
+            <result property="photoUrl" column="photo_url"/>
+            <result property="status" column="status"/>
+            <result property="sensorTypeName" column="sensor_type_name"/>
+            <result property="componentName" column="component_name"/>
+            <result property="structureName" column="structure_name"/>
+            <result property="companyName" column="company_name"/>
+            <result property="referenceFrequency" column="reference_frequency"/>
+            <result property="floatRange" column="float_range"/>
+            <result property="cableLength" column="cable_length"/>
+            <result property="unitCableLength" column="unit_cable_length"/>
+            <collection property="sensorVOList" ofType="com.iware.bridge.online.vo.SensorVO">
+                <result property="id" column="sensor_id"/>
+                <result property="companyId" column="company_id"/>
+                <result property="sensorName" column="sensor_name"/>
+                <result property="sensorTypeId" column="sensor_type_id"/>
+                <result property="sensorDetailsId" column="sensor_details_id"/>
+                <result property="sensorCoding" column="sensor_coding"/>
+                <result property="sensorPrincipleId" column="sensor_principle_id"/>
+                <result property="sensorPrincipleName" column="sensor_principle_name"/>
+                <result property="name" column="sensor_details_name"/>
+                <result property="precision" column="precision"/>
+                <result property="unit" column="unit"/>
+                <result property="initialValue" column="initial_value"/>
+                <result property="warningInterval" column="warning_interval"/>
+                <result property="firstWarningUpper" column="first_warning_upper"/>
+                <result property="firstWarningLower" column="first_warning_lower"/>
+                <result property="secondWarningUpper" column="second_warning_upper"/>
+                <result property="secondWarningLower" column="second_warning_lower"/>
+                <result property="thirdWarningUpper" column="third_warning_upper"/>
+                <result property="thirdWarningLower" column="third_warning_lower"/>
+                <result property="samplingFrequency" column="sampling_frequency"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <!--根据类型、位置获取传感器列表-->
+    <select id="selectSensorByType" resultMap="sensorTypeMap">
+        SELECT
+        <if test="type == 0">
+            tst.id AS o_id,
+            tst.name AS o_name,
+        </if>
+        <if test="type == 1 or type == 2">
+            NULL AS o_id,
+            tmp.section_position AS o_name,
+        </if>
+        tmp.*, ts.id as sensor_id, ts.sensor_coding, ts.sensor_principle_id, ts.unit, ts.initial_value,
+        ts.warning_interval, ts.first_warning_upper, ts.first_warning_lower, ts.second_warning_upper,
+         ts.second_warning_lower, ts.third_warning_upper, ts.third_warning_lower,ts.precision,ts.sensor_details_id,
+         CONCAT(tmp.name,'-', tsd.detail_name) as sensor_name, tsd.detail_name AS sensor_details_name,
+        (SELECT company FROM tb_company tc WHERE tc.id = tmp.company_id) AS company_name,
+        tst.name AS sensor_type_name,
+        (SELECT name FROM tb_component_info tci WHERE tci.id = tmp.component_id) AS component_name,
+        (SELECT principle FROM tb_sensor_principle tsp WHERE tsp.id = ts.sensor_principle_id) AS sensor_principle_name,
+        structure.name AS structure_name
+        FROM tb_sensor AS ts
+        INNER JOIN tb_means_point tmp ON ts.means_point_id = tmp.id
+        INNER JOIN tb_structure structure ON tmp.structure_id = structure.id
+        LEFT JOIN tb_sensor_type tst ON tst.id = tmp.sensor_type_id
+        LEFT JOIN tb_sensor_details tsd ON tsd.id = ts.sensor_details_id
+        <where>
+            structure.id = #{structureId}
+            <if test="queryAll == 1">
+                AND tmp.company_id = 1
+                AND tmp.sensor_type_id != 7
+            </if>
+        </where>
+        ORDER BY tmp.create_time ASC, ts.create_time ASC
+    </select>
+
+    <!--查看一小时内传感器是否有数据返回-->
+    <select id="getMeansPointStatus" resultType="com.iware.bridge.online.vo.MeansPointStatusVO">
+        SELECT * FROM (
+            SELECT
+                DISTINCT ON (tmp.id)
+                tmp.*,
+                rs.status AS current_status,
+                ts.name AS structure_name,
+                is_fraction(sampling_frequency) AS  fraction
+            FROM (
+            SELECT id, MIN(status) AS status FROM (
+                (
+                    SELECT
+                        tmp.id, ts.id AS sensor_id,
+                        CASE COUNT ( tc.paraid )
+                            WHEN 0 THEN 0
+                            ELSE 1
+                        END status
+                    FROM
+                        tb_means_point AS tmp
+                    LEFT JOIN tb_sensor AS ts ON ts.means_point_id = tmp.id
+                    LEFT JOIN composedata AS tc ON tc.paraid = ts.sensor_coding AND tc.collecttime >= (select date_trunc('hour',now())::TIMESTAMP - interval '1 hour')
+                    WHERE tmp.company_id = 1 AND ts.sensor_details_id != 7 AND tmp.status != 2
+                    GROUP BY
+                        tmp.id, ts.id
+                ) UNION ALL
+                (
+                    SELECT
+                        tmp.id, ts.id AS sensor_id,
+                        CASE COUNT ( tsh.sensor_coding )
+                            WHEN 0 THEN 0
+                            ELSE 1
+                        END status
+                    FROM
+                        tb_means_point AS tmp
+                    LEFT JOIN tb_sensor AS ts ON ts.means_point_id = tmp.id
+                    LEFT JOIN tb_sensor_hour AS tsh ON tsh.sensor_coding = ts.sensor_coding AND tsh.time >= (select date_trunc('hour',now())::TIMESTAMP - interval '1 hour')
+                    WHERE tmp.company_id != 1 AND ts.sensor_details_id != 7 AND tmp.status != 2
+                    GROUP BY
+                        tmp.id, ts.id
+                ) UNION ALL
+                (
+                    SELECT
+                        tmp.id, ts.id AS sensor_id,
+                        CASE COUNT ( tsw.sensor_coding )
+                            WHEN 0 THEN 0
+                            ELSE 1
+                        END status
+                    FROM
+                        tb_means_point AS tmp
+                    LEFT JOIN tb_sensor AS ts ON ts.means_point_id = tmp.id
+                    LEFT JOIN tb_sensor_weight AS tsw ON tsw.sensor_coding = ts.sensor_coding AND tsw.sampling_time >= (select date_trunc('hour',now())::TIMESTAMP - interval '1 hour')
+                    WHERE ts.sensor_details_id = 7 AND tmp.status != 2
+                    GROUP BY
+                        tmp.id, ts.id
+                )
+            ) AS st
+            GROUP BY
+                st.id
+            ) AS rs
+            LEFT JOIN tb_means_point tmp ON tmp.id = rs.id
+            LEFT JOIN tb_structure ts ON ts.id = tmp.structure_id
+        ) AS tb WHERE fraction = 'f'
+    </select>
+
+    <!--批量修改传感器-->
+    <update id="batchUpdateSensor" parameterType="java.util.List">
+        <foreach collection="list" item="it" separator=";">
+            <if test="it.id != null or it.sensorCoding != null">
+                UPDATE tb_sensor
+                <set>
+                    <trim prefix="" suffix="" suffixOverrides=",">
+                        modify_time = now(),
+                        <if test="it.meansPointId != null">
+                            means_point_id = #{it.meansPointId},
+                        </if>
+                        <if test="it.sensorDetailsId != null">
+                            sensor_details_id = #{it.sensorDetailsId},
+                        </if>
+                        <if test="it.sensorPrincipleId != null">
+                            sensor_principle_id = #{it.sensorPrincipleId},
+                        </if>
+                        <if test="it.sensorCoding != null and it.sensorCoding != ''">
+                            sensor_coding = #{it.sensorCoding},
+                        </if>
+                        <if test="it.initialValue != null">
+                            initial_value = #{it.initialValue},
+                        </if>
+                        <if test="it.warningInterval != null">
+                            warning_interval = #{it.warningInterval},
+                        </if>
+                        <if test="it.firstWarningUpper != null">
+                            first_warning_upper = #{it.firstWarningUpper},
+                        </if>
+                        <if test="it.firstWarningLower != null">
+                            first_warning_lower = #{it.firstWarningLower},
+                        </if>
+                        <if test="it.secondWarningUpper != null">
+                            second_warning_upper = #{it.secondWarningUpper},
+                        </if>
+                        <if test="it.secondWarningLower != null">
+                            second_warning_lower = #{it.secondWarningLower},
+                        </if>
+                        <if test="it.thirdWarningUpper != null">
+                            third_warning_upper = #{it.thirdWarningUpper},
+                        </if>
+                        <if test="it.thirdWarningLower != null">
+                            third_warning_lower = #{it.thirdWarningLower},
+                        </if>
+                        <if test="it.unit != null and it.unit != ''">
+                            unit = #{it.unit},
+                        </if>
+                        <if test="it.precision != null">
+                            precision = #{it.precision},
+                        </if>
+                        <if test="it.status != null">
+                            status = #{it.status},
+                        </if>
+                    </trim>
+                </set>
+                <where>
+                    <if test="it.id != null">
+                        id = #{it.id}
+                    </if>
+                    <if test="it.id == null and it.sensorCoding != null">
+                        sensor_coding = #{it.sensorCoding}
+                    </if>
+                </where>
+            </if>
+        </foreach>
+    </update>
+
+    <!--根据测点id删除传感器-->
+    <delete id="deleteSensorByMeansPointId">
+        DELETE FROM tb_sensor WHERE means_point_id = #{meansPointId}
+    </delete>
+
+    <!--批量修改测点状态-->
+    <update id="batchUpdateStatus" parameterType="java.util.List">
+        <foreach collection="list" item="it" separator=";">
+        UPDATE tb_means_point
+        <set>
+            <if test="it.currentStatus != null">
+                status = #{it.currentStatus}
+            </if>
+        </set>
+        WHERE id = #{it.id}
+        </foreach>
+    </update>
+
+    <!--查看是否存在同名传感器编号 -->
+    <select id="getSensorCoding" resultType="java.lang.String">
+        SELECT sensor_coding FROM tb_sensor
+        <where>
+            sensor_coding = #{sensorCoding}
+            <if test="id != null">
+                AND id != #{id}
+            </if>
+        </where>
+    </select>
+
+    <!--查看是否存在同名测点编号 -->
+    <select id="getMeansPointName" resultType="java.lang.String">
+        SELECT name FROM tb_means_point
+        <where>
+            name = #{meansPointName}
+            <if test="id != null">
+                AND id != #{id}
+            </if>
+        </where>
+    </select>
+
+    <!--图片路径设置为空-->
+    <delete id="deletePhotoUrl">
+        UPDATE tb_means_point
+        SET photo_url = null
+        WHERE id = #{id}
+    </delete>
+
+</mapper>

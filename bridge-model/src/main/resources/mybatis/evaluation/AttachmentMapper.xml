@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.evaluation.AttachmentDao">
+
+    <resultMap type="com.iware.bridge.model.entity.evaluation.Attachment" id="attachmentMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="path" column="path"/>
+        <result property="type" column="type"/>
+        <result property="targetId" column="target_id"/>
+        <result property="partType" column="part_type"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       name,
+       path,
+       type,
+       target_id,
+       part_type,
+       create_time,
+       modify_time,
+       status
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.evaluation.Attachment">
+        insert into tb_attachment
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                name,
+                path,
+                type,
+                target_id,
+                part_type,
+                status
+            </trim>
+        )
+        values
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{name},
+                #{path},
+                #{type},
+                #{targetId},
+                #{partType},
+                #{status}
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询Attachment -->
+    <select id="findById" parameterType="Integer" resultMap="attachmentMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_attachment
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.evaluation.Attachment">
+        UPDATE
+            tb_attachment
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="name != null and name != ''">
+                    name = #{name},
+                </if>
+                <if test="path != null and path != ''">
+                    path = #{path},
+                </if>
+                <if test="type != null">
+                    type = #{type},
+                </if>
+                <if test="targetId != null">
+                    target_id = #{targetId},
+                </if>
+                <if test="partType != null">
+                    part_type = #{partType},
+                </if>
+                <if test="status != null">
+                    status = #{status}
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_attachment
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_attachment
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                name,
+                path,
+                type,
+                target_id,
+                part_type,
+                status
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.name},
+                #{it.path},
+                #{it.type},
+                #{it.targetId},
+                #{it.partType},
+                #{it.status}
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_attachment
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="attachmentMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_attachment
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询Attachment -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.evaluation.Attachment" resultMap="attachmentMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_attachment
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="name != null and name != ''">
+                AND name = #{name}
+            </if>
+            <if test="path != null and path != ''">
+                AND path = #{path}
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+            <if test="targetId != null">
+                AND target_id = #{targetId}
+            </if>
+            <if test="partType != null">
+                AND part_type = #{partType}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询Attachment -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.evaluation.Attachment" resultMap="attachmentMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_attachment
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT ('%', #{name}, '%')
+            </if>
+            <if test="path != null and path != ''">
+                AND path LIKE CONCAT ('%', #{path}, '%')
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+            <if test="targetId != null">
+                AND target_id = #{targetId}
+            </if>
+            <if test="partType != null">
+                AND part_type = #{partType}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

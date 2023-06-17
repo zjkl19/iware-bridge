@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iware.bridge.app.assess.dao.AppBridgeComponentDao">
+
+
+	
+	<select id="getBridgeDeckComponentListByIds"  resultType="com.iware.bridge.model.entity.evaluation.BridgeDeckComponent">
+		select
+			 *
+		from tb_bridge_deck_component
+		where 1=1 and id in
+		<foreach collection="ids" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		
+	</select>
+	<select id="getBridgeSupcomponentListByIds"
+			resultType="com.iware.bridge.model.entity.evaluation.BridgeSupcomponent">
+		select
+		*
+		from tb_bridge_supcomponent
+		where 1=1 and id in
+		<foreach collection="ids" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+
+	</select>
+	<select id="getBridgeSubcomponentListByIds"
+			resultType="com.iware.bridge.model.entity.evaluation.BridgeSubcomponent">
+		select
+		*
+		from tb_bridge_subcomponent
+		where 1=1 and id in
+		<foreach collection="ids" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+
+	</select>
+
+<!--	<select id="getBridgeSubcomponentVoListByIds"-->
+<!--			resultType="com.iware.bridge.app.assess.vo.bridge.BridgeSubcomponentVos">-->
+<!--		select-->
+<!--		tbsub.*,-->
+<!--		tbs.is_abutment as isAbutment-->
+<!--		from tb_bridge_subcomponent as tbsub-->
+<!--		left join tb_bridge_substructure as tbs ON tbs.id=tbsub.bridge_substructure_id-->
+<!--		where 1=1 and tbsub.id in-->
+<!--		<foreach collection="ids" item="item" open="(" separator="," close=")">-->
+<!--			#{item}-->
+<!--		</foreach>-->
+
+<!--	</select>-->
+	<select id="getBridgeSubcomponentVoListByIds"
+			resultType="com.iware.bridge.app.assess.vo.bridge.BridgeSubcomponentVos">
+		SELECT
+		tbc. *,
+		(CASE
+		WHEN 22 IN (
+				SELECT
+				tb_bridge_subcomponent.component_id
+				FROM
+				tb_pier_abutment,
+				tb_bridge_subcomponent
+				WHERE
+				tb_bridge_subcomponent.pier_abutment_id = tb_pier_abutment."id"
+				and tb_bridge_subcomponent.component_id=22 and tb_pier_abutment."id"=tbc.pier_abutment_id
+			)
+		then 0 else 1 end) as isAbutment
+
+		from tb_bridge_subcomponent tbc
+		where 1=1 and tbc.id in
+		<foreach collection="ids" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+
+	</select>
+
+</mapper>

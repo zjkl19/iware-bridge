@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iware.bridge.info.dao.NoticeExpDao">
+
+    <select id="selectNoticeByUserId" resultType="com.iware.bridge.inspection.vo.AppNoticeVo">
+        select
+            tunr.id,
+            tan.title as noticeTitle,
+            tan.content as noticeContent,
+            tan.create_time as noticeTime,
+            tunr.status as status
+        from
+            tb_user_notice_rel tunr
+        left join tb_app_notice tan on tan.id=tunr.notice_id
+        where tunr.user_id=#{userId}
+        <if test="status != null">
+            and tunr.status = #{status}
+        </if>
+        order by tan.modify_time DESC
+    </select>
+
+    <select id="selectNoticeSizeByUserId" resultType="integer">
+        select
+        count(distinct (tunr.id))
+        from
+            tb_user_notice_rel tunr
+        left join tb_app_notice tan on tan.id=tunr.notice_id
+        where tunr.user_id=#{userId}
+        <if test="status != null">
+            and tunr.status = #{status}
+        </if>
+    </select>
+
+    <update id="updateRelStatus" parameterType="integer">
+        update tb_user_notice_rel
+        set status = 1
+        where user_id = #{userId}
+    </update>
+
+</mapper>

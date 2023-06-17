@@ -1,0 +1,1128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.global.BridgeInfoDao">
+
+    <resultMap type="com.iware.bridge.model.entity.global.BridgeInfo" id="bridgeInfoMap">
+        <result property="id" column="id"/>
+        <result property="structureId" column="structure_id"/>
+        <result property="cost" column="cost"/>
+        <result property="roadGrade" column="road_grade"/>
+        <result property="postingStandard" column="posting_standard"/>
+        <result property="quakeIntensity" column="quake_intensity"/>
+        <result property="skewAngle" column="skew_angle"/>
+        <result property="spanNum" column="span_num"/>
+        <result property="spanCombination" column="span_combination"/>
+        <result property="area" column="area"/>
+        <result property="totalLength" column="total_length"/>
+        <result property="totalWidth" column="total_width"/>
+        <result property="roadwayWidth" column="roadway_width"/>
+        <result property="sidewalkWidth" column="sidewalk_width"/>
+        <result property="streamwayGrade" column="streamway_grade"/>
+        <result property="highestStage" column="highest_stage"/>
+        <result property="usualStage" column="usual_stage"/>
+        <result property="upMainBeamForm" column="up_main_beam_form"/>
+        <result property="upMainBeamSize" column="up_main_beam_size"/>
+        <result property="upMainBeamQuantity" column="up_main_beam_quantity"/>
+        <result property="upCrossBeamForm" column="up_cross_beam_form"/>
+        <result property="clearanceSpan" column="clearance_span"/>
+        <result property="lowerLimit" column="lower_limit"/>
+        <result property="upRiseSpan" column="up_rise_span"/>
+        <result property="upBearingForm" column="up_bearing_form"/>
+        <result property="upBearingNum" column="up_bearing_num"/>
+        <result property="upDeckComposition" column="up_deck_composition"/>
+        <result property="upPavementLand" column="up_pavement_land"/>
+        <result property="upExpansionForm" column="up_expansion_form"/>
+        <result property="upExpansionQuantity" column="up_expansion_quantity"/>
+        <result property="upMainLongitudinalSlope" column="up_main_longitudinal_slope"/>
+        <result property="upMainCrossSlope" column="up_main_cross_slope"/>
+        <result property="upApproachLongitudinalSlope" column="up_approach_longitudinal_slope"/>
+        <result property="upApproachCrossSlope" column="up_approach_cross_slope"/>
+        <result property="pierForm" column="pier_form"/>
+        <result property="pierNum" column="pier_num"/>
+        <result property="pierElevation" column="pier_elevation"/>
+        <result property="pierCapSize" column="pier_cap_size"/>
+        <result property="pierBaseElevation" column="pier_base_elevation"/>
+        <result property="pierFloorSize" column="pier_floor_size"/>
+        <result property="pierPileSize" column="pier_pile_size"/>
+        <result property="pierPileNum" column="pier_pile_num"/>
+        <result property="abutmentForm" column="abutment_form"/>
+        <result property="abutmentNum" column="abutment_num"/>
+        <result property="abutmentElevation" column="abutment_elevation"/>
+        <result property="abutmentBaseElevation" column="abutment_base_elevation"/>
+        <result property="abutmentCapSize" column="abutment_cap_size"/>
+        <result property="abutmentBaseboardSize" column="abutment_baseboard_size"/>
+        <result property="abutmentPileSize" column="abutment_pile_size"/>
+        <result property="abutmentPileNum" column="abutment_pile_num"/>
+        <result property="abutmentRetainThick" column="abutment_retain_thick"/>
+        <result property="abutmentWingWallForm" column="abutment_wing_wall_form"/>
+        <result property="abutmentWingWallLength" column="abutment_wing_wall_length"/>
+        <result property="auxiliaryGulleySize" column="auxiliary_gulley_size"/>
+        <result property="auxiliaryGulleyNum" column="auxiliary_gulley_num"/>
+        <result property="waterDrainPipeSize" column="water_drain_pipe_size"/>
+        <result property="waterDrainPipeLength" column="water_drain_pipe_length"/>
+        <result property="auxiliaryRailLength" column="auxiliary_rail_length"/>
+        <result property="auxiliaryRailStruction" column="auxiliary_rail_struction"/>
+        <result property="auxiliaryBoundarySize" column="auxiliary_boundary_size"/>
+        <result property="auxiliaryRevetmentType" column="auxiliary_revetment_type"/>
+        <result property="auxiliaryBarricadeType" column="auxiliary_barricade_type"/>
+        <result property="pipelineWater" column="pipeline_water"/>
+        <result property="pipelineGas" column="pipeline_gas"/>
+        <result property="pipelineElectricity" column="pipeline_electricity"/>
+        <result property="pipelineCable" column="pipeline_cable"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       structure_id,
+       cost,
+       road_grade,
+       posting_standard,
+       quake_intensity,
+       skew_angle,
+       span_num,
+       span_combination,
+       area,
+       total_length,
+       total_width,
+       roadway_width,
+       sidewalk_width,
+       streamway_grade,
+       highest_stage,
+       usual_stage,
+       up_main_beam_form,
+       up_main_beam_size,
+       up_main_beam_quantity,
+       up_cross_beam_form,
+       clearance_span,
+       lower_limit,
+       up_rise_span,
+       up_bearing_form,
+       up_bearing_num,
+       up_deck_composition,
+       up_pavement_land,
+       up_expansion_form,
+       up_expansion_quantity,
+       up_main_longitudinal_slope,
+       up_main_cross_slope,
+       up_approach_longitudinal_slope,
+       up_approach_cross_slope,
+       pier_form,
+       pier_num,
+       pier_elevation,
+       pier_cap_size,
+       pier_base_elevation,
+       pier_floor_size,
+       pier_pile_size,
+       pier_pile_num,
+       abutment_form,
+       abutment_num,
+       abutment_elevation,
+       abutment_base_elevation,
+       abutment_cap_size,
+       abutment_baseboard_size,
+       abutment_pile_size,
+       abutment_pile_num,
+       abutment_retain_thick,
+       abutment_wing_wall_form,
+       abutment_wing_wall_length,
+       auxiliary_gulley_size,
+       auxiliary_gulley_num,
+       water_drain_pipe_size,
+       water_drain_pipe_length,
+       auxiliary_rail_length,
+       auxiliary_rail_struction,
+       auxiliary_boundary_size,
+       auxiliary_revetment_type,
+       auxiliary_barricade_type,
+       pipeline_water,
+       pipeline_gas,
+       pipeline_electricity,
+       pipeline_cable,
+       status,
+       create_time,
+       modify_time
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.global.BridgeInfo">
+        insert into tb_bridge_info
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            structure_id,
+            cost,
+            road_grade,
+            posting_standard,
+            quake_intensity,
+            skew_angle,
+            span_num,
+            span_combination,
+            area,
+            total_length,
+            total_width,
+            roadway_width,
+            sidewalk_width,
+            streamway_grade,
+            highest_stage,
+            usual_stage,
+            up_main_beam_form,
+            up_main_beam_size,
+            up_main_beam_quantity,
+            up_cross_beam_form,
+            clearance_span,
+            lower_limit,
+            up_rise_span,
+            up_bearing_form,
+            up_bearing_num,
+            up_deck_composition,
+            up_pavement_land,
+            up_expansion_form,
+            up_expansion_quantity,
+            up_main_longitudinal_slope,
+            up_main_cross_slope,
+            up_approach_longitudinal_slope,
+            up_approach_cross_slope,
+            pier_form,
+            pier_num,
+            pier_elevation,
+            pier_cap_size,
+            pier_base_elevation,
+            pier_floor_size,
+            pier_pile_size,
+            pier_pile_num,
+            abutment_form,
+            abutment_num,
+            abutment_elevation,
+            abutment_base_elevation,
+            abutment_cap_size,
+            abutment_baseboard_size,
+            abutment_pile_size,
+            abutment_pile_num,
+            abutment_retain_thick,
+            abutment_wing_wall_form,
+            abutment_wing_wall_length,
+            auxiliary_gulley_size,
+            auxiliary_gulley_num,
+            water_drain_pipe_size,
+            water_drain_pipe_length,
+            auxiliary_rail_length,
+            auxiliary_rail_struction,
+            auxiliary_boundary_size,
+            auxiliary_revetment_type,
+            auxiliary_barricade_type,
+            pipeline_water,
+            pipeline_gas,
+            pipeline_electricity,
+            pipeline_cable,
+            status,
+        </trim>
+        )
+        values
+        (
+        now(),
+        now(),
+        <trim prefix="" suffix="" suffixOverrides=",">
+            #{structureId},
+            #{cost},
+            #{roadGrade},
+            #{postingStandard},
+            #{quakeIntensity},
+            #{skewAngle},
+            #{spanNum},
+            #{spanCombination},
+            #{area},
+            #{totalLength},
+            #{totalWidth},
+            #{roadwayWidth},
+            #{sidewalkWidth},
+            #{streamwayGrade},
+            #{highestStage},
+            #{usualStage},
+            #{upMainBeamForm},
+            #{upMainBeamSize},
+            #{upMainBeamQuantity},
+            #{upCrossBeamForm},
+            #{clearanceSpan},
+            #{lowerLimit},
+            #{upRiseSpan},
+            #{upBearingForm},
+            #{upBearingNum},
+            #{upDeckComposition},
+            #{upPavementLand},
+            #{upExpansionForm},
+            #{upExpansionQuantity},
+            #{upMainLongitudinalSlope},
+            #{upMainCrossSlope},
+            #{upApproachLongitudinalSlope},
+            #{upApproachCrossSlope},
+            #{pierForm},
+            #{pierNum},
+            #{pierElevation},
+            #{pierCapSize},
+            #{pierBaseElevation},
+            #{pierFloorSize},
+            #{pierPileSize},
+            #{pierPileNum},
+            #{abutmentForm},
+            #{abutmentNum},
+            #{abutmentElevation},
+            #{abutmentBaseElevation},
+            #{abutmentCapSize},
+            #{abutmentBaseboardSize},
+            #{abutmentPileSize},
+            #{abutmentPileNum},
+            #{abutmentRetainThick},
+            #{abutmentWingWallForm},
+            #{abutmentWingWallLength},
+            #{auxiliaryGulleySize},
+            #{auxiliaryGulleyNum},
+            #{waterDrainPipeSize},
+            #{waterDrainPipeLength},
+            #{auxiliaryRailLength},
+            #{auxiliaryRailStruction},
+            #{auxiliaryBoundarySize},
+            #{auxiliaryRevetmentType},
+            #{auxiliaryBarricadeType},
+            #{pipelineWater},
+            #{pipelineGas},
+            #{pipelineElectricity},
+            #{pipelineCable},
+            #{status},
+        </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询BridgeInfo -->
+    <select id="findById" parameterType="Integer" resultMap="bridgeInfoMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_bridge_info
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.global.BridgeInfo">
+        UPDATE
+        tb_bridge_info
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="structureId != null">
+                    structure_id = #{structureId},
+                </if>
+                <if test="cost != null">
+                    cost = #{cost},
+                </if>
+                <if test="roadGrade != null and roadGrade != ''">
+                    road_grade = #{roadGrade},
+                </if>
+                <if test="postingStandard != null and postingStandard != ''">
+                    posting_standard = #{postingStandard},
+                </if>
+                <if test="quakeIntensity != null and quakeIntensity != ''">
+                    quake_intensity = #{quakeIntensity},
+                </if>
+                <if test="skewAngle != null and skewAngle != ''">
+                    skew_angle = #{skewAngle},
+                </if>
+                <if test="spanNum != null">
+                    span_num = #{spanNum},
+                </if>
+                <if test="spanCombination != null and spanCombination != ''">
+                    span_combination = #{spanCombination},
+                </if>
+                <if test="area != null">
+                    area = #{area},
+                </if>
+                <if test="totalLength != null">
+                    total_length = #{totalLength},
+                </if>
+                <if test="totalWidth != null">
+                    total_width = #{totalWidth},
+                </if>
+                <if test="roadwayWidth != null">
+                    roadway_width = #{roadwayWidth},
+                </if>
+                <if test="sidewalkWidth != null">
+                    sidewalk_width = #{sidewalkWidth},
+                </if>
+                <if test="streamwayGrade != null and streamwayGrade != ''">
+                    streamway_grade = #{streamwayGrade},
+                </if>
+                <if test="highestStage != null">
+                    highest_stage = #{highestStage},
+                </if>
+                <if test="usualStage != null">
+                    usual_stage = #{usualStage},
+                </if>
+                <if test="upMainBeamForm != null and upMainBeamForm != ''">
+                    up_main_beam_form = #{upMainBeamForm},
+                </if>
+                <if test="upMainBeamSize != null and upMainBeamSize != ''">
+                    up_main_beam_size = #{upMainBeamSize},
+                </if>
+                <if test="upMainBeamQuantity != null">
+                    up_main_beam_quantity = #{upMainBeamQuantity},
+                </if>
+                <if test="upCrossBeamForm != null and upCrossBeamForm != ''">
+                    up_cross_beam_form = #{upCrossBeamForm},
+                </if>
+                <if test="clearanceSpan != null">
+                    clearance_span = #{clearanceSpan},
+                </if>
+                <if test="lowerLimit != null">
+                    lower_limit = #{lowerLimit},
+                </if>
+                <if test="upRiseSpan != null and upRiseSpan != ''">
+                    up_rise_span = #{upRiseSpan},
+                </if>
+                <if test="upBearingForm != null and upBearingForm != ''">
+                    up_bearing_form = #{upBearingForm},
+                </if>
+                <if test="upBearingNum != null">
+                    up_bearing_num = #{upBearingNum},
+                </if>
+                <if test="upDeckComposition != null and upDeckComposition != ''">
+                    up_deck_composition = #{upDeckComposition},
+                </if>
+                <if test="upPavementLand != null">
+                    up_pavement_land = #{upPavementLand},
+                </if>
+                <if test="upExpansionForm != null and upExpansionForm != ''">
+                    up_expansion_form = #{upExpansionForm},
+                </if>
+                <if test="upExpansionQuantity != null">
+                    up_expansion_quantity = #{upExpansionQuantity},
+                </if>
+                <if test="upMainLongitudinalSlope != null">
+                    up_main_longitudinal_slope = #{upMainLongitudinalSlope},
+                </if>
+                <if test="upMainCrossSlope != null">
+                    up_main_cross_slope = #{upMainCrossSlope},
+                </if>
+                <if test="upApproachLongitudinalSlope != null">
+                    up_approach_longitudinal_slope = #{upApproachLongitudinalSlope},
+                </if>
+                <if test="upApproachCrossSlope != null">
+                    up_approach_cross_slope = #{upApproachCrossSlope},
+                </if>
+                <if test="pierForm != null and pierForm != ''">
+                    pier_form = #{pierForm},
+                </if>
+                <if test="pierNum != null">
+                    pier_num = #{pierNum},
+                </if>
+                <if test="pierElevation != null">
+                    pier_elevation = #{pierElevation},
+                </if>
+                <if test="pierCapSize != null and pierCapSize != ''">
+                    pier_cap_size = #{pierCapSize},
+                </if>
+                <if test="pierBaseElevation != null">
+                    pier_base_elevation = #{pierBaseElevation},
+                </if>
+                <if test="pierFloorSize != null and pierFloorSize != ''">
+                    pier_floor_size = #{pierFloorSize},
+                </if>
+                <if test="pierPileSize != null and pierPileSize != ''">
+                    pier_pile_size = #{pierPileSize},
+                </if>
+                <if test="pierPileNum != null">
+                    pier_pile_num = #{pierPileNum},
+                </if>
+                <if test="abutmentForm != null and abutmentForm != ''">
+                    abutment_form = #{abutmentForm},
+                </if>
+                <if test="abutmentNum != null">
+                    abutment_num = #{abutmentNum},
+                </if>
+                <if test="abutmentElevation != null">
+                    abutment_elevation = #{abutmentElevation},
+                </if>
+                <if test="abutmentBaseElevation != null">
+                    abutment_base_elevation = #{abutmentBaseElevation},
+                </if>
+                <if test="abutmentCapSize != null and abutmentCapSize != ''">
+                    abutment_cap_size = #{abutmentCapSize},
+                </if>
+                <if test="abutmentBaseboardSize != null and abutmentBaseboardSize != ''">
+                    abutment_baseboard_size = #{abutmentBaseboardSize},
+                </if>
+                <if test="abutmentPileSize != null and abutmentPileSize != ''">
+                    abutment_pile_size = #{abutmentPileSize},
+                </if>
+                <if test="abutmentPileNum != null">
+                    abutment_pile_num = #{abutmentPileNum},
+                </if>
+                <if test="abutmentRetainThick != null">
+                    abutment_retain_thick = #{abutmentRetainThick},
+                </if>
+                <if test="abutmentWingWallForm != null and abutmentWingWallForm != ''">
+                    abutment_wing_wall_form = #{abutmentWingWallForm},
+                </if>
+                <if test="abutmentWingWallLength != null">
+                    abutment_wing_wall_length = #{abutmentWingWallLength},
+                </if>
+                <if test="auxiliaryGulleySize != null and auxiliaryGulleySize != ''">
+                    auxiliary_gulley_size = #{auxiliaryGulleySize},
+                </if>
+                <if test="auxiliaryGulleyNum != null">
+                    auxiliary_gulley_num = #{auxiliaryGulleyNum},
+                </if>
+                <if test="waterDrainPipeSize != null and waterDrainPipeSize != ''">
+                    water_drain_pipe_size = #{waterDrainPipeSize},
+                </if>
+                <if test="waterDrainPipeLength != null">
+                    water_drain_pipe_length = #{waterDrainPipeLength},
+                </if>
+                <if test="auxiliaryRailLength != null">
+                    auxiliary_rail_length = #{auxiliaryRailLength},
+                </if>
+                <if test="auxiliaryRailStruction != null and auxiliaryRailStruction != ''">
+                    auxiliary_rail_struction = #{auxiliaryRailStruction},
+                </if>
+                <if test="auxiliaryBoundarySize != null and auxiliaryBoundarySize != ''">
+                    auxiliary_boundary_size = #{auxiliaryBoundarySize},
+                </if>
+                <if test="auxiliaryRevetmentType != null and auxiliaryRevetmentType != ''">
+                    auxiliary_revetment_type = #{auxiliaryRevetmentType},
+                </if>
+                <if test="auxiliaryBarricadeType != null and auxiliaryBarricadeType != ''">
+                    auxiliary_barricade_type = #{auxiliaryBarricadeType},
+                </if>
+                <if test="pipelineWater != null and pipelineWater != ''">
+                    pipeline_water = #{pipelineWater},
+                </if>
+                <if test="pipelineGas != null and pipelineGas != ''">
+                    pipeline_gas = #{pipelineGas},
+                </if>
+                <if test="pipelineElectricity != null and pipelineElectricity != ''">
+                    pipeline_electricity = #{pipelineElectricity},
+                </if>
+                <if test="pipelineCable != null and pipelineCable != ''">
+                    pipeline_cable = #{pipelineCable},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_bridge_info
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_bridge_info
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            structure_id,
+            cost,
+            road_grade,
+            posting_standard,
+            quake_intensity,
+            skew_angle,
+            span_num,
+            span_combination,
+            area,
+            total_length,
+            total_width,
+            roadway_width,
+            sidewalk_width,
+            streamway_grade,
+            highest_stage,
+            usual_stage,
+            up_main_beam_form,
+            up_main_beam_size,
+            up_main_beam_quantity,
+            up_cross_beam_form,
+            clearance_span,
+            lower_limit,
+            up_rise_span,
+            up_bearing_form,
+            up_bearing_num,
+            up_deck_composition,
+            up_pavement_land,
+            up_expansion_form,
+            up_expansion_quantity,
+            up_main_longitudinal_slope,
+            up_main_cross_slope,
+            up_approach_longitudinal_slope,
+            up_approach_cross_slope,
+            pier_form,
+            pier_num,
+            pier_elevation,
+            pier_cap_size,
+            pier_base_elevation,
+            pier_floor_size,
+            pier_pile_size,
+            pier_pile_num,
+            abutment_form,
+            abutment_num,
+            abutment_elevation,
+            abutment_base_elevation,
+            abutment_cap_size,
+            abutment_baseboard_size,
+            abutment_pile_size,
+            abutment_pile_num,
+            abutment_retain_thick,
+            abutment_wing_wall_form,
+            abutment_wing_wall_length,
+            auxiliary_gulley_size,
+            auxiliary_gulley_num,
+            water_drain_pipe_size,
+            water_drain_pipe_length,
+            auxiliary_rail_length,
+            auxiliary_rail_struction,
+            auxiliary_boundary_size,
+            auxiliary_revetment_type,
+            auxiliary_barricade_type,
+            pipeline_water,
+            pipeline_gas,
+            pipeline_electricity,
+            pipeline_cable,
+            status,
+        </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+            (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.structureId},
+                #{it.cost},
+                #{it.roadGrade},
+                #{it.postingStandard},
+                #{it.quakeIntensity},
+                #{it.skewAngle},
+                #{it.spanNum},
+                #{it.spanCombination},
+                #{it.area},
+                #{it.totalLength},
+                #{it.totalWidth},
+                #{it.roadwayWidth},
+                #{it.sidewalkWidth},
+                #{it.streamwayGrade},
+                #{it.highestStage},
+                #{it.usualStage},
+                #{it.upMainBeamForm},
+                #{it.upMainBeamSize},
+                #{it.upMainBeamQuantity},
+                #{it.upCrossBeamForm},
+                #{it.clearanceSpan},
+                #{it.lowerLimit},
+                #{it.upRiseSpan},
+                #{it.upBearingForm},
+                #{it.upBearingNum},
+                #{it.upDeckComposition},
+                #{it.upPavementLand},
+                #{it.upExpansionForm},
+                #{it.upExpansionQuantity},
+                #{it.upMainLongitudinalSlope},
+                #{it.upMainCrossSlope},
+                #{it.upApproachLongitudinalSlope},
+                #{it.upApproachCrossSlope},
+                #{it.pierForm},
+                #{it.pierNum},
+                #{it.pierElevation},
+                #{it.pierCapSize},
+                #{it.pierBaseElevation},
+                #{it.pierFloorSize},
+                #{it.pierPileSize},
+                #{it.pierPileNum},
+                #{it.abutmentForm},
+                #{it.abutmentNum},
+                #{it.abutmentElevation},
+                #{it.abutmentBaseElevation},
+                #{it.abutmentCapSize},
+                #{it.abutmentBaseboardSize},
+                #{it.abutmentPileSize},
+                #{it.abutmentPileNum},
+                #{it.abutmentRetainThick},
+                #{it.abutmentWingWallForm},
+                #{it.abutmentWingWallLength},
+                #{it.auxiliaryGulleySize},
+                #{it.auxiliaryGulleyNum},
+                #{it.waterDrainPipeSize},
+                #{it.waterDrainPipeLength},
+                #{it.auxiliaryRailLength},
+                #{it.auxiliaryRailStruction},
+                #{it.auxiliaryBoundarySize},
+                #{it.auxiliaryRevetmentType},
+                #{it.auxiliaryBarricadeType},
+                #{it.pipelineWater},
+                #{it.pipelineGas},
+                #{it.pipelineElectricity},
+                #{it.pipelineCable},
+                #{it.status},
+            </trim>
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+        tb_bridge_info
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="bridgeInfoMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_bridge_info
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件查询BridgeInfo -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.global.BridgeInfo" resultMap="bridgeInfoMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_bridge_info
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="structureId != null">
+                AND structure_id = #{structureId}
+            </if>
+            <if test="cost != null">
+                AND cost = #{cost}
+            </if>
+            <if test="roadGrade != null and roadGrade != ''">
+                AND road_grade = #{roadGrade}
+            </if>
+            <if test="postingStandard != null and postingStandard != ''">
+                AND posting_standard = #{postingStandard}
+            </if>
+            <if test="quakeIntensity != null and quakeIntensity != ''">
+                AND quake_intensity = #{quakeIntensity}
+            </if>
+            <if test="skewAngle != null and skewAngle != ''">
+                AND skew_angle = #{skewAngle}
+            </if>
+            <if test="spanNum != null">
+                AND span_num = #{spanNum}
+            </if>
+            <if test="spanCombination != null and spanCombination != ''">
+                AND span_combination = #{spanCombination}
+            </if>
+            <if test="area != null">
+                AND area = #{area}
+            </if>
+            <if test="totalLength != null">
+                AND total_length = #{totalLength}
+            </if>
+            <if test="totalWidth != null">
+                AND total_width = #{totalWidth}
+            </if>
+            <if test="roadwayWidth != null">
+                AND roadway_width = #{roadwayWidth}
+            </if>
+            <if test="sidewalkWidth != null">
+                AND sidewalk_width = #{sidewalkWidth}
+            </if>
+            <if test="streamwayGrade != null and streamwayGrade != ''">
+                AND streamway_grade = #{streamwayGrade}
+            </if>
+            <if test="highestStage != null">
+                AND highest_stage = #{highestStage}
+            </if>
+            <if test="usualStage != null">
+                AND usual_stage = #{usualStage}
+            </if>
+            <if test="upMainBeamForm != null and upMainBeamForm != ''">
+                AND up_main_beam_form = #{upMainBeamForm}
+            </if>
+            <if test="upMainBeamSize != null and upMainBeamSize != ''">
+                AND up_main_beam_size = #{upMainBeamSize}
+            </if>
+            <if test="upMainBeamQuantity != null">
+                AND up_main_beam_quantity = #{upMainBeamQuantity}
+            </if>
+            <if test="upCrossBeamForm != null and upCrossBeamForm != ''">
+                AND up_cross_beam_form = #{upCrossBeamForm}
+            </if>
+            <if test="clearanceSpan != null">
+                AND clearance_span = #{clearanceSpan}
+            </if>
+            <if test="lowerLimit != null">
+                AND lower_limit = #{lowerLimit}
+            </if>
+            <if test="upRiseSpan != null and upRiseSpan != ''">
+                AND up_rise_span = #{upRiseSpan}
+            </if>
+            <if test="upBearingForm != null and upBearingForm != ''">
+                AND up_bearing_form = #{upBearingForm}
+            </if>
+            <if test="upBearingNum != null">
+                AND up_bearing_num = #{upBearingNum}
+            </if>
+            <if test="upDeckComposition != null and upDeckComposition != ''">
+                AND up_deck_composition = #{upDeckComposition}
+            </if>
+            <if test="upPavementLand != null">
+                AND up_pavement_land = #{upPavementLand}
+            </if>
+            <if test="upExpansionForm != null and upExpansionForm != ''">
+                AND up_expansion_form = #{upExpansionForm}
+            </if>
+            <if test="upExpansionQuantity != null">
+                AND up_expansion_quantity = #{upExpansionQuantity}
+            </if>
+            <if test="upMainLongitudinalSlope != null">
+                AND up_main_longitudinal_slope = #{upMainLongitudinalSlope}
+            </if>
+            <if test="upMainCrossSlope != null">
+                AND up_main_cross_slope = #{upMainCrossSlope}
+            </if>
+            <if test="upApproachLongitudinalSlope != null">
+                AND up_approach_longitudinal_slope = #{upApproachLongitudinalSlope}
+            </if>
+            <if test="upApproachCrossSlope != null">
+                AND up_approach_cross_slope = #{upApproachCrossSlope}
+            </if>
+            <if test="pierForm != null and pierForm != ''">
+                AND pier_form = #{pierForm}
+            </if>
+            <if test="pierNum != null">
+                AND pier_num = #{pierNum}
+            </if>
+            <if test="pierElevation != null">
+                AND pier_elevation = #{pierElevation}
+            </if>
+            <if test="pierCapSize != null and pierCapSize != ''">
+                AND pier_cap_size = #{pierCapSize}
+            </if>
+            <if test="pierBaseElevation != null">
+                AND pier_base_elevation = #{pierBaseElevation}
+            </if>
+            <if test="pierFloorSize != null and pierFloorSize != ''">
+                AND pier_floor_size = #{pierFloorSize}
+            </if>
+            <if test="pierPileSize != null and pierPileSize != ''">
+                AND pier_pile_size = #{pierPileSize}
+            </if>
+            <if test="pierPileNum != null">
+                AND pier_pile_num = #{pierPileNum}
+            </if>
+            <if test="abutmentForm != null and abutmentForm != ''">
+                AND abutment_form = #{abutmentForm}
+            </if>
+            <if test="abutmentNum != null">
+                AND abutment_num = #{abutmentNum}
+            </if>
+            <if test="abutmentElevation != null">
+                AND abutment_elevation = #{abutmentElevation}
+            </if>
+            <if test="abutmentBaseElevation != null">
+                AND abutment_base_elevation = #{abutmentBaseElevation}
+            </if>
+            <if test="abutmentCapSize != null and abutmentCapSize != ''">
+                AND abutment_cap_size = #{abutmentCapSize}
+            </if>
+            <if test="abutmentBaseboardSize != null and abutmentBaseboardSize != ''">
+                AND abutment_baseboard_size = #{abutmentBaseboardSize}
+            </if>
+            <if test="abutmentPileSize != null and abutmentPileSize != ''">
+                AND abutment_pile_size = #{abutmentPileSize}
+            </if>
+            <if test="abutmentPileNum != null">
+                AND abutment_pile_num = #{abutmentPileNum}
+            </if>
+            <if test="abutmentRetainThick != null">
+                AND abutment_retain_thick = #{abutmentRetainThick}
+            </if>
+            <if test="abutmentWingWallForm != null and abutmentWingWallForm != ''">
+                AND abutment_wing_wall_form = #{abutmentWingWallForm}
+            </if>
+            <if test="abutmentWingWallLength != null">
+                AND abutment_wing_wall_length = #{abutmentWingWallLength}
+            </if>
+            <if test="auxiliaryGulleySize != null and auxiliaryGulleySize != ''">
+                AND auxiliary_gulley_size = #{auxiliaryGulleySize}
+            </if>
+            <if test="auxiliaryGulleyNum != null">
+                AND auxiliary_gulley_num = #{auxiliaryGulleyNum}
+            </if>
+            <if test="waterDrainPipeSize != null and waterDrainPipeSize != ''">
+                AND water_drain_pipe_size = #{waterDrainPipeSize}
+            </if>
+            <if test="waterDrainPipeLength != null">
+                AND water_drain_pipe_length = #{waterDrainPipeLength}
+            </if>
+            <if test="auxiliaryRailLength != null">
+                AND auxiliary_rail_length = #{auxiliaryRailLength}
+            </if>
+            <if test="auxiliaryRailStruction != null and auxiliaryRailStruction != ''">
+                AND auxiliary_rail_struction = #{auxiliaryRailStruction}
+            </if>
+            <if test="auxiliaryBoundarySize != null and auxiliaryBoundarySize != ''">
+                AND auxiliary_boundary_size = #{auxiliaryBoundarySize}
+            </if>
+            <if test="auxiliaryRevetmentType != null and auxiliaryRevetmentType != ''">
+                AND auxiliary_revetment_type = #{auxiliaryRevetmentType}
+            </if>
+            <if test="auxiliaryBarricadeType != null and auxiliaryBarricadeType != ''">
+                AND auxiliary_barricade_type = #{auxiliaryBarricadeType}
+            </if>
+            <if test="pipelineWater != null and pipelineWater != ''">
+                AND pipeline_water = #{pipelineWater}
+            </if>
+            <if test="pipelineGas != null and pipelineGas != ''">
+                AND pipeline_gas = #{pipelineGas}
+            </if>
+            <if test="pipelineElectricity != null and pipelineElectricity != ''">
+                AND pipeline_electricity = #{pipelineElectricity}
+            </if>
+            <if test="pipelineCable != null and pipelineCable != ''">
+                AND pipeline_cable = #{pipelineCable}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件模糊查询BridgeInfo -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.global.BridgeInfo" resultMap="bridgeInfoMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_bridge_info
+        <where>
+            <if test="structureId != null">
+                AND structure_id = #{structureId}
+            </if>
+            <if test="cost != null">
+                AND cost = #{cost}
+            </if>
+            <if test="roadGrade != null and roadGrade != ''">
+                AND road_grade LIKE CONCAT ('%', #{roadGrade}, '%')
+            </if>
+            <if test="postingStandard != null and postingStandard != ''">
+                AND posting_standard LIKE CONCAT ('%', #{postingStandard}, '%')
+            </if>
+            <if test="quakeIntensity != null and quakeIntensity != ''">
+                AND quake_intensity LIKE CONCAT ('%', #{quakeIntensity}, '%')
+            </if>
+            <if test="skewAngle != null and skewAngle != ''">
+                AND skew_angle LIKE CONCAT ('%', #{skewAngle}, '%')
+            </if>
+            <if test="spanNum != null">
+                AND span_num = #{spanNum}
+            </if>
+            <if test="spanCombination != null and spanCombination != ''">
+                AND span_combination LIKE CONCAT ('%', #{spanCombination}, '%')
+            </if>
+            <if test="area != null">
+                AND area = #{area}
+            </if>
+            <if test="totalLength != null">
+                AND total_length = #{totalLength}
+            </if>
+            <if test="totalWidth != null">
+                AND total_width = #{totalWidth}
+            </if>
+            <if test="roadwayWidth != null">
+                AND roadway_width = #{roadwayWidth}
+            </if>
+            <if test="sidewalkWidth != null">
+                AND sidewalk_width = #{sidewalkWidth}
+            </if>
+            <if test="streamwayGrade != null and streamwayGrade != ''">
+                AND streamway_grade LIKE CONCAT ('%', #{streamwayGrade}, '%')
+            </if>
+            <if test="highestStage != null">
+                AND highest_stage = #{highestStage}
+            </if>
+            <if test="usualStage != null">
+                AND usual_stage = #{usualStage}
+            </if>
+            <if test="upMainBeamForm != null and upMainBeamForm != ''">
+                AND up_main_beam_form LIKE CONCAT ('%', #{upMainBeamForm}, '%')
+            </if>
+            <if test="upMainBeamSize != null and upMainBeamSize != ''">
+                AND up_main_beam_size LIKE CONCAT ('%', #{upMainBeamSize}, '%')
+            </if>
+            <if test="upMainBeamQuantity != null">
+                AND up_main_beam_quantity = #{upMainBeamQuantity}
+            </if>
+            <if test="upCrossBeamForm != null and upCrossBeamForm != ''">
+                AND up_cross_beam_form LIKE CONCAT ('%', #{upCrossBeamForm}, '%')
+            </if>
+            <if test="clearanceSpan != null">
+                AND clearance_span = #{clearanceSpan}
+            </if>
+            <if test="lowerLimit != null">
+                AND lower_limit = #{lowerLimit}
+            </if>
+            <if test="upRiseSpan != null and upRiseSpan != ''">
+                AND up_rise_span LIKE CONCAT ('%', #{upRiseSpan}, '%')
+            </if>
+            <if test="upBearingForm != null and upBearingForm != ''">
+                AND up_bearing_form LIKE CONCAT ('%', #{upBearingForm}, '%')
+            </if>
+            <if test="upBearingNum != null">
+                AND up_bearing_num = #{upBearingNum}
+            </if>
+            <if test="upDeckComposition != null and upDeckComposition != ''">
+                AND up_deck_composition LIKE CONCAT ('%', #{upDeckComposition}, '%')
+            </if>
+            <if test="upPavementLand != null">
+                AND up_pavement_land = #{upPavementLand}
+            </if>
+            <if test="upExpansionForm != null and upExpansionForm != ''">
+                AND up_expansion_form LIKE CONCAT ('%', #{upExpansionForm}, '%')
+            </if>
+            <if test="upExpansionQuantity != null">
+                AND up_expansion_quantity = #{upExpansionQuantity}
+            </if>
+            <if test="upMainLongitudinalSlope != null">
+                AND up_main_longitudinal_slope = #{upMainLongitudinalSlope}
+            </if>
+            <if test="upMainCrossSlope != null">
+                AND up_main_cross_slope = #{upMainCrossSlope}
+            </if>
+            <if test="upApproachLongitudinalSlope != null">
+                AND up_approach_longitudinal_slope = #{upApproachLongitudinalSlope}
+            </if>
+            <if test="upApproachCrossSlope != null">
+                AND up_approach_cross_slope = #{upApproachCrossSlope}
+            </if>
+            <if test="pierForm != null and pierForm != ''">
+                AND pier_form LIKE CONCAT ('%', #{pierForm}, '%')
+            </if>
+            <if test="pierNum != null">
+                AND pier_num = #{pierNum}
+            </if>
+            <if test="pierElevation != null">
+                AND pier_elevation = #{pierElevation}
+            </if>
+            <if test="pierCapSize != null and pierCapSize != ''">
+                AND pier_cap_size LIKE CONCAT ('%', #{pierCapSize}, '%')
+            </if>
+            <if test="pierBaseElevation != null">
+                AND pier_base_elevation = #{pierBaseElevation}
+            </if>
+            <if test="pierFloorSize != null and pierFloorSize != ''">
+                AND pier_floor_size LIKE CONCAT ('%', #{pierFloorSize}, '%')
+            </if>
+            <if test="pierPileSize != null and pierPileSize != ''">
+                AND pier_pile_size LIKE CONCAT ('%', #{pierPileSize}, '%')
+            </if>
+            <if test="pierPileNum != null">
+                AND pier_pile_num = #{pierPileNum}
+            </if>
+            <if test="abutmentForm != null and abutmentForm != ''">
+                AND abutment_form LIKE CONCAT ('%', #{abutmentForm}, '%')
+            </if>
+            <if test="abutmentNum != null">
+                AND abutment_num = #{abutmentNum}
+            </if>
+            <if test="abutmentElevation != null">
+                AND abutment_elevation = #{abutmentElevation}
+            </if>
+            <if test="abutmentBaseElevation != null">
+                AND abutment_base_elevation = #{abutmentBaseElevation}
+            </if>
+            <if test="abutmentCapSize != null and abutmentCapSize != ''">
+                AND abutment_cap_size LIKE CONCAT ('%', #{abutmentCapSize}, '%')
+            </if>
+            <if test="abutmentBaseboardSize != null and abutmentBaseboardSize != ''">
+                AND abutment_baseboard_size LIKE CONCAT ('%', #{abutmentBaseboardSize}, '%')
+            </if>
+            <if test="abutmentPileSize != null and abutmentPileSize != ''">
+                AND abutment_pile_size LIKE CONCAT ('%', #{abutmentPileSize}, '%')
+            </if>
+            <if test="abutmentPileNum != null">
+                AND abutment_pile_num = #{abutmentPileNum}
+            </if>
+            <if test="abutmentRetainThick != null">
+                AND abutment_retain_thick = #{abutmentRetainThick}
+            </if>
+            <if test="abutmentWingWallForm != null and abutmentWingWallForm != ''">
+                AND abutment_wing_wall_form LIKE CONCAT ('%', #{abutmentWingWallForm}, '%')
+            </if>
+            <if test="abutmentWingWallLength != null">
+                AND abutment_wing_wall_length = #{abutmentWingWallLength}
+            </if>
+            <if test="auxiliaryGulleySize != null and auxiliaryGulleySize != ''">
+                AND auxiliary_gulley_size LIKE CONCAT ('%', #{auxiliaryGulleySize}, '%')
+            </if>
+            <if test="auxiliaryGulleyNum != null">
+                AND auxiliary_gulley_num = #{auxiliaryGulleyNum}
+            </if>
+            <if test="waterDrainPipeSize != null and waterDrainPipeSize != ''">
+                AND water_drain_pipe_size LIKE CONCAT ('%', #{waterDrainPipeSize}, '%')
+            </if>
+            <if test="waterDrainPipeLength != null">
+                AND water_drain_pipe_length = #{waterDrainPipeLength}
+            </if>
+            <if test="auxiliaryRailLength != null">
+                AND auxiliary_rail_length = #{auxiliaryRailLength}
+            </if>
+            <if test="auxiliaryRailStruction != null and auxiliaryRailStruction != ''">
+                AND auxiliary_rail_struction LIKE CONCAT ('%', #{auxiliaryRailStruction}, '%')
+            </if>
+            <if test="auxiliaryBoundarySize != null and auxiliaryBoundarySize != ''">
+                AND auxiliary_boundary_size LIKE CONCAT ('%', #{auxiliaryBoundarySize}, '%')
+            </if>
+            <if test="auxiliaryRevetmentType != null and auxiliaryRevetmentType != ''">
+                AND auxiliary_revetment_type LIKE CONCAT ('%', #{auxiliaryRevetmentType}, '%')
+            </if>
+            <if test="auxiliaryBarricadeType != null and auxiliaryBarricadeType != ''">
+                AND auxiliary_barricade_type LIKE CONCAT ('%', #{auxiliaryBarricadeType}, '%')
+            </if>
+            <if test="pipelineWater != null and pipelineWater != ''">
+                AND pipeline_water LIKE CONCAT ('%', #{pipelineWater}, '%')
+            </if>
+            <if test="pipelineGas != null and pipelineGas != ''">
+                AND pipeline_gas LIKE CONCAT ('%', #{pipelineGas}, '%')
+            </if>
+            <if test="pipelineElectricity != null and pipelineElectricity != ''">
+                AND pipeline_electricity LIKE CONCAT ('%', #{pipelineElectricity}, '%')
+            </if>
+            <if test="pipelineCable != null and pipelineCable != ''">
+                AND pipeline_cable LIKE CONCAT ('%', #{pipelineCable}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+</mapper>

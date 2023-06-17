@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.global.ProjectAppointDao">
+
+    <resultMap type="com.iware.bridge.model.entity.global.ProjectAppoint" id="projectAppointMap">
+        <result property="id" column="id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="appointUnitId" column="appoint_unit_id"/>
+        <result property="receiveUnitId" column="receive_unit_id"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="createUserId" column="create_user_id"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       project_id,
+       appoint_unit_id,
+       receive_unit_id,
+       start_time,
+       end_time,
+       create_user_id,
+       status,
+       create_time,
+       modify_time
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.global.ProjectAppoint">
+        insert into tb_project_appoint
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            project_id,
+            appoint_unit_id,
+            receive_unit_id,
+            start_time,
+            end_time,
+            create_user_id,
+            status,
+        </trim>
+        )
+        values
+        (
+        now(),
+        now(),
+        <trim prefix="" suffix="" suffixOverrides=",">
+            #{projectId},
+            #{appointUnitId},
+            #{receiveUnitId},
+            #{startTime},
+            #{endTime},
+            #{createUserId},
+            #{status},
+        </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询ProjectAppoint -->
+    <select id="findById" parameterType="Integer" resultMap="projectAppointMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_project_appoint
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.global.ProjectAppoint">
+        UPDATE
+        tb_project_appoint
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="projectId != null">
+                    project_id = #{projectId},
+                </if>
+                <if test="appointUnitId != null">
+                    appoint_unit_id = #{appointUnitId},
+                </if>
+                <if test="receiveUnitId != null">
+                    receive_unit_id = #{receiveUnitId},
+                </if>
+                <if test="startTime != null">
+                    start_time = #{startTime},
+                </if>
+                <if test="endTime != null">
+                    end_time = #{endTime},
+                </if>
+                <if test="createUserId != null">
+                    create_user_id = #{createUserId},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_project_appoint
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_project_appoint
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            project_id,
+            appoint_unit_id,
+            receive_unit_id,
+            start_time,
+            end_time,
+            create_user_id,
+            status,
+        </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+            (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.projectId},
+                #{it.appointUnitId},
+                #{it.receiveUnitId},
+                #{it.startTime},
+                #{it.endTime},
+                #{it.createUserId},
+                #{it.status},
+            </trim>
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+        tb_project_appoint
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="projectAppointMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_project_appoint
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件查询ProjectAppoint -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.global.ProjectAppoint" resultMap="projectAppointMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_project_appoint
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="projectId != null">
+                AND project_id = #{projectId}
+            </if>
+            <if test="appointUnitId != null">
+                AND appoint_unit_id = #{appointUnitId}
+            </if>
+            <if test="receiveUnitId != null">
+                AND receive_unit_id = #{receiveUnitId}
+            </if>
+            <if test="startTime != null">
+                AND start_time = #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND end_time = #{endTime}
+            </if>
+            <if test="createUserId != null">
+                AND create_user_id = #{createUserId}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件模糊查询ProjectAppoint -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.global.ProjectAppoint" resultMap="projectAppointMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_project_appoint
+        <where>
+            <if test="projectId != null">
+                AND project_id = #{projectId}
+            </if>
+            <if test="appointUnitId != null">
+                AND appoint_unit_id = #{appointUnitId}
+            </if>
+            <if test="receiveUnitId != null">
+                AND receive_unit_id = #{receiveUnitId}
+            </if>
+            <if test="startTime != null">
+                AND start_time LIKE CONCAT ('%', #{startTime}, '%')
+            </if>
+            <if test="endTime != null">
+                AND end_time LIKE CONCAT ('%', #{endTime}, '%')
+            </if>
+            <if test="createUserId != null">
+                AND create_user_id = #{createUserId}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+</mapper>

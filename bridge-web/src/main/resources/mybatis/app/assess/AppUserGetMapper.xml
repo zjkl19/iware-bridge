@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iware.bridge.app.assess.dao.AppUserGetDao">
+
+
+	<resultMap id="AppUserMap" type="com.iware.bridge.app.assess.vo.appuser.AppUserVo">
+		<id column="tauId" property="id"></id>
+		<result property="username" column="username"></result>
+		<result property="realName" column="realName"></result>
+		<result property="createTime" column="au_create_time"></result>
+		<result property="userId" column="user_id"></result>
+		<collection property="appRoles" javaType="ArrayList" ofType="com.iware.bridge.model.entity.user.AppRole">
+			<id property="id" column="tarlId"></id>
+			<result property="name" column="tarl_name"></result>
+			<result property="englishName" column="english_name"></result>
+		</collection>
+	</resultMap>
+	<select id="getUser"  resultMap="AppUserMap">
+		select
+		tu.id as tauId,
+		tu.username as username,
+		tu.real_name as realName,
+		tu.create_time as au_create_time,
+		tu.unit_id as user_id,
+			tarl.id as tarlId,
+			tarl.name as tarl_name,
+			tarl.english_name as english_name
+		from tb_user as tu
+		left outer join tb_user_app_role_rel as tuarr ON tu.id =tuarr.user_id
+		left outer join tb_app_role as tarl ON tarl.id=tuarr.app_role_id
+		where 1=1
+		<if test="id !=null">
+			and tu.id=#{id}
+		</if>
+	</select>
+
+
+
+</mapper>

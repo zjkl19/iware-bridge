@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.inspection.dao.InspectionDiseaseExpDao">
+
+    <resultMap id="InspectionDiseaseTreeMap" type="com.iware.bridge.inspection.vo.InspectionDiseaseTableCellVo">
+        <id column="id" property="id"></id>
+        <result property="damageType" column="disease_part"></result>
+        <collection property="list" javaType="ArrayList" ofType="com.iware.bridge.inspection.vo.InspectionDiseaseTableCellVo">
+            <id column="id" property="id"></id>
+            <result property="damageType" column="check_item"></result>
+            <collection property="list" javaType="ArrayList" ofType="com.iware.bridge.inspection.vo.InspectionDiseaseTableCellVo">
+                <id column="id" property="id"></id>
+                <result property="damageType" column="damage_type"></result>
+                <result property="unit" column="unit"></result>
+                <result property="structureType" column="structure_type"></result>
+                <result property="type" column="type"></result>
+                <result property="optionName" column="option_name"></result>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="listDisease" resultType="com.iware.bridge.inspection.vo.InspectionDiseaseInstanceVO">
+        SELECT
+            td.*, ti. NAME AS disease_name,ti.damage_type AS damageType,ti.check_item as checkItem,ti.disease_part as diseasePart,
+            (select array_to_string(
+                array(
+                    SELECT
+                        tdo. NAME
+                    FROM
+                        tb_disease_instance_option_rel tdior
+                        left join tb_inspection_disease_option tdo on tdior.inspection_disease_option_id=tdo.id
+                    WHERE
+                        tdior.inspection_disease_instance_id = td.id
+                    ),
+                ',')
+            )AS option_name,ti.unit as unit
+        FROM
+            tb_inspection_disease ti,
+            tb_inspection_disease_instance td
+        WHERE
+            td.inspection_disease_id = ti. ID
+            AND td.plan_detail_id = #{planDetailId}
+            <if test="keyword!=null">
+                AND (td.remarks LIKE CONCAT ('%', #{keyword}, '%')
+                    OR ti.damage_type LIKE CONCAT ('%', #{keyword}, '%')
+                )
+            </if>
+        order by ti.id ASC
+    </select>
+
+    <select id="listDiseaseWithTableRowLoop" resultType="com.iware.bridge.inspection.vo.InspectionDiseaseInstanceVO">
+        SELECT
+        td.*, ti. NAME AS disease_name,ti.damage_type AS damageType,ti.check_item as checkItem,ti.disease_part as diseasePart,
+        (select array_to_string(
+        array(
+        SELECT
+        tdo. NAME
+        FROM
+        tb_disease_instance_option_rel tdior
+        left join tb_inspection_disease_option tdo on tdior.inspection_disease_option_id=tdo.id
+        WHERE
+        tdior.inspection_disease_instance_id = td.id
+        ),
+        ',')
+        )AS option_name,ti.unit as unit
+        FROM
+        tb_inspection_disease ti,
+        tb_inspection_disease_instance td
+        WHERE
+        td.inspection_disease_id = ti. ID
+        AND td.plan_detail_id = #{planDetailId}
+        AND ti.id != 24
+        AND ti.id != 25
+        AND ti.id != 26
+        AND ti.id != 64
+        <if test="keyword!=null">
+            AND (td.remarks LIKE CONCAT ('%', #{keyword}, '%')
+            OR ti.damage_type LIKE CONCAT ('%', #{keyword}, '%')
+            )
+        </if>
+        order by ti.id ASC
+    </select>
+
+    <select id="listDiseaseWithTablePlaceholder" resultType="com.iware.bridge.inspection.vo.InspectionDiseaseInstanceVO">
+        SELECT
+        td.*, ti. NAME AS disease_name,ti.damage_type AS damageType,ti.check_item as checkItem,ti.disease_part as diseasePart,
+        (select array_to_string(
+        array(
+        SELECT
+        tdo. NAME
+        FROM
+        tb_disease_instance_option_rel tdior
+        left join tb_inspection_disease_option tdo on tdior.inspection_disease_option_id=tdo.id
+        WHERE
+        tdior.inspection_disease_instance_id = td.id
+        ),
+        ',')
+        )AS option_name,ti.unit as unit
+        FROM
+        tb_inspection_disease ti,
+        tb_inspection_disease_instance td
+        WHERE
+        td.inspection_disease_id = ti. ID
+        AND td.plan_detail_id = #{planDetailId}
+        AND (ti.id = 24
+        OR ti.id = 25
+        OR ti.id = 26
+        OR ti.id = 64)
+        <if test="keyword!=null">
+            AND (td.remarks LIKE CONCAT ('%', #{keyword}, '%')
+            OR ti.damage_type LIKE CONCAT ('%', #{keyword}, '%')
+            )
+        </if>
+        order by ti.id ASC
+    </select>
+
+    <select id="listProjectDisease" resultType="com.iware.bridge.inspection.vo.InspectionDiseaseInstanceVO">
+        SELECT
+            td.*, ti. NAME AS disease_name,ti.damage_type AS damageType,ti.check_item as checkItem,ti.disease_part as diseasePart,
+            (select array_to_string(
+                array(
+                    SELECT
+                        tdo. NAME
+                    FROM
+                        tb_disease_instance_option_rel tdior
+                        left join tb_inspection_disease_option tdo on tdior.inspection_disease_option_id=tdo.id
+                    WHERE
+                        tdior.inspection_disease_instance_id = td.id
+                    ),
+                ',')
+            )AS option_name,ti.unit as unit,ts.name as structureName,tpd.inspection_time,
+            CASE strategy
+            WHEN 4 then tpd.inspection_time
+            WHEN 7 then tpd.inspection_time
+            WHEN 9 then tpd.inspection_time
+            ELSE tmi.maintain_time
+            END AS maintain_time
+        FROM
+            tb_inspection_disease_instance td
+                left join tb_inspection_disease ti on td.inspection_disease_id = ti. ID
+                left join tb_plan_detail tpd on td.plan_detail_id=tpd.id
+                left join tb_maintain_item tmi on tmi.disease_instance_id =td.id
+                left join tb_structure ts on ts.id=tpd.structure_id
+                left join tb_plan_info tpi on tpd.plan_id=tpi.id
+                <if test="roleId == 1 or roleId == 0">
+                    LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = tpi.project_id
+                    LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+                </if>
+        WHERE
+            (tpd.id in (
+                SELECT
+                T.id
+                FROM
+                    (SELECT
+                        ROW_NUMBER () OVER (
+                        PARTITION BY tddd.structure_id,tddd.plan_id
+                        ORDER BY
+                        tddd.inspection_time DESC
+                    ) rowId,
+                tddd.*
+                FROM
+                    tb_plan_detail tddd
+                LEFT JOIN tb_plan_info tpiii ON tddd.plan_id = tpiii. ID
+                <if test="roleId != 3">
+                    LEFT JOIN tb_project AS tppp ON tpiii.project_id = tppp.id
+                </if>
+                <if test="roleId == 1 or roleId == 0">
+                    LEFT JOIN tb_project_appoint AS tpaaa ON tpaaa.project_id = tppp.id
+                    LEFT JOIN tb_project_appoint_power_rel AS paprrr ON paprrr.project_appoint_id = tpaaa.id
+                </if>
+                WHERE
+                tddd.status=1
+                <if test="roleId == 1 or roleId == 0">
+                    AND tpaaa.receive_unit_id = #{unitId}
+                    AND tddd.inspection_time BETWEEN tpaaa.start_time AND tpaaa.end_time
+                    AND paprrr.power_id = #{powerId}
+                </if>
+                <if test="roleId == 2">
+                    AND tppp.unit_id = #{unitId}
+                </if>
+                ) T
+                WHERE
+                rowid = 1) or td.status=2
+            )
+            and
+            tpi.project_id = #{projectId}
+            and ts.structure_type = #{structureType}
+            <if test="roleId == 1 or roleId == 0">
+                AND tpa.receive_unit_id = #{unitId}
+                AND tpd.inspection_time BETWEEN tpa.start_time AND tpa.end_time
+                AND papr.power_id = #{powerId}
+            </if>
+            <if test="keyword!=null">
+                AND (td.remarks LIKE CONCAT ('%', #{keyword}, '%')
+                    OR ti.damage_type LIKE CONCAT ('%', #{keyword}, '%')
+                )
+            </if>
+        order by tpd.inspection_time DESC,ti.id ASC
+    </select>
+
+    <select id="selDiseaseByMaintainId" resultType="com.iware.bridge.inspection.vo.InspectionDiseaseInstanceVO">
+        SELECT
+            td.*, ti. NAME AS disease_name,
+            ti.damage_type AS damageType,
+            ti.check_item AS checkItem,
+            ti.disease_part AS diseasePart,
+            ti.unit AS unit,
+            (select array_to_string(
+                            array(
+                                SELECT
+                        tdo. NAME
+                    FROM
+                        tb_disease_instance_option_rel tdior
+                        left join tb_inspection_disease_option tdo on tdior.inspection_disease_option_id=tdo.id
+                    WHERE
+                        tdior.inspection_disease_instance_id = td.id
+                    ),
+                            ',')
+            )AS option_name
+        FROM
+            tb_inspection_disease_instance td
+                LEFT JOIN tb_inspection_disease ti ON td.inspection_disease_id = ti. ID
+                LEFT JOIN tb_maintain_item tmi ON tmi.disease_instance_id = td. ID
+        WHERE
+            tmi. ID = #{maintainId}
+    </select>
+
+    <select id="selectOptionIdsByDiseaseInstanceId" resultType="integer">
+        select dior.inspection_disease_option_id from tb_disease_instance_option_rel dior where dior.inspection_disease_instance_id=#{instanceId}
+    </select>
+
+    <select id="selectInspectionDiseaseByStructureBridgeType" resultType="com.iware.bridge.model.entity.inspection.InspectionDisease">
+        SELECT
+            tid.*
+        FROM
+            tb_bridge_type_disease_rel tbtdr
+                LEFT JOIN tb_inspection_disease tid ON tbtdr.inspection_disease_id = tid. ID
+        WHERE
+            tbtdr.bridge_type_id = #{bridgeType}
+        ORDER BY tbtdr.seq_num
+    </select>
+
+    <select id="selectInspectionDiseaseTreeByBridgeType" resultMap="InspectionDiseaseTreeMap" parameterType="arraylist">
+        SELECT
+            tid.*,tido.name as option_name
+        FROM
+            tb_bridge_type_disease_rel tbtdr
+                LEFT JOIN tb_inspection_disease tid ON tbtdr.inspection_disease_id = tid. ID
+                LEFT JOIN tb_inspection_disease_option tido on tido.inspection_disease_id = tid.id
+        WHERE
+            tbtdr.bridge_type_id = #{bridgeType}
+            and tido.option_status=1
+            and
+              <foreach collection="keywords" open="(" close=")" separator="or" item="keyword">
+                  tid.name = #{keyword}
+              </foreach>
+        ORDER BY tbtdr.seq_num ASC
+    </select>
+
+    <select id="getNormalOptionNameByDiseaseId" resultType="com.iware.bridge.inspection.vo.DiseaseNormalOptionRel">
+        SELECT
+            inspection_disease_id as diseaseId,
+            NAME as normalValue
+        FROM
+            tb_inspection_disease_option
+        WHERE
+            option_status = 1
+            and name is not null
+    </select>
+
+</mapper>

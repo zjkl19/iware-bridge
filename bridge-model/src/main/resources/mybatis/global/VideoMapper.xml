@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.global.VideoDao">
+
+    <resultMap type="com.iware.bridge.model.entity.global.Video" id="videoMap">
+        <result property="id" column="id"/>
+        <result property="structureId" column="structure_id"/>
+        <result property="partId" column="part_id"/>
+        <result property="componentId" column="component_id"/>
+        <result property="monitorName" column="monitor_name"/>
+        <result property="type" column="type"/>
+        <result property="ezopenUrl" column="ezopen_url"/>
+        <result property="ip" column="ip"/>
+        <result property="port" column="port"/>
+        <result property="appKey" column="app_key"/>
+        <result property="password" column="password"/>
+        <result property="videoCoding" column="video_coding"/>
+        <result property="xAxis" column="x_axis"/>
+        <result property="yAxis" column="y_axis"/>
+        <result property="zAxis" column="z_axis"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       structure_id,
+       part_id,
+       component_id,
+       monitor_name,
+       type,
+       ezopen_url,
+       ip,
+       port,
+       app_key,
+       password,
+       video_coding,
+       x_axis,
+       y_axis,
+       z_axis,
+       status,
+       create_time,
+       modify_time
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.global.Video">
+        insert into tb_video
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                structure_id,
+                part_id,
+                component_id,
+                monitor_name,
+                type,
+                ezopen_url,
+                ip,
+                port,
+                app_key,
+                password,
+                video_coding,
+                x_axis,
+                y_axis,
+                z_axis,
+                status,
+            </trim>
+        )
+        values
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{structureId},
+                #{partId},
+                #{componentId},
+                #{monitorName},
+                #{type},
+                #{ezopenUrl},
+                #{ip},
+                #{port},
+                #{appKey},
+                #{password},
+                #{videoCoding},
+                #{xAxis},
+                #{yAxis},
+                #{zAxis},
+                #{status},
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询Video -->
+    <select id="findById" parameterType="Integer" resultMap="videoMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_video
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.global.Video">
+        UPDATE
+            tb_video
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="structureId != null">
+                    structure_id = #{structureId},
+                </if>
+                <if test="partId != null">
+                    part_id = #{partId},
+                </if>
+                <if test="componentId != null">
+                    component_id = #{componentId},
+                </if>
+                <if test="monitorName != null and monitorName != ''">
+                    monitor_name = #{monitorName},
+                </if>
+                <if test="type != null">
+                    type = #{type},
+                </if>
+                <if test="ezopenUrl != null and ezopenUrl != ''">
+                    ezopen_url = #{ezopenUrl},
+                </if>
+                <if test="ip != null and ip != ''">
+                    ip = #{ip},
+                </if>
+                <if test="port != null">
+                    port = #{port},
+                </if>
+                <if test="appKey != null and appKey != ''">
+                    app_key = #{appKey},
+                </if>
+                <if test="password != null and password != ''">
+                    password = #{password},
+                </if>
+                <if test="videoCoding != null and videoCoding != ''">
+                    video_coding = #{videoCoding},
+                </if>
+                <if test="xAxis != null">
+                    x_axis = #{xAxis},
+                </if>
+                <if test="yAxis != null">
+                    y_axis = #{yAxis},
+                </if>
+                <if test="zAxis != null">
+                    z_axis = #{zAxis},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_video
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_video
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                structure_id,
+                part_id,
+                component_id,
+                monitor_name,
+                type,
+                ezopen_url,
+                ip,
+                port,
+                app_key,
+                password,
+                video_coding,
+                x_axis,
+                y_axis,
+                z_axis,
+                status,
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.structureId},
+                #{it.partId},
+                #{it.componentId},
+                #{it.monitorName},
+                #{it.type},
+                #{it.ezopenUrl},
+                #{it.ip},
+                #{it.port},
+                #{it.appKey},
+                #{it.password},
+                #{it.videoCoding},
+                #{it.xAxis},
+                #{it.yAxis},
+                #{it.zAxis},
+                #{it.status},
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_video
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="videoMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_video
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询Video -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.global.Video" resultMap="videoMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_video
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="structureId != null">
+                AND structure_id = #{structureId}
+            </if>
+            <if test="partId != null">
+                AND part_id = #{partId}
+            </if>
+            <if test="componentId != null">
+                AND component_id = #{componentId}
+            </if>
+            <if test="monitorName != null and monitorName != ''">
+                AND monitor_name = #{monitorName}
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+            <if test="ezopenUrl != null and ezopenUrl != ''">
+                AND ezopen_url = #{ezopenUrl}
+            </if>
+            <if test="ip != null and ip != ''">
+                AND ip = #{ip}
+            </if>
+            <if test="port != null">
+                AND port = #{port}
+            </if>
+            <if test="appKey != null and appKey != ''">
+                AND app_key = #{appKey}
+            </if>
+            <if test="password != null and password != ''">
+                AND password = #{password}
+            </if>
+            <if test="videoCoding != null and videoCoding != ''">
+                AND video_coding = #{videoCoding}
+            </if>
+            <if test="xAxis != null">
+                AND x_axis = #{xAxis}
+            </if>
+            <if test="yAxis != null">
+                AND y_axis = #{yAxis}
+            </if>
+            <if test="zAxis != null">
+                AND z_axis = #{zAxis}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询Video -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.global.Video" resultMap="videoMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_video
+        <where>
+            <if test="structureId != null">
+                AND structure_id = #{structureId}
+            </if>
+            <if test="partId != null">
+                AND part_id = #{partId}
+            </if>
+            <if test="componentId != null">
+                AND component_id = #{componentId}
+            </if>
+            <if test="monitorName != null and monitorName != ''">
+                AND monitor_name LIKE CONCAT ('%', #{monitorName}, '%')
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+            <if test="ezopenUrl != null and ezopenUrl != ''">
+                AND ezopen_url LIKE CONCAT ('%', #{ezopenUrl}, '%')
+            </if>
+            <if test="ip != null and ip != ''">
+                AND ip LIKE CONCAT ('%', #{ip}, '%')
+            </if>
+            <if test="port != null">
+                AND port = #{port}
+            </if>
+            <if test="appKey != null and appKey != ''">
+                AND app_key LIKE CONCAT ('%', #{appKey}, '%')
+            </if>
+            <if test="password != null and password != ''">
+                AND password LIKE CONCAT ('%', #{password}, '%')
+            </if>
+            <if test="videoCoding != null and videoCoding != ''">
+                AND video_coding LIKE CONCAT ('%', #{videoCoding}, '%')
+            </if>
+            <if test="xAxis != null">
+                AND x_axis = #{xAxis}
+            </if>
+            <if test="yAxis != null">
+                AND y_axis = #{yAxis}
+            </if>
+            <if test="zAxis != null">
+                AND z_axis = #{zAxis}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.info.dao.StructureExpDao">
+
+    <!--获取结构物信息列表-->
+    <select id="getStructureList" resultType="com.iware.bridge.model.entity.global.Structure">
+        SELECT
+            DISTINCT ts.*
+        FROM
+            tb_structure ts
+        <if test="roleId == 1 or roleId == 0">
+            INNER JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+            INNER JOIN tb_project tp ON tp.id = psr.project_id
+        </if>
+        <where>
+            structure_type = #{filter.structureType}
+            <if test="roleId == 2">
+                AND unit_id = #{unitId}
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                AND tp.id IN (
+                SELECT DISTINCT
+                    tp.ID
+                FROM
+                    tb_project tp
+                LEFT JOIN tb_project_appoint tpa ON tpa.project_id = tp.ID
+                WHERE
+                    tpa.receive_unit_id = #{unitId}
+                )
+            </if>
+            <if test="filter.keyword != null and filter.keyword != ''">
+                AND (
+                    ts.name LIKE CONCAT('%', #{filter.keyword}, '%')
+                    OR ts.road_name LIKE CONCAT('%', #{filter.keyword}, '%')
+                    OR ts.span_type LIKE CONCAT('%', #{filter.keyword}, '%')
+                    OR ts.maintain_department LIKE CONCAT('%', #{filter.keyword}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY id DESC
+    </select>
+
+    <!--根据项目id获取结构物-->
+    <select id="getStructureByProjectId" resultType="com.iware.bridge.model.entity.global.Structure">
+        SELECT *
+        FROM tb_structure ts
+        INNER JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+        WHERE
+         psr.project_id = #{projectId}
+    </select>
+
+    <!--判断同名结构物-->
+    <select id="getStructureName" resultType="java.lang.String">
+        SELECT name FROM tb_structure
+        WHERE name = #{name}
+        <if test="id != null">
+            AND id != #{id}
+        </if>
+    </select>
+
+    <!--判断同代码结构物-->
+    <select id="getStructureCode" resultType="java.lang.String">
+        SELECT name FROM tb_structure
+        WHERE code = #{code}
+        <if test="id != null">
+            AND id != #{id}
+        </if>
+    </select>
+
+    <!--修改结构物信息 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.global.Structure">
+        UPDATE
+        tb_structure
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="code != null and code != ''">
+                    code = #{code},
+                </if>
+                <if test="name != null and name != ''">
+                    name = #{name},
+                </if>
+                <if test="number != null and number != ''">
+                    number = #{number},
+                </if>
+                <if test="provinceId != null">
+                    province_id = #{provinceId},
+                </if>
+                <if test="cityId != null">
+                    city_id = #{cityId},
+                </if>
+                <if test="countyId != null">
+                    county_id = #{countyId},
+                </if>
+                charge_name = #{chargeName},
+                charge_phone = #{chargePhone},
+                road_name = #{roadName},
+                build_time = #{buildTime},
+                <if test="maintainCategory != null">
+                    maintain_category = #{maintainCategory},
+                </if>
+                <if test="maintainGrade != null">
+                    maintain_grade = #{maintainGrade},
+                </if>
+                <if test="maintainDepartment != null and maintainDepartment != ''">
+                    maintain_department = #{maintainDepartment},
+                </if>
+                maintain_depart_phone = #{maintainDepartPhone},
+                <if test="designLoad != null and designLoad != ''">
+                    design_load = #{designLoad},
+                </if>
+                <if test="spanType != null and spanType != ''">
+                    span_type = #{spanType},
+                </if>
+                <if test="longitude != null">
+                    longitude = #{longitude},
+                </if>
+                <if test="latitude != null">
+                    latitude = #{latitude},
+                </if>
+                <if test="structureType != null">
+                    structure_type = #{structureType},
+                </if>
+                <if test="bridgeType != null">
+                    bridge_type = #{bridgeType},
+                </if>
+                running_department = #{runningDepartment},
+                <if test="supervisionDepartment != null and supervisionDepartment != ''">
+                    supervision_department = #{supervisionDepartment},
+                </if>
+                <if test="buildingDepartment != null and buildingDepartment != ''">
+                    building_department = #{buildingDepartment},
+                </if>
+                <if test="constructionDepartment != null and constructionDepartment != ''">
+                    construction_department = #{constructionDepartment},
+                </if>
+                <if test="designDepartment != null and designDepartment != ''">
+                    design_department = #{designDepartment},
+                </if>
+                <if test="unitId != null">
+                    unit_id = #{unitId},
+                </if>
+                <if test="createUserId != null">
+                    create_user_id = #{createUserId},
+                </if>
+                <if test="technology != null and technology != ''">
+                    technology = #{technology},
+                </if>
+                grade = #{grade},
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+
+    <!--修改桥梁详情 -->
+    <update id="updateBridgeDetail" parameterType="com.iware.bridge.model.entity.global.BridgeInfo">
+        UPDATE
+        tb_bridge_info
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="structureId != null">
+                    structure_id = #{structureId},
+                </if>
+                cost = #{cost},
+                road_grade = #{roadGrade},
+                posting_standard = #{postingStandard},
+                quake_intensity = #{quakeIntensity},
+                skew_angle = #{skewAngle},
+                span_num = #{spanNum},
+                span_combination = #{spanCombination},
+                area = #{area},
+                total_length = #{totalLength},
+                total_width = #{totalWidth},
+                roadway_width = #{roadwayWidth},
+                sidewalk_width = #{sidewalkWidth},
+                streamway_grade = #{streamwayGrade},
+                highest_stage = #{highestStage},
+                usual_stage = #{usualStage},
+                up_main_beam_form = #{upMainBeamForm},
+                up_main_beam_size = #{upMainBeamSize},
+                up_main_beam_quantity = #{upMainBeamQuantity},
+                up_cross_beam_form = #{upCrossBeamForm},
+                clearance_span = #{clearanceSpan},
+                lower_limit = #{lowerLimit},
+                up_rise_span = #{upRiseSpan},
+                up_bearing_form = #{upBearingForm},
+                up_bearing_num = #{upBearingNum},
+                up_deck_composition = #{upDeckComposition},
+                up_pavement_land = #{upPavementLand},
+                up_expansion_form = #{upExpansionForm},
+                up_expansion_quantity = #{upExpansionQuantity},
+                up_main_longitudinal_slope = #{upMainLongitudinalSlope},
+                up_main_cross_slope = #{upMainCrossSlope},
+                up_approach_longitudinal_slope = #{upApproachLongitudinalSlope},
+                up_approach_cross_slope = #{upApproachCrossSlope},
+                pier_form = #{pierForm},
+                pier_num = #{pierNum},
+                pier_elevation = #{pierElevation},
+                pier_cap_size = #{pierCapSize},
+                pier_base_elevation = #{pierBaseElevation},
+                pier_floor_size = #{pierFloorSize},
+                pier_pile_size = #{pierPileSize},
+                pier_pile_num = #{pierPileNum},
+                abutment_form = #{abutmentForm},
+                abutment_num = #{abutmentNum},
+                abutment_elevation = #{abutmentElevation},
+                abutment_base_elevation = #{abutmentBaseElevation},
+                abutment_cap_size = #{abutmentCapSize},
+                abutment_baseboard_size = #{abutmentBaseboardSize},
+                abutment_pile_size = #{abutmentPileSize},
+                abutment_pile_num = #{abutmentPileNum},
+                abutment_retain_thick = #{abutmentRetainThick},
+                abutment_wing_wall_form = #{abutmentWingWallForm},
+                abutment_wing_wall_length = #{abutmentWingWallLength},
+                auxiliary_gulley_size = #{auxiliaryGulleySize},
+                auxiliary_gulley_num = #{auxiliaryGulleyNum},
+                water_drain_pipe_size = #{waterDrainPipeSize},
+                water_drain_pipe_length = #{waterDrainPipeLength},
+                auxiliary_rail_length = #{auxiliaryRailLength},
+                auxiliary_rail_struction = #{auxiliaryRailStruction},
+                auxiliary_boundary_size = #{auxiliaryBoundarySize},
+                auxiliary_revetment_type = #{auxiliaryRevetmentType},
+                auxiliary_barricade_type = #{auxiliaryBarricadeType},
+                pipeline_water = #{pipelineWater},
+                pipeline_gas = #{pipelineGas},
+                pipeline_electricity = #{pipelineElectricity},
+                pipeline_cable = #{pipelineCable},
+                status = #{status},
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+
+    <!--修改隧道详情 -->
+    <update id="updateTunnelDetail" parameterType="com.iware.bridge.model.entity.global.TunnelInfo">
+        UPDATE
+        tb_tunnel_info
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="structureId != null">
+                    structure_id = #{structureId},
+                </if>
+                road_code = #{roadCode},
+                road_grade = #{roadGrade},
+                center_mileage = #{centerMileage},
+                length = #{length},
+                width = #{width},
+                road_width = #{roadWidth},
+                height = #{height},
+                stratum_geology = #{stratumGeology},
+                wall_rock_types = #{wallRockTypes},
+                lining_type = #{liningType},
+                lining_thick = #{liningThick},
+                portal_form = #{portalForm},
+                road_type = #{roadType},
+                lighting_installation = #{lightingInstallation},
+                air_installation = #{airInstallation},
+                fire_installation = #{fireInstallation},
+                watch_installation = #{watchInstallation},
+                electric_installation = #{electricInstallation},
+                tunnel_longitudinal_slope = #{tunnelLongitudinalSlope},
+                status = #{status},
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+
+    <!--删除一条桥梁的详细信息 -->
+    <delete id="deleteBridgeInfo">
+		DELETE FROM tb_bridge_info tb
+		WHERE structure_id = #{structureId}
+	</delete>
+
+    <!--删除一条隧道的详细信息 -->
+    <delete id="deleteTunnelInfo">
+		DELETE FROM tb_tunnel_info tb
+		WHERE structure_id = #{structureId}
+	</delete>
+
+    <!--根据项目id获取结构物-->
+    <select id="getStructureByProjectIds" resultType="com.iware.bridge.model.entity.global.Structure">
+        SELECT DISTINCT ts.*
+        FROM
+        tb_structure ts
+        INNER JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+        INNER JOIN tb_project tp ON tp.id = psr.project_id
+        <where>
+            tp.id IN
+            <foreach collection="list" item="id" separator="," open="(" close=")">
+                #{id}
+            </foreach>
+        </where>
+    </select>
+
+    <!--获取承接单位的结构物项目关联列表-->
+    <select id="getStructureCJ" resultType="com.iware.bridge.model.entity.global.Structure">
+        SELECT
+            DISTINCT ts.*
+        FROM
+            tb_structure AS ts
+            INNER JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+            INNER JOIN tb_project AS tp ON tp.ID = psr.project_id
+            INNER JOIN tb_project_appoint AS tpa ON tp.ID = tpa.project_id
+            INNER JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.ID
+        WHERE
+            papr.power_id = #{powerId}
+            and tpa.receive_unit_id  = #{unitId}
+            AND now() &lt;= tpa.end_time
+            AND now() >= tpa.start_time
+    </select>
+
+    <!--获取业主的结构物项目关联列表-->
+    <select id="getStructureYZ" resultType="com.iware.bridge.model.entity.global.Structure">
+        SELECT DISTINCT
+            ts.*
+        FROM
+            tb_structure AS ts
+            INNER JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+            INNER JOIN tb_project AS tp ON tp.ID = psr.project_id
+        WHERE
+            tp.unit_id = #{unitId}
+    </select>
+
+    <!--获取结构物信息-->
+    <select id="findById" resultType="com.iware.bridge.model.entity.global.Structure">
+        SELECT DISTINCT ts.id,ts.code,ts.name,ts.number,ts.province_id,ts.city_id,ts.county_id,
+        ts.charge_name,ts.charge_phone,ts.road_name,ts.build_time,ts.maintain_category,
+        ts.maintain_grade,ts.maintain_department,ts.maintain_depart_phone,ts.design_load,ts.span_type,
+        ts.longitude,ts.latitude,ts.structure_type,ts.bridge_type,ts.supervision_department,
+        ts.building_department,ts.construction_department,ts.design_department,ts.unit_id,ts.create_user_id,ts.technology,
+        ts.grade,ts.status,ts.create_time,ts.modify_time,
+        (SELECT name FROM tb_unit tu WHERE tu.id = ts.unit_id) AS  running_department
+        FROM tb_structure ts
+        WHERE ts.id = #{structureId}
+    </select>
+</mapper>

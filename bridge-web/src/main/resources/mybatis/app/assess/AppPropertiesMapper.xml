@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iware.bridge.app.assess.dao.AppPropertiesDao">
+
+	<resultMap id="bridgeTypeComponentMap" type="com.iware.bridge.app.assess.vo.offline.property.BridgeTypeComponentVo">
+		<id property="id" column="id"/>
+		<result property="partType" column="part_type"/>
+		<result property="initialWeight" column="initial_weight"/>
+		<result property="pierAbutment" column="pier_abutment"/>
+		<result property="bridgeTypeId" column="bridge_type_id"/>
+		<collection property="bridgeTypeList" ofType="com.iware.bridge.model.entity.evaluation.BridgeType">
+			<id column="bridge_type_id" property="id"></id>
+			<result property="name" column="btName"/>
+
+
+		</collection>
+		<collection property="componentList" ofType="com.iware.bridge.model.entity.evaluation.Component">
+			<id column="componentId" property="id"></id>
+			<result property="name" column="compName"/>
+			<result property="needJudge" column="need_judge"/>
+		</collection>
+	</resultMap>
+
+	<select id="getBridgeTypeComponentAllList" resultMap="bridgeTypeComponentMap">
+		select
+			 bbtcr.id as id,
+			 bbtcr.part_type,
+			 bbtcr.initial_weight,
+			 bbtcr.pier_abutment,
+			 bbtcr.bridge_type_id,
+			 tbt.name as btName,
+			 bbtcr.component_id as componentId,
+			 tc.name as compName,
+			 tc.need_judge
+
+		from tb_bridge_type_component_rel bbtcr
+		left outer join tb_bridge_type tbt ON tbt.id=bbtcr.bridge_type_id
+		left outer join tb_component as tc ON tc.id=bbtcr.component_id
+
+	</select>
+
+	<resultMap id="bridgeTypeMaps" type="com.iware.bridge.app.assess.vo.offline.property.BridgeTypeVo">
+		<id column="bridge_type_id" property="id"></id>
+		<result property="name" column="btName"/>
+
+		<collection property="componentList" ofType="com.iware.bridge.app.assess.vo.offline.property.ComponentVo">
+			<id column="componentId" property="id"></id>
+			<result property="name" column="compName"/>
+			<result property="needJudge" column="need_judge"/>
+			<result property="partType" column="part_type"/>
+			<result property="initialWeight" column="initial_weight"/>
+			<result property="pierAbutment" column="pier_abutment"/>
+		</collection>
+	</resultMap>
+	<select id="getBridgeTypeAndComponentAllList" resultMap="bridgeTypeMaps">
+		select
+			 bbtcr.id as id,
+			 bbtcr.part_type,
+			 bbtcr.initial_weight,
+			 bbtcr.pier_abutment,
+			 bbtcr.bridge_type_id,
+			 tbt.name as btName,
+			 bbtcr.component_id as componentId,
+			 tc.name as compName,
+			 tc.need_judge
+
+		from tb_bridge_type_component_rel bbtcr
+		left outer join tb_bridge_type tbt ON tbt.id=bbtcr.bridge_type_id
+		left outer join tb_component as tc ON tc.id=bbtcr.component_id
+
+	</select>
+
+	<resultMap id="componentDisease" type="com.iware.bridge.app.assess.vo.offline.property.ComponentDiseaseVo">
+		<id property="id" column="id"/>
+		<result property="id" column="id"/>
+		<result property="partType" column="part_type"/>
+		<result property="bridgeTypeId" column="bridge_type_id"/>
+		<collection property="bridgeTypeList" ofType="com.iware.bridge.model.entity.evaluation.BridgeType">
+			<id column="bridge_type_id" property="id"></id>
+			<result property="name" column="btName"/>
+		</collection>
+		<collection property="componentList" ofType="com.iware.bridge.model.entity.evaluation.Component">
+			<id column="componentId" property="id"></id>
+			<result property="name" column="compName"/>
+			<result property="needJudge" column="need_judge"/>
+		</collection>
+		<collection property="bridgeDiseaseList" ofType="com.iware.bridge.model.entity.evaluation.BridgeDisease">
+			<id column="disease_id" property="id"></id>
+			<result property="name" column="dName"/>
+			<result property="code" column="dCode"/>
+		</collection>
+		<collection property="propertyGroupList" ofType="com.iware.bridge.app.assess.vo.offline.property.PropertyGroupVo">
+			<id column="tpgId" property="id"></id>
+			<result property="propertyId" column="property_id"/>
+			<result property="accord" column="accord"/>
+			<collection property="propertyList" ofType="com.iware.bridge.app.assess.vo.offline.property.PropertyVo">
+				<id column="property_id" property="id"></id>
+				<result property="name" column="tpName"/>
+				<result property="englishName" column="tpEnglishName"/>
+				<result property="unit" column="unit"/>
+				<result property="type" column="tpType"/>
+
+				<collection property="propertyOptionList" ofType="com.iware.bridge.app.assess.vo.offline.property.PropertyOptionVo">
+					<id column="tpoId" property="id"></id>
+					<result property="optionName" column="option_name"/>
+					<result property="seqNum" column="seq_num"/>
+				</collection>
+			</collection>
+		</collection>
+	</resultMap>
+	<select id="getComponentDiseaseAllList" resultMap="componentDisease">
+		select
+			 tcdr.id as id,
+			 tcdr.part_type,
+			 tcdr.bridge_type_id,
+			 tbt.name as btName,
+			 tcdr.component_id as componentId,
+			 tc.name as compName,
+			 tc.need_judge,
+			 tcdr.disease_id,
+			 tbd.name as dName,
+			 tbd.code as dCode,
+			 tcdr.groups,
+			 tpg.id as tpgId,
+			 tpg.property_id,
+			 tpg.accord,
+			 tp.name as tpName,
+			 tp.english_name as tpEnglishName,
+			 tp.unit,
+			 tp.type as tpType,
+			 tpo.id as tpoId,
+			 tpo.option_name,
+			 tpgor.seq_num
+		from tb_component_disease_rel tcdr
+		left outer join tb_bridge_type tbt ON tbt.id=tcdr.bridge_type_id
+		left outer join tb_component as tc ON tc.id=tcdr.component_id
+		left outer join tb_bridge_disease as tbd ON tbd.id=tcdr.disease_id
+		left outer join tb_property_group as tpg ON tpg.groups=tcdr.groups
+		left outer join tb_property as tp ON tp.id=tpg.property_id
+		left outer join tb_property_group_option_rel as tpgor ON tpgor.property_group_id=tpg.id and tpgor.component_disease_rel=tcdr.id
+		left outer join tb_property_option as tpo ON tpo.id=tpgor.property_option_id
+
+	</select>
+
+	<resultMap id="BridgeTypePropertyMap" type="com.iware.bridge.app.assess.vo.offline.property.BridgeTypeVo">
+		<id property="id" column="bridge_type_id"/>
+		<result property="name" column="btName"/>
+		<collection property="targetList" ofType="com.iware.bridge.app.assess.vo.offline.property.BridgeTargetVo">
+			<id property="id" column="tpr_id"/>
+			<result property="targetId" column="target_id"/>
+			<result property="targetType" column="target_type"/>
+			<result property="partType" column="part_type"/>
+			<collection property="propertyList" ofType="com.iware.bridge.app.assess.vo.offline.property.PropertyVo">
+				<id property="id" column="tpId"/>
+				<result property="name" column="tpName"/>
+				<result property="englishName" column="tpEnglishName"/>
+				<result property="unit" column="tpUnit"/>
+				<result property="type" column="tpType"/>
+				<collection property="propertyOptionList" ofType="com.iware.bridge.app.assess.vo.offline.property.PropertyOptionVo">
+					<id property="id" column="tpoId"/>
+					<result property="optionName" column="OptionName"/>
+					<collection property="propertyList" ofType="com.iware.bridge.model.entity.evaluation.Property">
+						<id property="id" column="property_id"/>
+
+					</collection>
+				</collection>
+			</collection>
+		</collection>
+	</resultMap>
+	<select id="getBridgeTypeOptionsList" resultMap="BridgeTypePropertyMap">
+		select
+			tpr.id as tpr_id,
+			tpr.bridge_type_id as bridge_type_id,
+			tbt.name as btName,
+			tpr.target_id as target_id,
+			tpr.target_type as target_type,
+			tpr.part_type as part_type,
+			tp.id as tpId,
+			tp.name as tpName,
+			tp.english_name as tpEnglishName,
+			tp.unit as tpUnit,
+			tp.type as tpType,
+			tpo.id as tpoId,
+			tpo.option_name as OptionName,
+			topr.property_id
+		from tb_property_rel as tpr
+		left outer join tb_bridge_type as tbt ON tbt.id=tpr.bridge_type_id
+		left outer join tb_property_option_rel as tpor ON tpor.property_rel_id=tpr.id
+		left outer join tb_property as tp ON tp.id=tpor.property_id
+		left outer join tb_property_option as tpo ON tpo.id=tpor.property_options_id
+		left outer join tb_option_property_rel as topr ON topr.property_option_rel_id=tpor.id
+
+
+	</select>
+
+
+</mapper>

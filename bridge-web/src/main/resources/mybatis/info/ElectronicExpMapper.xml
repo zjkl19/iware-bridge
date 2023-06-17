@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.info.dao.ElectronicArchivesExpDao">
+
+    <!--分页获取电子档案-->
+    <select id="listByPage" resultType="com.iware.bridge.info.vo.ElectronicArchivesVO">
+        SELECT
+            tea.*,
+            CASE tea.type
+                WHEN 1 THEN '设计档案'
+                WHEN 2 THEN '施工文件'
+                WHEN 3 THEN '合同文件'
+                WHEN 4 THEN '基本资料'
+                WHEN 5 THEN '养护档案'
+                WHEN 6 THEN '其他'
+            END AS type_name,
+            tu.real_name AS username
+        FROM tb_electronic_archives tea
+        INNER JOIN tb_user tu ON tu.id = tea.user_id
+        <where>
+            <if test="structureId != null">
+                AND structure_id = #{structureId}
+            </if>
+            <if test="fileName != null and fileName != ''">
+                AND file_name LIKE CONCAT ('%', #{fileName}, '%')
+            </if>
+            <if test="code != null and code != ''">
+                AND code LIKE CONCAT ('%', #{code}, '%')
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+            <if test="summary != null and summary != ''">
+                AND summary LIKE CONCAT ('%', #{summary}, '%')
+            </if>
+            <if test="userId != null">
+                AND user_id LIKE CONCAT ('%', #{userId}, '%')
+            </if>
+            <if test="path != null and path != ''">
+                AND path LIKE CONCAT ('%', #{path}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.global.ElectronicArchives">
+        UPDATE
+        tb_electronic_archives
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="structureId != null">
+                    structure_id = #{structureId},
+                </if>
+                <if test="fileName != null">
+                    file_name = #{fileName},
+                </if>
+                <if test="code != null">
+                    code = #{code},
+                </if>
+                <if test="type != null">
+                    type = #{type},
+                </if>
+                <if test="summary != null">
+                    summary = #{summary},
+                </if>
+                <if test="userId != null">
+                    user_id = #{userId},
+                </if>
+                <if test="path != null">
+                    path = #{path},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+</mapper>

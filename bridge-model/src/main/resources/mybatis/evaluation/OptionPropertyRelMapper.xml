@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.evaluation.OptionPropertyRelDao">
+
+    <resultMap type="com.iware.bridge.model.entity.evaluation.OptionPropertyRel" id="optionPropertyRelMap">
+        <result property="id" column="id"/>
+        <result property="propertyOptionRelId" column="property_option_rel_id"/>
+        <result property="propertyId" column="property_id"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       property_option_rel_id,
+       property_id
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.evaluation.OptionPropertyRel">
+        insert into tb_option_property_rel
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                property_option_rel_id,
+                property_id
+            </trim>
+        )
+        values
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{propertyOptionRelId},
+                #{propertyId}
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询OptionPropertyRel -->
+    <select id="findById" parameterType="Integer" resultMap="optionPropertyRelMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_option_property_rel
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.evaluation.OptionPropertyRel">
+        UPDATE
+            tb_option_property_rel
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                <if test="propertyOptionRelId != null">
+                    property_option_rel_id = #{propertyOptionRelId},
+                </if>
+                <if test="propertyId != null">
+                    property_id = #{propertyId}
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_option_property_rel
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_option_property_rel
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                property_option_rel_id,
+                property_id
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.propertyOptionRelId},
+                #{it.propertyId}
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_option_property_rel
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="optionPropertyRelMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_option_property_rel
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询OptionPropertyRel -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.evaluation.OptionPropertyRel" resultMap="optionPropertyRelMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_option_property_rel
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="propertyOptionRelId != null">
+                AND property_option_rel_id = #{propertyOptionRelId}
+            </if>
+            <if test="propertyId != null">
+                AND property_id = #{propertyId}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询OptionPropertyRel -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.evaluation.OptionPropertyRel" resultMap="optionPropertyRelMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_option_property_rel
+        <where>
+            <if test="propertyOptionRelId != null">
+                AND property_option_rel_id = #{propertyOptionRelId}
+            </if>
+            <if test="propertyId != null">
+                AND property_id = #{propertyId}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

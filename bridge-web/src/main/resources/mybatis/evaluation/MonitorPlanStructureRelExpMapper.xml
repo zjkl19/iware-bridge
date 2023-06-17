@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.iware.bridge.evaluation.dao.MonitorPlanStructureRelExpDao">
+	<update id="deleteMonitorStructure">
+        update tb_monitor_plan_structure_rel set is_delete = 1 where id = #{id}
+    </update>
+	<delete id="deleteStructure">
+		DELETE FROM tb_monitor_plan_structure_rel WHERE monitor_plan_id = #{id}
+	</delete>
+
+	<select id="selectNewProject"
+			resultType="com.iware.bridge.evaluation.vo.EvaluationAnalysisVO">
+		SELECT structure.id,
+		structure.structure_info_id,
+		plan.project_info_id,
+		to_char(plan.start_time,'yyyy') as start_time
+		FROM tb_monitor_plan_structure_rel as structure
+		join (
+		SELECT id,
+		start_time,
+		project_info_id
+		FROM tb_monitor_plan
+		where 1= 1
+		<if test="projectId != null and projectId != 0">
+			and project_info_id = #{projectId}
+		</if>
+		<if test="projectId == null or projectId == 0">
+			<if test="list != null and list.size > 0">
+				and project_info_id in
+				<foreach collection="list" item="item" open="(" close=")" separator=",">
+					#{item.id}
+				</foreach>
+			</if>
+			<if test="list == null or list.size &lt; 1">
+				and project_info_id = -1
+			</if>
+		</if>
+		<if test="time != null and time != ''">
+			and to_char(start_time,'yyyy') = #{time}
+		</if>
+		) as plan on structure.monitor_plan_id = plan.id
+		where 1=1
+		<if test="structureId != null and structureId != 0">
+			and structure_info_id = #{structureId}
+		</if>
+		ORDER BY plan.start_time DESC, structure.id DESC limit 1
+	</select>
+	<select id="selectDetectionNumber" resultType="java.lang.Integer">
+		SELECT COUNT(rel.id)
+		FROM tb_monitor_plan_structure_rel as rel
+		join tb_bridge_score as score on score.target_id = rel.id and score.type = 1
+		WHERE rel.monitor_plan_id in(
+		SELECT id
+		FROM tb_monitor_plan
+		WHERE 1=1
+		<if test="projectId != null and projectId != 0">
+			and project_info_id = #{projectId}
+		</if>
+<!--		<if test="time != null and time != ''">-->
+<!--			and to_char(start_time, 'yyyy') = #{time}-->
+<!--		</if>-->
+		)
+		<if test="structureId != null and structureId != 0">
+			and rel.structure_info_id = #{structureId}
+		</if>
+	</select>
+	<select id="getRecordList" resultType="com.iware.bridge.evaluation.vo.AssessRecordVO">
+		SELECT
+		tmpr."id",
+		tmpr.structure_info_id,
+		tmp.modify_time AS "time",
+		tmpr.structure_name,
+		tpi.name as project_name,
+		bs.rating_level,
+		ROUND(CAST(bs.score as numeric), 2) AS score,
+		por.id as original
+		FROM
+		tb_monitor_plan_structure_rel AS tmpr
+		LEFT JOIN tb_bridge_score bs ON tmpr."id" = bs.target_id
+		AND bs."type" = 1
+		LEFT JOIN tb_monitor_plan AS tmp ON tmp.ID = tmpr.monitor_plan_id
+		LEFT JOIN tb_project AS tpi ON tpi.ID = tmp.project_info_id
+		left join tb_monitor_plan_original_record as por on por.monitor_plan_structure_rel_id = tmpr.id
+		where
+		tmp.upload = 1 and
+		(tmpr.is_delete = 0 or tmpr.is_delete is null)
+		<if test="projectInfoId != null and projectInfoId != ''">
+			AND tpi.id = #{projectInfoId}
+		</if>
+		<if test="structureInfoId != null and structureInfoId != ''">
+			AND tmpr.structure_info_id = #{structureInfoId}
+		</if>
+		<if test="list != null and list.size > 0">
+			AND tpi.id IN
+			<foreach collection="list" item="item" separator="," open="(" close=")">
+				#{item.id}
+			</foreach>
+		</if>
+		<if test="list == null or list.size &lt; 1">
+			AND tpi.id = -1
+		</if>
+		order by tmp.modify_time desc,tmpr.structure_name
+	</select>
+	<select id="getMpSrelIdByBid" resultType="java.lang.Integer">
+		SELECT mpsr.ID
+		FROM tb_monitor_plan_structure_rel mpsr
+		LEFT JOIN  tb_monitor_plan tmp ON tmp.ID = mpsr.monitor_plan_id
+		WHERE
+		      tmp.end_time is not null
+		  AND mpsr.structure_info_id = #{bid}
+		ORDER BY tmp.modify_time DESC LIMIT 1
+	</select>
+    <select id="existMonitorStructure" resultType="java.lang.Integer">
+        SELECT count(id)
+        FROM tb_monitor_plan_structure_rel
+        WHERE id = #{id}
+        AND (is_delete != 1 or is_delete IS NULL)
+	</select>
+    <select id="selectNoUrl" resultType="com.iware.bridge.model.entity.evaluation.MonitorPlanStructureRel">
+		SELECT
+			id,
+			monitor_plan_id,
+			structure_info_id,
+			structure_name,
+			file_name,
+			is_delete
+		FROM
+			tb_monitor_plan_structure_rel
+		WHERE
+			monitor_plan_id = #{planId}
+		ORDER BY id
+	</select>
+
+	<!--桥梁详情页获取检测记录-->
+	<select id="getMonitorRecordList" resultType="com.iware.bridge.evaluation.vo.MonitorRecord">
+		SELECT
+			tmpsr.id AS monitor_structure_id,
+			tmpsr.monitor_plan_id,
+			tmp.type,
+			CASE tmp.type
+				WHEN 1 THEN '定期检测'
+				WHEN 2 THEN '特殊检测'
+				WHEN 3 THEN '静载实验'
+			END AS type_name,
+			tmp.end_time,
+			tbs.rating_level,
+			round(tbs.score::numeric ,2) AS bridge_condition_index,
+			tbs.bridge_structure_index,
+			tmpsr.structure_info_id,
+			tmpsr.structure_name,
+			tmp.project_info_id AS project_id
+		FROM tb_monitor_plan_structure_rel tmpsr
+		LEFT JOIN tb_monitor_plan tmp ON tmp.id=tmpsr.monitor_plan_id
+		LEFT JOIN tb_bridge_score tbs ON tbs.target_id=tmpsr.id AND tbs.type = 1
+		<if test="roleId == 0 or roleId == 1">
+			INNER JOIN tb_project_appoint tpa ON tpa.project_id = tmp.project_info_id
+			INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.id
+			AND papr.power_id = #{powerId}
+		</if>
+		<where>
+			tmp.upload = 1
+			AND (tmpsr.is_delete = 0 OR tmpsr.is_delete IS NULL)
+			<if test="roleId == 0 or roleId == 1">
+				AND tpa.receive_unit_id = #{unitId}
+				AND tmp.create_time > tpa.start_time
+				AND tmp.create_time &lt; tpa.end_time
+			</if>
+			<if test="structureId != null">
+				AND tmpsr.structure_info_id = #{structureId}
+			</if>
+		</where>
+		ORDER BY tmp.modify_time DESC
+	</select>
+
+</mapper>

@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.evaluation.BridgeSubcomponentDao">
+
+    <resultMap type="com.iware.bridge.model.entity.evaluation.BridgeSubcomponent" id="bridgeSubcomponentMap">
+        <result property="id" column="id"/>
+        <result property="bridgeSubstructureId" column="bridge_substructure_id"/>
+        <result property="componentId" column="component_id"/>
+        <result property="code" column="code"/>
+        <result property="initialWeight" column="initial_weight"/>
+        <result property="actualWeight" column="actual_weight"/>
+        <result property="deduct" column="deduct"/>
+        <result property="capBeamsHeight" column="cap_beams_height"/>
+        <result property="capBeamsWidth" column="cap_beams_width"/>
+        <result property="capBeamsThick" column="cap_beams_thick"/>
+        <result property="abutmentHeight" column="abutment_height"/>
+        <result property="abutmentWidth" column="abutment_width"/>
+        <result property="abutmentThick" column="abutment_thick"/>
+        <result property="abutmentCapHeight" column="abutment_cap_height"/>
+        <result property="pierShape" column="pier_shape"/>
+        <result property="pierHeight" column="pier_height"/>
+        <result property="pierWidth" column="pier_width"/>
+        <result property="pierThick" column="pier_thick"/>
+        <result property="pierRadius" column="pier_radius"/>
+        <result property="isAbutment" column="is_abutment"/>
+        <result property="pierAbutmentId" column="pier_abutment_id"/>
+        <result property="serious" column="serious"/>
+        <result property="creator" column="creator"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       bridge_substructure_id,
+       component_id,
+       code,
+       initial_weight,
+       actual_weight,
+       deduct,
+       cap_beams_height,
+       cap_beams_width,
+       cap_beams_thick,
+       abutment_height,
+       abutment_width,
+       abutment_thick,
+       abutment_cap_height,
+       pier_shape,
+       pier_height,
+       pier_width,
+       pier_thick,
+       pier_radius,
+       is_abutment,
+       pier_abutment_id,
+       serious,
+       creator,
+       status,
+       create_time,
+       modify_time
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.evaluation.BridgeSubcomponent">
+        insert into tb_bridge_subcomponent
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            bridge_substructure_id,
+            component_id,
+            code,
+            initial_weight,
+            actual_weight,
+            deduct,
+            cap_beams_height,
+            cap_beams_width,
+            cap_beams_thick,
+            abutment_height,
+            abutment_width,
+            abutment_thick,
+            abutment_cap_height,
+            pier_shape,
+            pier_height,
+            pier_width,
+            pier_thick,
+            pier_radius,
+            is_abutment,
+            pier_abutment_id,
+            serious,
+            creator,
+            status,
+        </trim>
+        )
+        values
+        (
+        now(),
+        now(),
+        <trim prefix="" suffix="" suffixOverrides=",">
+            #{bridgeSubstructureId},
+            #{componentId},
+            #{code},
+            #{initialWeight},
+            #{actualWeight},
+            #{deduct},
+            #{capBeamsHeight},
+            #{capBeamsWidth},
+            #{capBeamsThick},
+            #{abutmentHeight},
+            #{abutmentWidth},
+            #{abutmentThick},
+            #{abutmentCapHeight},
+            #{pierShape},
+            #{pierHeight},
+            #{pierWidth},
+            #{pierThick},
+            #{pierRadius},
+            #{isAbutment},
+            #{pierAbutmentId},
+            #{serious},
+            #{creator},
+            #{status},
+        </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询BridgeSubcomponent -->
+    <select id="findById" parameterType="Integer" resultMap="bridgeSubcomponentMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_bridge_subcomponent
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.evaluation.BridgeSubcomponent">
+        UPDATE
+        tb_bridge_subcomponent
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="bridgeSubstructureId != null">
+                    bridge_substructure_id = #{bridgeSubstructureId},
+                </if>
+                <if test="componentId != null">
+                    component_id = #{componentId},
+                </if>
+                <if test="code != null and code != ''">
+                    code = #{code},
+                </if>
+                <if test="initialWeight != null and initialWeight != ''">
+                    initial_weight = #{initialWeight},
+                </if>
+                <if test="actualWeight != null and actualWeight != ''">
+                    actual_weight = #{actualWeight},
+                </if>
+                <if test="deduct != null and deduct != ''">
+                    deduct = #{deduct},
+                </if>
+                <if test="capBeamsHeight != null and capBeamsHeight != ''">
+                    cap_beams_height = #{capBeamsHeight},
+                </if>
+                <if test="capBeamsWidth != null and capBeamsWidth != ''">
+                    cap_beams_width = #{capBeamsWidth},
+                </if>
+                <if test="capBeamsThick != null and capBeamsThick != ''">
+                    cap_beams_thick = #{capBeamsThick},
+                </if>
+                <if test="abutmentHeight != null and abutmentHeight != ''">
+                    abutment_height = #{abutmentHeight},
+                </if>
+                <if test="abutmentWidth != null and abutmentWidth != ''">
+                    abutment_width = #{abutmentWidth},
+                </if>
+                <if test="abutmentThick != null and abutmentThick != ''">
+                    abutment_thick = #{abutmentThick},
+                </if>
+                <if test="abutmentCapHeight != null and abutmentCapHeight != ''">
+                    abutment_cap_height = #{abutmentCapHeight},
+                </if>
+                <if test="pierShape != null">
+                    pier_shape = #{pierShape},
+                </if>
+                <if test="pierHeight != null and pierHeight != ''">
+                    pier_height = #{pierHeight},
+                </if>
+                <if test="pierWidth != null and pierWidth != ''">
+                    pier_width = #{pierWidth},
+                </if>
+                <if test="pierThick != null and pierThick != ''">
+                    pier_thick = #{pierThick},
+                </if>
+                <if test="pierRadius != null and pierRadius != ''">
+                    pier_radius = #{pierRadius},
+                </if>
+                <if test="isAbutment != null">
+                    is_abutment = #{isAbutment},
+                </if>
+                <if test="pierAbutmentId != null">
+                    pier_abutment_id = #{pierAbutmentId},
+                </if>
+                <if test="serious != null">
+                    serious = #{serious},
+                </if>
+                <if test="creator != null and creator != ''">
+                    creator = #{creator},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+        id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_bridge_subcomponent
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_bridge_subcomponent
+        (
+        create_time,
+        modify_time,
+        <trim prefix="" suffix="" suffixOverrides=",">
+            bridge_substructure_id,
+            component_id,
+            code,
+            initial_weight,
+            actual_weight,
+            deduct,
+            cap_beams_height,
+            cap_beams_width,
+            cap_beams_thick,
+            abutment_height,
+            abutment_width,
+            abutment_thick,
+            abutment_cap_height,
+            pier_shape,
+            pier_height,
+            pier_width,
+            pier_thick,
+            pier_radius,
+            is_abutment,
+            pier_abutment_id,
+            serious,
+            creator,
+            status,
+        </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+            (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.bridgeSubstructureId},
+                #{it.componentId},
+                #{it.code},
+                #{it.initialWeight},
+                #{it.actualWeight},
+                #{it.deduct},
+                #{it.capBeamsHeight},
+                #{it.capBeamsWidth},
+                #{it.capBeamsThick},
+                #{it.abutmentHeight},
+                #{it.abutmentWidth},
+                #{it.abutmentThick},
+                #{it.abutmentCapHeight},
+                #{it.pierShape},
+                #{it.pierHeight},
+                #{it.pierWidth},
+                #{it.pierThick},
+                #{it.pierRadius},
+                #{it.isAbutment},
+                #{it.pierAbutmentId},
+                #{it.serious},
+                #{it.creator},
+                #{it.status},
+            </trim>
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+        tb_bridge_subcomponent
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="bridgeSubcomponentMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_bridge_subcomponent
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件查询BridgeSubcomponent -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.evaluation.BridgeSubcomponent" resultMap="bridgeSubcomponentMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_bridge_subcomponent
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="bridgeSubstructureId != null">
+                AND bridge_substructure_id = #{bridgeSubstructureId}
+            </if>
+            <if test="componentId != null">
+                AND component_id = #{componentId}
+            </if>
+            <if test="code != null and code != ''">
+                AND code = #{code}
+            </if>
+            <if test="initialWeight != null and initialWeight != ''">
+                AND initial_weight = #{initialWeight}
+            </if>
+            <if test="actualWeight != null and actualWeight != ''">
+                AND actual_weight = #{actualWeight}
+            </if>
+            <if test="deduct != null and deduct != ''">
+                AND deduct = #{deduct}
+            </if>
+            <if test="capBeamsHeight != null and capBeamsHeight != ''">
+                AND cap_beams_height = #{capBeamsHeight}
+            </if>
+            <if test="capBeamsWidth != null and capBeamsWidth != ''">
+                AND cap_beams_width = #{capBeamsWidth}
+            </if>
+            <if test="capBeamsThick != null and capBeamsThick != ''">
+                AND cap_beams_thick = #{capBeamsThick}
+            </if>
+            <if test="abutmentHeight != null and abutmentHeight != ''">
+                AND abutment_height = #{abutmentHeight}
+            </if>
+            <if test="abutmentWidth != null and abutmentWidth != ''">
+                AND abutment_width = #{abutmentWidth}
+            </if>
+            <if test="abutmentThick != null and abutmentThick != ''">
+                AND abutment_thick = #{abutmentThick}
+            </if>
+            <if test="abutmentCapHeight != null and abutmentCapHeight != ''">
+                AND abutment_cap_height = #{abutmentCapHeight}
+            </if>
+            <if test="pierShape != null">
+                AND pier_shape = #{pierShape}
+            </if>
+            <if test="pierHeight != null and pierHeight != ''">
+                AND pier_height = #{pierHeight}
+            </if>
+            <if test="pierWidth != null and pierWidth != ''">
+                AND pier_width = #{pierWidth}
+            </if>
+            <if test="pierThick != null and pierThick != ''">
+                AND pier_thick = #{pierThick}
+            </if>
+            <if test="pierRadius != null and pierRadius != ''">
+                AND pier_radius = #{pierRadius}
+            </if>
+            <if test="isAbutment != null">
+                AND is_abutment = #{isAbutment}
+            </if>
+            <if test="pierAbutmentId != null">
+                AND pier_abutment_id = #{pierAbutmentId}
+            </if>
+            <if test="serious != null">
+                AND serious = #{serious}
+            </if>
+            <if test="creator != null and creator != ''">
+                AND creator = #{creator}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+
+    <!-- 根据条件模糊查询BridgeSubcomponent -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.evaluation.BridgeSubcomponent" resultMap="bridgeSubcomponentMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        tb_bridge_subcomponent
+        <where>
+            <if test="bridgeSubstructureId != null">
+                AND bridge_substructure_id = #{bridgeSubstructureId}
+            </if>
+            <if test="componentId != null">
+                AND component_id = #{componentId}
+            </if>
+            <if test="code != null and code != ''">
+                AND code LIKE CONCAT ('%', #{code}, '%')
+            </if>
+            <if test="initialWeight != null and initialWeight != ''">
+                AND initial_weight LIKE CONCAT ('%', #{initialWeight}, '%')
+            </if>
+            <if test="actualWeight != null and actualWeight != ''">
+                AND actual_weight LIKE CONCAT ('%', #{actualWeight}, '%')
+            </if>
+            <if test="deduct != null and deduct != ''">
+                AND deduct LIKE CONCAT ('%', #{deduct}, '%')
+            </if>
+            <if test="capBeamsHeight != null and capBeamsHeight != ''">
+                AND cap_beams_height LIKE CONCAT ('%', #{capBeamsHeight}, '%')
+            </if>
+            <if test="capBeamsWidth != null and capBeamsWidth != ''">
+                AND cap_beams_width LIKE CONCAT ('%', #{capBeamsWidth}, '%')
+            </if>
+            <if test="capBeamsThick != null and capBeamsThick != ''">
+                AND cap_beams_thick LIKE CONCAT ('%', #{capBeamsThick}, '%')
+            </if>
+            <if test="abutmentHeight != null and abutmentHeight != ''">
+                AND abutment_height LIKE CONCAT ('%', #{abutmentHeight}, '%')
+            </if>
+            <if test="abutmentWidth != null and abutmentWidth != ''">
+                AND abutment_width LIKE CONCAT ('%', #{abutmentWidth}, '%')
+            </if>
+            <if test="abutmentThick != null and abutmentThick != ''">
+                AND abutment_thick LIKE CONCAT ('%', #{abutmentThick}, '%')
+            </if>
+            <if test="abutmentCapHeight != null and abutmentCapHeight != ''">
+                AND abutment_cap_height LIKE CONCAT ('%', #{abutmentCapHeight}, '%')
+            </if>
+            <if test="pierShape != null">
+                AND pier_shape = #{pierShape}
+            </if>
+            <if test="pierHeight != null and pierHeight != ''">
+                AND pier_height LIKE CONCAT ('%', #{pierHeight}, '%')
+            </if>
+            <if test="pierWidth != null and pierWidth != ''">
+                AND pier_width LIKE CONCAT ('%', #{pierWidth}, '%')
+            </if>
+            <if test="pierThick != null and pierThick != ''">
+                AND pier_thick LIKE CONCAT ('%', #{pierThick}, '%')
+            </if>
+            <if test="pierRadius != null and pierRadius != ''">
+                AND pier_radius LIKE CONCAT ('%', #{pierRadius}, '%')
+            </if>
+            <if test="isAbutment != null">
+                AND is_abutment = #{isAbutment}
+            </if>
+            <if test="pierAbutmentId != null">
+                AND pier_abutment_id = #{pierAbutmentId}
+            </if>
+            <if test="serious != null">
+                AND serious = #{serious}
+            </if>
+            <if test="creator != null and creator != ''">
+                AND creator LIKE CONCAT ('%', #{creator}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+        id DESC
+    </select>
+</mapper>

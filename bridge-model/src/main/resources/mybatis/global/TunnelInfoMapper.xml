@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.global.TunnelInfoDao">
+
+    <resultMap type="com.iware.bridge.model.entity.global.TunnelInfo" id="tunnelInfoMap">
+        <result property="id" column="id"/>
+        <result property="structureId" column="structure_id"/>
+        <result property="roadCode" column="road_code"/>
+        <result property="roadGrade" column="road_grade"/>
+        <result property="centerMileage" column="center_mileage"/>
+        <result property="length" column="length"/>
+        <result property="width" column="width"/>
+        <result property="roadWidth" column="road_width"/>
+        <result property="height" column="height"/>
+        <result property="stratumGeology" column="stratum_geology"/>
+        <result property="wallRockTypes" column="wall_rock_types"/>
+        <result property="liningType" column="lining_type"/>
+        <result property="liningThick" column="lining_thick"/>
+        <result property="portalForm" column="portal_form"/>
+        <result property="roadType" column="road_type"/>
+        <result property="lightingInstallation" column="lighting_installation"/>
+        <result property="airInstallation" column="air_installation"/>
+        <result property="fireInstallation" column="fire_installation"/>
+        <result property="watchInstallation" column="watch_installation"/>
+        <result property="electricInstallation" column="electric_installation"/>
+        <result property="tunnelLongitudinalSlope" column="tunnel_longitudinal_slope"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       structure_id,
+       road_code,
+       road_grade,
+       center_mileage,
+       length,
+       width,
+       road_width,
+       height,
+       stratum_geology,
+       wall_rock_types,
+       lining_type,
+       lining_thick,
+       portal_form,
+       road_type,
+       lighting_installation,
+       air_installation,
+       fire_installation,
+       watch_installation,
+       electric_installation,
+       tunnel_longitudinal_slope,
+       status,
+       create_time,
+       modify_time
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.global.TunnelInfo">
+        insert into tb_tunnel_info
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                structure_id,
+                road_code,
+                road_grade,
+                center_mileage,
+                length,
+                width,
+                road_width,
+                height,
+                stratum_geology,
+                wall_rock_types,
+                lining_type,
+                lining_thick,
+                portal_form,
+                road_type,
+                lighting_installation,
+                air_installation,
+                fire_installation,
+                watch_installation,
+                electric_installation,
+                tunnel_longitudinal_slope,
+                status,
+            </trim>
+        )
+        values
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{structureId},
+                #{roadCode},
+                #{roadGrade},
+                #{centerMileage},
+                #{length},
+                #{width},
+                #{roadWidth},
+                #{height},
+                #{stratumGeology},
+                #{wallRockTypes},
+                #{liningType},
+                #{liningThick},
+                #{portalForm},
+                #{roadType},
+                #{lightingInstallation},
+                #{airInstallation},
+                #{fireInstallation},
+                #{watchInstallation},
+                #{electricInstallation},
+                #{tunnelLongitudinalSlope},
+                #{status},
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询TunnelInfo -->
+    <select id="findById" parameterType="Integer" resultMap="tunnelInfoMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_tunnel_info
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.global.TunnelInfo">
+        UPDATE
+            tb_tunnel_info
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="structureId != null">
+                    structure_id = #{structureId},
+                </if>
+                <if test="roadCode != null and roadCode != ''">
+                    road_code = #{roadCode},
+                </if>
+                <if test="roadGrade != null and roadGrade != ''">
+                    road_grade = #{roadGrade},
+                </if>
+                <if test="centerMileage != null and centerMileage != ''">
+                    center_mileage = #{centerMileage},
+                </if>
+                <if test="length != null">
+                    length = #{length},
+                </if>
+                <if test="width != null">
+                    width = #{width},
+                </if>
+                <if test="roadWidth != null">
+                    road_width = #{roadWidth},
+                </if>
+                <if test="height != null">
+                    height = #{height},
+                </if>
+                <if test="stratumGeology != null and stratumGeology != ''">
+                    stratum_geology = #{stratumGeology},
+                </if>
+                <if test="wallRockTypes != null and wallRockTypes != ''">
+                    wall_rock_types = #{wallRockTypes},
+                </if>
+                <if test="liningType != null and liningType != ''">
+                    lining_type = #{liningType},
+                </if>
+                <if test="liningThick != null">
+                    lining_thick = #{liningThick},
+                </if>
+                <if test="portalForm != null and portalForm != ''">
+                    portal_form = #{portalForm},
+                </if>
+                <if test="roadType != null and roadType != ''">
+                    road_type = #{roadType},
+                </if>
+                <if test="lightingInstallation != null and lightingInstallation != ''">
+                    lighting_installation = #{lightingInstallation},
+                </if>
+                <if test="airInstallation != null and airInstallation != ''">
+                    air_installation = #{airInstallation},
+                </if>
+                <if test="fireInstallation != null and fireInstallation != ''">
+                    fire_installation = #{fireInstallation},
+                </if>
+                <if test="watchInstallation != null and watchInstallation != ''">
+                    watch_installation = #{watchInstallation},
+                </if>
+                <if test="electricInstallation != null and electricInstallation != ''">
+                    electric_installation = #{electricInstallation},
+                </if>
+                <if test="tunnelLongitudinalSlope != null and tunnelLongitudinalSlope != ''">
+                    tunnel_longitudinal_slope = #{tunnelLongitudinalSlope},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_tunnel_info
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_tunnel_info
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                structure_id,
+                road_code,
+                road_grade,
+                center_mileage,
+                length,
+                width,
+                road_width,
+                height,
+                stratum_geology,
+                wall_rock_types,
+                lining_type,
+                lining_thick,
+                portal_form,
+                road_type,
+                lighting_installation,
+                air_installation,
+                fire_installation,
+                watch_installation,
+                electric_installation,
+                tunnel_longitudinal_slope,
+                status,
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.structureId},
+                #{it.roadCode},
+                #{it.roadGrade},
+                #{it.centerMileage},
+                #{it.length},
+                #{it.width},
+                #{it.roadWidth},
+                #{it.height},
+                #{it.stratumGeology},
+                #{it.wallRockTypes},
+                #{it.liningType},
+                #{it.liningThick},
+                #{it.portalForm},
+                #{it.roadType},
+                #{it.lightingInstallation},
+                #{it.airInstallation},
+                #{it.fireInstallation},
+                #{it.watchInstallation},
+                #{it.electricInstallation},
+                #{it.tunnelLongitudinalSlope},
+                #{it.status},
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_tunnel_info
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="tunnelInfoMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_tunnel_info
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询TunnelInfo -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.global.TunnelInfo" resultMap="tunnelInfoMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_tunnel_info
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="structureId != null">
+                AND structure_id = #{structureId}
+            </if>
+            <if test="roadCode != null and roadCode != ''">
+                AND road_code = #{roadCode}
+            </if>
+            <if test="roadGrade != null and roadGrade != ''">
+                AND road_grade = #{roadGrade}
+            </if>
+            <if test="centerMileage != null and centerMileage != ''">
+                AND center_mileage = #{centerMileage}
+            </if>
+            <if test="length != null">
+                AND length = #{length}
+            </if>
+            <if test="width != null">
+                AND width = #{width}
+            </if>
+            <if test="roadWidth != null">
+                AND road_width = #{roadWidth}
+            </if>
+            <if test="height != null">
+                AND height = #{height}
+            </if>
+            <if test="stratumGeology != null and stratumGeology != ''">
+                AND stratum_geology = #{stratumGeology}
+            </if>
+            <if test="wallRockTypes != null and wallRockTypes != ''">
+                AND wall_rock_types = #{wallRockTypes}
+            </if>
+            <if test="liningType != null and liningType != ''">
+                AND lining_type = #{liningType}
+            </if>
+            <if test="liningThick != null">
+                AND lining_thick = #{liningThick}
+            </if>
+            <if test="portalForm != null and portalForm != ''">
+                AND portal_form = #{portalForm}
+            </if>
+            <if test="roadType != null and roadType != ''">
+                AND road_type = #{roadType}
+            </if>
+            <if test="lightingInstallation != null and lightingInstallation != ''">
+                AND lighting_installation = #{lightingInstallation}
+            </if>
+            <if test="airInstallation != null and airInstallation != ''">
+                AND air_installation = #{airInstallation}
+            </if>
+            <if test="fireInstallation != null and fireInstallation != ''">
+                AND fire_installation = #{fireInstallation}
+            </if>
+            <if test="watchInstallation != null and watchInstallation != ''">
+                AND watch_installation = #{watchInstallation}
+            </if>
+            <if test="electricInstallation != null and electricInstallation != ''">
+                AND electric_installation = #{electricInstallation}
+            </if>
+            <if test="tunnelLongitudinalSlope != null and tunnelLongitudinalSlope != ''">
+                AND tunnel_longitudinal_slope = #{tunnelLongitudinalSlope}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null and modifyTime != ''">
+                AND modify_time = #{modifyTime}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询TunnelInfo -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.global.TunnelInfo" resultMap="tunnelInfoMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_tunnel_info
+        <where>
+            <if test="structureId != null">
+                AND structure_id = #{structureId}
+            </if>
+            <if test="roadCode != null and roadCode != ''">
+                AND road_code LIKE CONCAT ('%', #{roadCode}, '%')
+            </if>
+            <if test="roadGrade != null and roadGrade != ''">
+                AND road_grade LIKE CONCAT ('%', #{roadGrade}, '%')
+            </if>
+            <if test="centerMileage != null and centerMileage != ''">
+                AND center_mileage LIKE CONCAT ('%', #{centerMileage}, '%')
+            </if>
+            <if test="length != null">
+                AND length = #{length}
+            </if>
+            <if test="width != null">
+                AND width = #{width}
+            </if>
+            <if test="roadWidth != null">
+                AND road_width = #{roadWidth}
+            </if>
+            <if test="height != null">
+                AND height = #{height}
+            </if>
+            <if test="stratumGeology != null and stratumGeology != ''">
+                AND stratum_geology LIKE CONCAT ('%', #{stratumGeology}, '%')
+            </if>
+            <if test="wallRockTypes != null and wallRockTypes != ''">
+                AND wall_rock_types LIKE CONCAT ('%', #{wallRockTypes}, '%')
+            </if>
+            <if test="liningType != null and liningType != ''">
+                AND lining_type LIKE CONCAT ('%', #{liningType}, '%')
+            </if>
+            <if test="liningThick != null">
+                AND lining_thick = #{liningThick}
+            </if>
+            <if test="portalForm != null and portalForm != ''">
+                AND portal_form LIKE CONCAT ('%', #{portalForm}, '%')
+            </if>
+            <if test="roadType != null and roadType != ''">
+                AND road_type LIKE CONCAT ('%', #{roadType}, '%')
+            </if>
+            <if test="lightingInstallation != null and lightingInstallation != ''">
+                AND lighting_installation LIKE CONCAT ('%', #{lightingInstallation}, '%')
+            </if>
+            <if test="airInstallation != null and airInstallation != ''">
+                AND air_installation LIKE CONCAT ('%', #{airInstallation}, '%')
+            </if>
+            <if test="fireInstallation != null and fireInstallation != ''">
+                AND fire_installation LIKE CONCAT ('%', #{fireInstallation}, '%')
+            </if>
+            <if test="watchInstallation != null and watchInstallation != ''">
+                AND watch_installation LIKE CONCAT ('%', #{watchInstallation}, '%')
+            </if>
+            <if test="electricInstallation != null and electricInstallation != ''">
+                AND electric_installation LIKE CONCAT ('%', #{electricInstallation}, '%')
+            </if>
+            <if test="tunnelLongitudinalSlope != null and tunnelLongitudinalSlope != ''">
+                AND tunnel_longitudinal_slope LIKE CONCAT ('%', #{tunnelLongitudinalSlope}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

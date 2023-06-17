@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iware.bridge.app.assess.dao.PlatUserDao">
+	<select id="getUser" resultType="com.iware.bridge.app.assess.vo.platUser.PlatUserVo">
+		select 
+			id,
+			username,
+			real_name,
+			(select tr.name from tb_user_role_rel url left join tb_role tr on tr.id = url.role_id where url.user_id=tb_user.id) as role,
+			pet_name,
+			create_user_id
+		from tb_user
+		where id=#{id}
+		LIMIT 1
+	</select>
+	<select id="getUserList" resultType="com.iware.bridge.app.assess.vo.platUser.PlatUserVo">
+		select 
+			id,
+			username,
+			real_name,
+			(select tr.name from tb_user_role_rel url left join tb_role tr on tr.id = url.role_id where url.user_id=tb_user.id) as role,
+			pet_name,
+			create_user_id
+		from tb_user
+		where 1=1
+		<if test="ids !=null">
+			and id in 
+			<foreach item="item" index="index" collection="ids"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		
+	</select>
+</mapper>

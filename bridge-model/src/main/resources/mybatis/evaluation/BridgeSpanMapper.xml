@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.evaluation.BridgeSpanDao">
+
+    <resultMap type="com.iware.bridge.model.entity.evaluation.BridgeSpan" id="bridgeSpanMap">
+        <result property="id" column="id"/>
+        <result property="bridgeRoadId" column="bridge_road_id"/>
+        <result property="bridgeShape" column="bridge_shape"/>
+        <result property="spanCode" column="span_code"/>
+        <result property="length" column="length"/>
+        <result property="outerArcLength" column="outer_arc_length"/>
+        <result property="innerArcLength" column="inner_arc_length"/>
+        <result property="convex" column="convex"/>
+        <result property="creator" column="creator"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       bridge_road_id,
+       bridge_shape,
+       span_code,
+       length,
+       outer_arc_length,
+       inner_arc_length,
+       convex,
+       creator,
+       create_time,
+       modify_time,
+       status
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.evaluation.BridgeSpan">
+        insert into tb_bridge_span
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                bridge_road_id,
+                bridge_shape,
+                span_code,
+                length,
+                outer_arc_length,
+                inner_arc_length,
+                convex,
+                creator,
+                status
+            </trim>
+        )
+        values
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{bridgeRoadId},
+                #{bridgeShape},
+                #{spanCode},
+                #{length},
+                #{outerArcLength},
+                #{innerArcLength},
+                #{convex},
+                #{creator},
+                #{status}
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询BridgeSpan -->
+    <select id="findById" parameterType="Integer" resultMap="bridgeSpanMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_span
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.evaluation.BridgeSpan">
+        UPDATE
+            tb_bridge_span
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="bridgeRoadId != null">
+                    bridge_road_id = #{bridgeRoadId},
+                </if>
+                <if test="bridgeShape != null">
+                    bridge_shape = #{bridgeShape},
+                </if>
+                <if test="spanCode != null and spanCode != ''">
+                    span_code = #{spanCode},
+                </if>
+                <if test="length != null and length != ''">
+                    length = #{length},
+                </if>
+                <if test="outerArcLength != null and outerArcLength != ''">
+                    outer_arc_length = #{outerArcLength},
+                </if>
+                <if test="innerArcLength != null and innerArcLength != ''">
+                    inner_arc_length = #{innerArcLength},
+                </if>
+                <if test="convex != null">
+                    convex = #{convex},
+                </if>
+                <if test="creator != null and creator != ''">
+                    creator = #{creator},
+                </if>
+                <if test="status != null">
+                    status = #{status}
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_bridge_span
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_bridge_span
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                bridge_road_id,
+                bridge_shape,
+                span_code,
+                length,
+                outer_arc_length,
+                inner_arc_length,
+                convex,
+                creator,
+                status
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.bridgeRoadId},
+                #{it.bridgeShape},
+                #{it.spanCode},
+                #{it.length},
+                #{it.outerArcLength},
+                #{it.innerArcLength},
+                #{it.convex},
+                #{it.creator},
+                #{it.status}
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_bridge_span
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="bridgeSpanMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_span
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询BridgeSpan -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.evaluation.BridgeSpan" resultMap="bridgeSpanMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_span
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="bridgeRoadId != null">
+                AND bridge_road_id = #{bridgeRoadId}
+            </if>
+            <if test="bridgeShape != null">
+                AND bridge_shape = #{bridgeShape}
+            </if>
+            <if test="spanCode != null and spanCode != ''">
+                AND span_code = #{spanCode}
+            </if>
+            <if test="length != null and length != ''">
+                AND length = #{length}
+            </if>
+            <if test="outerArcLength != null and outerArcLength != ''">
+                AND outer_arc_length = #{outerArcLength}
+            </if>
+            <if test="innerArcLength != null and innerArcLength != ''">
+                AND inner_arc_length = #{innerArcLength}
+            </if>
+            <if test="convex != null">
+                AND convex = #{convex}
+            </if>
+            <if test="creator != null and creator != ''">
+                AND creator = #{creator}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询BridgeSpan -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.evaluation.BridgeSpan" resultMap="bridgeSpanMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_span
+        <where>
+            <if test="bridgeRoadId != null">
+                AND bridge_road_id = #{bridgeRoadId}
+            </if>
+            <if test="bridgeShape != null">
+                AND bridge_shape = #{bridgeShape}
+            </if>
+            <if test="spanCode != null and spanCode != ''">
+                AND span_code LIKE CONCAT ('%', #{spanCode}, '%')
+            </if>
+            <if test="length != null and length != ''">
+                AND length LIKE CONCAT ('%', #{length}, '%')
+            </if>
+            <if test="outerArcLength != null and outerArcLength != ''">
+                AND outer_arc_length LIKE CONCAT ('%', #{outerArcLength}, '%')
+            </if>
+            <if test="innerArcLength != null and innerArcLength != ''">
+                AND inner_arc_length LIKE CONCAT ('%', #{innerArcLength}, '%')
+            </if>
+            <if test="convex != null">
+                AND convex = #{convex}
+            </if>
+            <if test="creator != null and creator != ''">
+                AND creator LIKE CONCAT ('%', #{creator}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

@@ -1,0 +1,2203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>three.js webgl - OBJLoader + MTLLoader</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+  <link rel="stylesheet" type="text/css" href="./css/loading.css" />
+  <style>
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .pointBox {
+      position: absolute;
+      width: 32px;
+      height: 36px;
+      z-index: 8;
+      cursor: pointer;
+    }
+
+    .pointBox img {
+      width: 100%;
+      height: 100%;
+    }
+
+    .contentBox {
+      position: absolute;
+      width: 440px;
+      height: 351px;
+      /* height: 32.531vh; */
+      padding: 1.855vh 0 1.391vh;
+      background: url('./image/bridgeModel/divBox.png') no-repeat;
+      background-size: 100% 100%;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      z-index: 9;
+    }
+
+    .contentItem {
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+    }
+
+    .first {
+      font-size: 16px;
+      color: #34ddde;
+      display: flex;
+      align-items: center;
+    }
+
+    .first span {
+      padding-right: 15px;
+    }
+
+    .second {
+      /* height: 3.337vh; */
+      height: 36px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .secItem {
+      width: 25%;
+      height: 100%;
+      font-size: 12px;
+      color: #fff;
+      border-right: 1px solid rgba(53, 62, 81, 0.5);
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      justify-content: space-evenly;
+    }
+
+    .secItem:last-child {
+      border: none;
+    }
+
+    .third {
+      /* height: 14.829vh; */
+      height: 160px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .third img {
+      height: 100%;
+    }
+
+    .third .left {
+      width: 20px;
+      height: 20px;
+      border-radius: 10px;
+      background: url('image/bridgeModel/icon_left.png') no-repeat;
+      background-size: 100% 100%;
+      cursor: pointer;
+    }
+
+    .third .right {
+      width: 20px;
+      height: 20px;
+      border-radius: 10px;
+      background: url('image/bridgeModel/icon_right.png') no-repeat;
+      background-size: 100% 100%;
+      cursor: pointer;
+    }
+
+    #modelEcahrts {
+      height: 100%;
+      width: 100%;
+      font-size: 28px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .fourth {
+      /* height: 4.635vh; */
+      height: 50px;
+      color: rgba(255, 255, 255, 0.85);
+      border-top: 1px solid #10424c;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .videoBox {
+      position: absolute;
+      width: 408px;
+      height: 228px;
+      background-color: #07222c;
+      border: solid 1px #1bccc1;
+      padding: 4px;
+      display: none;
+      z-index: 10;
+    }
+
+    .videoBox::after {
+      position: absolute;
+      left: -8px;
+      top: 50%;
+      content: '';
+      width: 14px;
+      height: 14px;
+      background: #07222c;
+      border-top: 1px solid #1bccc1;
+      border-left: 1px solid #1bccc1;
+      transform: rotate(-45deg);
+      z-index: -1;
+    }
+
+    .videoBox #myPlayer {
+      width: 100%;
+      height: 100%;
+    }
+
+    .textGraGreen {
+      font-size: 16px;
+      font-weight: bold;
+      background: linear-gradient(to top, #25f2f5, #fff);
+      -webkit-background-clip: text;
+      color: transparent;
+      display: flex;
+      align-items: center;
+    }
+
+    .textGraYellow {
+      font-size: 16px;
+      background: linear-gradient(to top, #ff600a, #fff);
+      -webkit-background-clip: text;
+      color: transparent;
+      display: flex;
+      align-items: center;
+    }
+
+    #dieaseBox .secItem {
+      width: 33.33%;
+    }
+
+    #dieaseBox .fourth {
+      border: none;
+      align-items: baseline;
+    }
+
+    .threeContainer {
+      /* 此类是画布的父类，通过给画布设置透明度闪烁来 */
+      opacity: 1;
+      /* 动效类 */
+      /* 定义变量transitionTime，通过调节transitionTime来调整子项位移速度*/
+      --transitionTime: 500ms;
+      transition: all var(--transitionTime);
+      -moz-transition: all var(--transitionTime);
+      -webkit-transition: all var(--transitionTime);
+      -o-transition: all var(--transitionTime);
+    }
+
+    /* 模型加载遮罩 */
+    .loading {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: url(./image/tiankong.png) no-repeat;
+      background-size: 100% 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+
+    .loading #loadName {
+      font-size: 20px;
+      color: #fff;
+    }
+
+    .loading #loadPercent {
+      font-size: 32px;
+      color: red;
+    }
+
+    /* 模型加载错误 */
+    #loadError {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: url(./image/tiankong.png) no-repeat;
+      background-size: 100% 100%;
+      color: red;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 60;
+    }
+
+    #loadError #text {
+      font-size: 30px;
+      color: red;
+      margin-bottom: 5px;
+    }
+
+    #loadError #back {
+      margin: 0 5px;
+      font-size: 18px;
+      color: #25f2f5;
+    }
+
+    #loadError #back:hover {
+      opacity: 0.5;
+    }
+
+    .selectSensor {
+      background: transparent;
+      color: #fff;
+      border: 0;
+      outline: 0;
+    }
+
+    .optionSensor {
+      color: #000;
+    }
+
+    /* .pointBox .dotBox::after{
+            content: "";
+            position: absolute;
+            left: 2px;
+            top: 2px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-image: linear-gradient(to right bottom, #36fff0, rgba(21,118,128,1));
+        } */
+
+    /* 标记点的css属性 */
+    .markerPoints {
+      width: 40px;
+      height: 45px;
+      color: #fff;
+      /* padding: 0.521vw; */
+      opacity: 1;
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
+      /* 动效类 */
+      /* 定义变量transitionTime，通过调节transitionTime来调整子项位移速度*/
+      /* 标记点也要设置过渡动画 */
+      --transitionTime: 500ms;
+      transition: opacity var(--transitionTime);
+      -moz-transition: opacity var(--transitionTime);
+      -webkit-transition: opacity var(--transitionTime);
+      -o-transition: opacity var(--transitionTime);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 模型加载遮罩 -->
+  <div id="loading" class="loading">
+    <span id="loadName">模型加载中...</span>
+    <span id="loadPercent">0%</span>
+  </div>
+  <!-- 模型加载错误 -->
+  <div id="loadError">
+    <span id="text"></span>
+    <a id="back" href="javascript:;" onClick="routerGo()">上传模型</a>
+  </div>
+  </div>
+  <!-- 传感器、视频图标 -->
+  <div id="iconBox"></div>
+  <!-- 传感器弹框 -->
+  <div id="contentBox" class="contentBox">
+    <div class="contentItem first">
+      <span id="contentTitle" class="textGraYellow"></span>
+      <!-- <span>正常</span> -->
+    </div>
+    <div id="contentItem" class="contentItem second">
+      <div class="secItem">
+        <span id="contentValue1" class="textGraGreen">结构物名称</span><span id="contentText1"></span>
+      </div>
+      <div class="secItem">
+        <span id="contentValue2" class="textGraGreen">部位</span><span id="contentText2"></span>
+      </div>
+      <div class="secItem">
+        <span id="contentValue3" class="textGraGreen">构件</span><span id="contentText3"></span>
+      </div>
+      <div class="secItem">
+        <span id="contentValue4" class="textGraGreen">传感器类型</span><span id="contentText4"></span>
+      </div>
+    </div>
+    <div id="echartBox" class="contentItem third">
+      <div id="modelEcahrts"></div>
+    </div>
+    <div id="noWarn" class="contentItem fourth">
+      <span>最新预警</span><span id="warnTime"></span><span id="warnLevel" class="textGraGreen"></span>
+    </div>
+  </div>
+  <!-- 病害弹框 -->
+  <div id="dieaseBox" class="contentBox">
+    <div class="contentItem first">
+      <span class="textGraYellow">左幅-1#跨主梁</span>
+    </div>
+    <div class="contentItem second">
+      <div class="secItem">
+        <span class="textGraGreen">78.23</span><span>构件BCI评分</span>
+      </div>
+      <div class="secItem">
+        <span class="textGraGreen">82.23</span><span>构件BSI评分</span>
+      </div>
+      <div class="secItem">
+        <span class="textGraGreen">21</span><span>病害数</span>
+      </div>
+    </div>
+    <div class="contentItem third">
+      <div class="left"></div>
+      <img src="./image/diease.png" alt="" />
+      <div class="right"></div>
+    </div>
+    <div class="contentItem fourth">
+      <span>编号LF-04,结构裂缝，缝长13.8m，程度：严重</span>
+    </div>
+  </div>
+  <!-- 视频弹框 -->
+  <div id="videoBox" class="videoBox">
+    <div id="myPlayer"></div>
+  </div>
+  <script src="./js/ezuikit.js"></script>
+  <script src="./js/three.js"></script>
+  <script src="./js/MTLLoader.js"></script>
+  <script src="./js/OBJLoader.js"></script>
+  <script src="./js/GLTFLoader.js"></script>
+  <script src="./js/FBXLoader.js"></script>
+  <script src="./js/OrbitControls.js"></script>
+  <script src="./js/html2canvas.js"></script>
+  <script src="./js/jquery.min.js"></script>
+  <script src="./js/echarts.js"></script>
+  <script>
+    var structureId = window.location.search.split('?')[1].split('=')[1];
+    var strToken = '';
+    var sendemoList;
+    // 容器
+    var container;
+    // 相机控制器
+    var controls;
+    //	相机
+    var camera;
+    // 场景
+    var scene;
+    // 渲染器
+    var renderer;
+    // 场景中的传感器集
+    var senSorList = [];
+
+    var objList = [{
+        id: 1,
+        name: 'River',
+        path: 'River'
+      },
+      {
+        id: 2,
+        name: 'Terrain',
+        path: 'Terrain'
+      }
+    ];
+    var objList2 = [{
+      id: 1,
+      name: 'Tongshan',
+      path: 'Tongshan'
+    }];
+
+    //模型的url
+    var modelUrl = '';
+
+    var radioTerrainSta = 1; //默认加载地形效果
+
+    //弹窗，框体，材质，对象,加载，echarts对象
+    var infoCube;
+    var infoEchartMaterial;
+    var infoMesh;
+    var infoLoading;
+    var oGraph = null;
+
+    //传感器的透明度，颜色
+    var sensorColor = 0xff36fff0;
+    var sensorOpacity = 1;
+    var sensorOpacityClick = 0.3;
+
+    //处理异步指标
+    var asynIndex;
+
+    //加载指数
+    var loadCount = 0;
+
+    //当前点击的对象
+    var currentElement, currentElement2, currentElement3;
+
+    //漫游速度
+    var speed = 500;
+
+    var timmer;
+
+    // 选择终止位，为true时可以进行旋转
+    var rotationKey = false;
+
+    var nameList = [{
+        name: '应变传感器',
+        url: 'icon_yingbian1.png',
+        className: 'stressSensor',
+        color: 0xff007af9
+      },
+      {
+        name: '索力传感器',
+        url: 'icon_suoli1.png',
+        className: 'tensionSensor',
+        color: 0xfff6507e
+      },
+      {
+        name: '加速度传感器',
+        url: 'icon_sudu1.png',
+        className: 'accelerationSensor',
+        color: 0xffff2b2a
+      },
+      {
+        name: '动态采集仪',
+        url: 'icon_dongtai1.png',
+        className: 'dynamicCollectionSensor',
+        color: 0xffa3fe03
+      },
+      {
+        name: '温度传感器',
+        url: 'icon_wendu1.png',
+        className: 'temperatureSensor',
+        color: 0xff02f6ff
+      },
+      {
+        name: '倾角传感器',
+        url: 'icon_qingjiao1.png',
+        className: 'angleSensor',
+        color: 0xfffb702d
+      },
+      {
+        name: '称重传感器',
+        url: 'icon_chengzhong1.png',
+        className: 'weighSensor',
+        color: 0xffe6bc08
+      },
+      {
+        name: '位移传感器',
+        url: 'icon_weiyi1.png',
+        className: 'displacementSensor',
+        color: 0xff008f71
+      }
+    ];
+
+    var showType = 0; //弹框类型
+    var iconList = [];
+    var videoList = [];
+    var sensorVOList = []
+    var echartData = {
+      timeList: [],
+      dataList: []
+    };
+    var player = null; //视频播放器
+
+    var echartTimer = null;
+    // 标记点静态信息
+    var markerPointsStaticInformation = [{
+        name: '应变传感器',
+        url: 'icon_yingbian1.png',
+        className: 'stressSensor'
+      },
+      {
+        name: '索力传感器',
+        url: 'icon_suoli1.png',
+        className: 'tensionSensor'
+      },
+      {
+        name: '加速度传感器',
+        url: 'icon_sudu1.png',
+        className: 'accelerationSensor'
+      },
+      {
+        name: '动态采集仪',
+        url: 'icon_dongtai1.png',
+        className: 'dynamicCollectionSensor'
+      },
+      {
+        name: '温度传感器',
+        url: 'icon_wendu1.png',
+        className: 'temperatureSensor'
+      },
+      {
+        name: '倾角传感器',
+        url: 'icon_qingjiao1.png',
+        className: 'angleSensor'
+      },
+      {
+        name: '称重传感器',
+        url: 'icon_chengzhong1.png',
+        className: 'weighSensor'
+      },
+      {
+        name: '位移传感器',
+        url: 'icon_weiyi1.png',
+        className: 'displacementSensor'
+      },
+      {
+        name: '应变传感器Y',
+        url: 'icon_yingbian2.png',
+        className: 'stressSensor'
+      },
+      {
+        name: '索力传感器Y',
+        url: 'icon_suoli2.png',
+        className: 'tensionSensor'
+      },
+      {
+        name: '加速度传感器Y',
+        url: 'icon_sudu2.png',
+        className: 'accelerationSensor'
+      },
+      {
+        name: '动态采集传感器Y',
+        url: 'icon_yingbian2.png',
+        className: 'dynamicCollectionSensor'
+      },
+      {
+        name: '温度传感器Y',
+        url: 'icon_dongtai2.png',
+        className: 'temperatureSensor'
+      },
+      {
+        name: '倾角传感器Y',
+        url: 'icon_qingjiao2.png',
+        className: 'angleSensor'
+      },
+      {
+        name: '称重传感器Y',
+        url: 'icon_chengzhong2.png',
+        className: 'weighSensor'
+      },
+      {
+        name: '位移传感器Y',
+        url: 'icon_weiyi2.png',
+        className: 'displacementSensor'
+      }
+    ];
+
+    var mouse = new THREE.Vector2();
+    init();
+    // animate();
+
+    // window.addEventListener("click", modelClick, false);
+    window.addEventListener('dblclick', modeldbClick, false);
+
+    function init() {
+      //获取渲染的目标位置
+
+      container = document.createElement('div');
+      container.classList.add('threeContainer');
+      document.body.appendChild(container);
+      // scene 创建一个场景
+      scene = new THREE.Scene();
+
+      //偏移位置。
+      camera = new THREE.PerspectiveCamera(
+        75, //fov:眼球张开的角度，0°时相当于闭眼
+        window.innerWidth / window.innerHeight, //aspect:可视区域横纵比
+        0.1, //near:眼睛能看到的最近垂直距离
+        10000 // far：眼睛能看到的最远垂直距离
+      );
+      // camera.position.x =-21500;
+      // camera.position.y = 9661; //相机位置，位于（-21500,9661,7992）
+      // camera.position.z = 7992;
+      camera.position.y = 250;
+      camera.position.z = 250;
+      camera.position.x = -200;
+      camera.up.x = 0;
+      camera.up.y = 1; //相机朝向--相机上方为y轴，向量
+      camera.up.z = 0;
+      //相机添加入场景
+      scene.add(camera);
+
+      //设置渲染器。
+      renderer = new THREE.WebGLRenderer({
+        antialias: true, // 是否开启反锯齿，设置为true开启反锯齿
+        alpha: false, //是否可以设置背景色透明
+        precision: 'highp', //着色精度选择。 highp/mediump/lowp
+        premultipliedAlpha: true, //表示是否可以设置像素深度（用来度量图像的分辨率）
+        preserveDrawingBuffer: true, // 表示是否保存绘图缓冲
+        maxLights: 3, // 最大灯光数
+        stencil: false //表示是否使用模板字体或图案
+      });
+
+      scene.background = new THREE.ImageUtils.loadTexture(
+        'image/tiankong.png'
+      );
+
+      //场景添加环境光
+      var ambientLight = new THREE.AmbientLight(0xffffff);
+      scene.add(ambientLight);
+
+      //坐标轴
+      // var axisHelper=new THREE.AxisHelper(3000)//每个轴的长度
+      // scene.add(axisHelper);
+
+      // //相机位置添加点光源
+      var pointLight = new THREE.PointLight(0xffffff, 0.8);
+      camera.add(pointLight);
+
+      light = new THREE.PointLight(0x6b8e23);
+      light.position.set(0, 50, 0);
+      light.distance = 250;
+      scene.add(light);
+
+      light = new THREE.PointLight(0x000fff);
+      light.position.set(115, 50, 0);
+      light.distance = 160;
+      scene.add(light);
+
+      light = new THREE.PointLight(0x000fff);
+      light.position.set(-115, 50, 0);
+      light.distance = 160;
+      scene.add(light);
+
+      light = new THREE.PointLight(0x000fff);
+      light.position.set(220, 50, 0);
+      light.distance = 160;
+      scene.add(light);
+
+      light = new THREE.PointLight(0x000fff);
+      light.position.set(-220, 50, 0);
+      light.distance = 160;
+      scene.add(light);
+
+      //添加辅助线
+      //var helper = new THREE.AxesHelper(100); //添加xyz轴 x轴红色，y轴绿色，z轴蓝色
+      //scene.add(helper);
+
+      // 设置分辨率
+      renderer.setPixelRatio(window.devicePixelRatio);
+      // 设置 物体的渲染顺序将会由他们添加到场景中的顺序所决定
+      // 如何设置true 则可以手动控制加载顺序
+      renderer.sortObjects = false;
+      // 设置渲染尺寸
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      // 渲染到目标位置
+      container.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      // 如果使用animate方法时，将此函数删除
+      controls.addEventListener('change', render);
+      // 使动画循环使用时阻尼或自转 意思是否有惯性
+      controls.enableDamping = true;
+      //动态阻尼系数 就是鼠标拖拽旋转灵敏度
+      controls.dampingFactor = 0.25;
+      //是否可以缩放
+      controls.enableZoom = true;
+      //是否自动旋转
+      controls.autoRotate = false;
+      //设置相机距离原点的最远距离
+      controls.minDistance = 100;
+      //设置相机距离原点的最远距离
+      // controls.maxDistance = 1000;
+      //是否开启右键拖拽
+      controls.enablePan = true;
+      //设置可旋转范围为上半球
+      controls.minPolarAngle = Math.PI * 0; // radians
+      controls.maxPolarAngle = Math.PI * 0.64; // radians
+
+      //获取模型
+      // getBridgeModel();
+
+      // model  开始创建模型
+      // if (radioTerrainSta == '1') {
+      //   //添加河流效果
+      //   loadModelOBJ2(objList[0]);
+      //   //添加地形效果
+      //   loadModelOBJ2(objList[1]);
+      //   // loadModel("bridgeDX/Terrain/Terrain")
+      // }
+      // loadModelOBJ2(objList2[0]);
+
+      // 自适应监听
+      window.addEventListener(
+        'resize',
+        function () {
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+          render();
+        },
+        false
+      );
+    }
+
+    //获取模型
+    function getBridgeModel(token) {
+      strToken = token;
+      $.ajax({
+        type: 'GET',
+        dataType: 'json',
+        async: false, //同步请求
+        headers: {
+          'X-AUTH-TOKEN': token,
+          'X-ROUTER-URL': '/home'
+        },
+        url: 'http://' +
+          window.location.host +
+          '/bridge/photo/list/' +
+          structureId +
+          '/3',
+        success: (res) => {
+          if (res.code == '0000') {
+            if (res.data.list.length > 0) {
+              let data = res.data.list[0];
+              radioTerrainSta = data.terrain;
+              if (radioTerrainSta == 1) {
+                //添加河流效果
+                loadModelOBJ2(objList[0]);
+                //添加地形效果
+                loadModelOBJ2(objList[1]);
+                // loadModel("bridgeDX/Terrain/Terrain")
+              }
+              let modelObj = {
+                id: 1,
+                name: data.name.split('.zip')[0],
+                path: data.path.slice(0, data.path.lastIndexOf('/')) + '/'
+              };
+              loadModelGLTF(modelObj);
+              // loadModelObjGet(modelObj);
+            } else {
+              $('#loadError').css('display', 'flex');
+              $('#text').html('暂无模型');
+              $('#back').css('display', 'flex');
+            }
+          } else {
+            $('#loadError').css('display', 'flex');
+            $('#text').html(res.msg);
+            $('#back').hide();
+          }
+        },
+        error: (msg) => {
+          $('#loadError').css('display', 'flex');
+          $('#text').html(res.msg);
+          $('#back').hide();
+        }
+      });
+    }
+
+    //获取传感器和视频
+    function getSensorAndVideo(token) {
+      $.ajax({
+        type: 'GET',
+        dataType: 'json',
+        async: false, //同步请求
+        headers: {
+          'X-AUTH-TOKEN': token,
+          'X-ROUTER-URL': '/home'
+        },
+        url: 'http://' +
+          window.location.host +
+          '/bridge/home/detail/getSensorAndVideo/' +
+          structureId,
+        success: (res) => {
+          if (res.code == '0000') {
+            let data = res.data;
+            let sensorNameObj = {
+              加速度传感器: 'jiasudu1',
+              索力传感器: 'suoli1',
+              应变传感器: 'yingbian1',
+              动态采集仪: 'dongtai1',
+              温度传感器: 'wendu1',
+              倾角传感器: 'qingjiao1',
+              称重传感器: 'chengzhong1',
+              位移传感器: 'weiyi1',
+              气象传感器: 'qixiang1'
+            };
+            let senSorList = [];
+            data.meansPointVOList.map((item) => {
+              let obj = {
+                id: item.id,
+                name: sensorNameObj[item.sensorTypeName],
+                imgUrl: 'icon_' + sensorNameObj[item.sensorTypeName] + '.png',
+                xAxis: item.xAxis || 0,
+                yAxis: item.yAxis || 0,
+                zAxis: item.zAxis || 0,
+                type: 1,
+                partName: item.partName,
+                structureName: item.structureName,
+                componentName: item.componentName,
+                sensorVOList: item.sensorVOList,
+                firstWarningUpper: item.firstWarningUpper,
+                secondWarningUpper: item.secondWarningUpper,
+                thirdWarningUpper: item.thirdWarningUpper,
+                firstWarningLower: item.firstWarningLower,
+                secondWarningLower: item.secondWarningLower,
+                thirdWarningLower: item.thirdWarningLower,
+                sensorCode: item.name,
+                sensorType: item.sensorTypeName
+              };
+              senSorList.push(obj);
+            });
+            let videoList = [];
+            data.videoList.map((item) => {
+              let obj = {
+                id: item.id,
+                name: 'video',
+                imgUrl: 'icon_video.png',
+                xAxis: item.xAxis || 0,
+                yAxis: item.yAxis || 0,
+                zAxis: item.zAxis || 0,
+                type: 2,
+                ezopenUrl: item.ezopenUrl
+              };
+              videoList.push(obj);
+            });
+            iconList = senSorList.concat(videoList);
+            // videoList = videoList;
+          } else {
+            console.log('获取传感器、视频列表失败：' + res.msg);
+          }
+        },
+        error: (msg) => {
+          console.log(msg);
+        }
+      });
+    }
+
+    //获取传感器最后一条预警信息
+    function getNewestWarning(id, id2) {
+      $.ajax({
+        type: 'GET',
+        dataType: 'json',
+        async: false, //同步请求
+        headers: {
+          'X-AUTH-TOKEN': strToken,
+          'X-ROUTER-URL': '/home'
+        },
+        url: 'http://' +
+          window.location.host +
+          '/bridge/home/getNewestWarning/' +
+          id,
+        success: (res) => {
+          if (res.code == '0000') {
+            if (!!res.data) {
+              let level = res.data.level==1?'一级预警':res.data.level==2?'二级预警':'三级预警'
+              $('#noWarn').show();
+              $('#echartBox').css('padding-bottom', '0');
+              $('#warnTime').html(res.data.warningTime);
+              $('#warnLevel').html(level);
+            } else {
+              $('#noWarn').hide();
+              $('#echartBox').css({
+                height: '230px',
+                paddingBottom: '32px'
+              });
+            }
+            getSensorData(id, id2);
+          } else {
+            console.log('获取最新一条预警信息失败：' + res.msg);
+          }
+        },
+        error: (msg) => {
+          console.log(msg);
+        }
+      });
+    }
+
+    //获取用户最新传感器数据
+    function getSensorData(id, id2) {
+      $.ajax({
+        type: 'GET',
+        dataType: 'json',
+        async: false, //同步请求
+        headers: {
+          'X-AUTH-TOKEN': strToken,
+          'X-ROUTER-URL': '/home'
+        },
+        url: 'http://' +
+          window.location.host +
+          '/bridge/home/getSensorData/' +
+          id + '/' + id2,
+        success: (res) => {
+          $('#contentBox').css('display', 'flex');
+          if (res.code == '0000') {
+            if (!!res.data && res.data.datas) {
+              $('#modelEcahrts').remove();
+              let html = '<div id="modelEcahrts"></div>'
+              $('#echartBox').append(html)
+              this.echartData.timeList = res.data.times.split(',');
+              this.echartData.dataList = res.data.datas.split(',');
+              drawEchart();
+            } else {
+              $('#modelEcahrts').html('暂无数据');
+            }
+          } else {
+            $('#modelEcahrts').html('暂无数据');
+            console.log('获取传感器数据失败：' + res.msg);
+          }
+        },
+        error: (msg) => {
+          console.log(msg);
+        }
+      });
+    }
+
+    //获取萤石云token
+    function getYingshiyunAccessToken(element) {
+      $.ajax({
+        type: 'GET',
+        dataType: 'json',
+        async: false, //同步请求
+        headers: {
+          'X-AUTH-TOKEN': strToken,
+          'X-ROUTER-URL': '/home'
+        },
+        url: 'http://' + window.location.host + '/bridge/video/getAccessToken',
+        success: (res) => {
+          if (res.code == '0000') {
+            $('#videoBox').show();
+            if (player != null) {
+              player.stop();
+              player.play({
+                url: element.ezopenUrl
+              });
+            } else {
+              $('#myPlayer').html('');
+              player = new EZUIKit.EZUIKitPlayer({
+                autoplay: true,
+                id: 'myPlayer',
+                accessToken: res.data,
+                url: element.ezopenUrl,
+                template: 'simple' // simple - 极简版;standard-标准版;security - 安防版(预览回放);voice-语音版；
+              });
+              player.play();
+            }
+          } else {
+            $('#videoBox').hide();
+            console.log('获取萤石云token失败：' + res.msg);
+          }
+        },
+        error: (msg) => {
+          console.log(msg);
+        }
+      });
+    }
+
+    //跳转添加模型
+    function routerGo() {
+      window.parent.postMessage('models');
+    }
+
+    //加载模型（GLTF）
+    function loadModelGLTF(data) {
+      let path = data.path;
+      let name = data.name;
+      // 加载gltf
+      // 创建加载器
+      let loader = new THREE.GLTFLoader();
+      // 加载器加载方法，以及加载方法的一系列回调
+      loader.load(
+        'http://' +
+        window.location.host +
+        '/bridge/static/' +
+        path +
+        name +
+        '.gltf',
+        function (gltf) {
+          // 将模型引入
+          gltf.scene.name = path;
+          scene.add(gltf.scene);
+          render();
+          THREE.Cache.clear();
+        },
+        (xhr) => {
+          if (xhr.target.status == 200) {
+            let percentComplete = (xhr.loaded / xhr.total) * 100;
+            let percent = Math.round(percentComplete, 2);
+            // console.log(percent);
+            if (percent >= 100) {
+              $('#loading').hide();
+              addAllMarkerPoints();
+              setTimeout(() => {
+                render();
+              }, 1000);
+            } else {
+              $('#loadPercent').html(percent + '%');
+            }
+          }
+        },
+        (err) => {
+          if (err.target.status == '404') {
+            loadModelObjGet(data);
+          }
+        }
+      );
+    }
+
+    //加载地形、河流
+    function loadModelOBJ2(data) {
+      let path = data.path;
+      let name = data.name;
+      new THREE.MTLLoader()
+        .setPath('model/')
+        .load(path + '.mtl', function (materials) {
+          materials.preload();
+          // 加载obj
+          new THREE.OBJLoader()
+            .setMaterials(materials)
+            .setPath('model/')
+            .load(
+              path + '.obj',
+              function (object) {
+                object.traverse(function (child) {
+                  if (child instanceof THREE.Mesh) {
+                    child.material.shading = THREE.SmoothShading;
+                  }
+                });
+                object.name = name;
+                scene.add(object);
+                render();
+              },
+              () => {},
+              () => {}
+            );
+        });
+    }
+
+    //加载模型（OBJ、MTL）
+    function loadModelObjGet(data) {
+      let path = data.path;
+      let name = data.name;
+      new THREE.MTLLoader()
+        .setPath('http://' + window.location.host + '/bridge/static/' + path)
+        .load(name + '.mtl', function (materials) {
+          materials.preload();
+          // 加载obj
+          new THREE.OBJLoader()
+            .setMaterials(materials)
+            .setPath(
+              'http://' + window.location.host + '/bridge/static/' + path
+            )
+            .load(
+              name + '.obj',
+              function (object) {
+                object.traverse(function (child) {
+                  if (child instanceof THREE.Mesh) {
+                    // console.log(child);
+                    // child.material.shading = THREE.SmoothShading;
+                    child.material.transparent = true;
+                    child.material.opacity = 0.5
+                  }
+                });
+                object.name = name;
+                scene.add(object);
+                render();
+              },
+              (xhr) => {
+                let percentComplete = (xhr.loaded / xhr.total) * 100;
+                let percent = Math.round(percentComplete, 2);
+                // console.log(percent);
+                if (percent >= 100) {
+                  $('#loading').hide();
+                  addAllMarkerPoints();
+                  setTimeout(() => {
+                    render();
+                  }, 1500);
+                } else {
+                  $('#loadPercent').html(percent + '%');
+                }
+              },
+              () => {}
+            );
+        });
+    }
+
+    //加点模型
+    function showMesh(meshName, color) {
+      let group = new THREE.Group();
+      group.name = meshName;
+      for (let i = 0; i < sendemoList.length; i++) {
+        let name = getMarkerPointClassName(sendemoList[i].sensorType);
+
+        if (name == meshName) {
+          let element = sendemoList[i];
+
+          // var geometry1 = new THREE.BoxGeometry(28, 2, 7);
+          var geometry1 = new THREE.SphereGeometry(1, 32, 32);
+          var lamberBox1 = new THREE.MeshLambertMaterial({
+            //创建材质
+            // color: element.color,
+            color: color,
+            opacity: sensorOpacity,
+            transparent: true
+          });
+          var meshBox1 = new THREE.Mesh(geometry1, lamberBox1); //创建网格模型
+          meshBox1.position.set(element.x, element.y, element.z); //设置长方体(传感器)的坐标
+          // meshBox1.rotation.set(0 * Math.PI, 0 * Math.PI, 0 * Math.PI);
+          meshBox1.structureName = element.structureName;
+          meshBox1.partName = element.partName;
+          meshBox1.componentName = element.componentName;
+          meshBox1.sensorType = element.sensorType;
+          meshBox1.sensorId = element.id;
+          meshBox1.sensorCoding = element.sensorCoding;
+          meshBox1.sensorCodingDesc = element.sensorCodingDesc;
+          meshBox1.rotateY(0);
+          meshBox1.name = name;
+          senSorList.push(meshBox1);
+          group.add(meshBox1); //将长方体添加到场景中
+        }
+      }
+      if (group.children.length > 0) {
+        scene.add(group);
+      }
+      render();
+    }
+
+    //移除点模型
+    function removeMesh(meshName) {
+      for (let i = 0; i < scene.children.length; i++) {
+        if (scene.children[i].type === 'Group') {
+          if (scene.children[i].name == meshName) {
+            scene.remove(scene.children[i]);
+          }
+        }
+      }
+      render();
+    }
+
+    // 时刻渲染
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    //判断是否在相机视野中
+    function getViewInside() {
+      var frustum = new THREE.Frustum(); //Frustum用来确定相机的可视区域
+      var cameraViewProjectionMatrix = new THREE.Matrix4();
+      cameraViewProjectionMatrix.multiplyMatrices(
+        camera.projectionMatrix,
+        camera.matrixWorldInverse
+      ); //获取相机的法线
+      frustum.setFromMatrix(cameraViewProjectionMatrix); //设置frustum沿着相机法线方向
+      //传感器、视频列表
+      for (let i = 0; i < iconList.length; i++) {
+        let position = new THREE.Vector3(
+          Number(iconList[i].xAxis),
+          Number(iconList[i].yAxis),
+          Number(iconList[i].zAxis)
+        );
+        if (frustum.containsPoint(position)) {
+          $('#markerPoint' + i).show();
+          renderMarkerPoint(iconList[i], i);
+          if (showType == 1) {
+            $('#contentBox').css('display', 'flex');
+          } else if (showType == 3) {
+            $('#videoBox').css('display', 'flex');
+          }
+        } else {
+          $('#markerPoint' + i).hide();
+          if (showType == 1) {
+            $('#contentBox').hide();
+          } else if (showType == 3) {
+            $('#videoBox').hide();
+          }
+        }
+      }
+    }
+
+    //实时渲染
+    function render() {
+      renderer.render(scene, camera);
+      if ($('#contentBox').is(':visible')) {
+        renderDiv(currentElement);
+      }
+      if ($('#videoBox').is(':visible')) {
+        renderDiv(currentElement2);
+      }
+      if ($('#dieaseBox').is(':visible')) {
+        renderDiv(currentElement3);
+      }
+      // renderAllMarkerPoints();
+      getViewInside();
+    }
+
+    //传感器显示隐藏
+    function setIconState(name, state) {
+      for (let i = 0; i < iconList.length; i++) {
+        if (iconList[i].name.includes(name)) {
+          if (state) {
+            addMarkerPoint(iconList[i], i);
+          } else {
+            $('#markerPoint' + i).remove();
+          }
+        }
+      }
+      $('#contentBox').hide();
+    }
+    //生成echarts图
+    function drawEchart() {
+      let maxValue = Math.max(...echartData.dataList);
+      oGraph = echarts.init(document.getElementById('modelEcahrts'));
+      oGraph.clear();
+      let option = {
+        tooltip: {
+          trigger: 'axis'
+        },
+        grid: {
+          top: '10%', //与上面的距离
+          left: '3%', //与左边的距离
+          right: maxValue > echartData.thirdWarningUpper ||
+            maxValue < echartData.thirdWarningLower ?
+            '20%' : '3%', //与右边的距离
+          bottom: '0%', //与下面的距离
+          containLabel: true
+        },
+        xAxis: {
+          type: 'category',
+          data: echartData.timeList,
+          axisLine: {
+            show: false
+          },
+          axisLabel: {
+            margin: 12,
+            color: '#fff',
+            fontSize: 10
+          },
+          axisTick: {
+            show: false
+          },
+          splitArea: {
+            show: false
+          }
+        },
+        yAxis: {
+          name: echartData.unit,
+          type: 'value',
+          nameTextStyle: {
+            color: '#595959'
+          },
+          nameGap: 5,
+          max: 'dataMax',
+          min: 'dataMin',
+          axisLine: {
+            show: false
+          },
+          axisLabel: {
+            margin: 8,
+            color: '#fff',
+            fontSize: 10
+          },
+          axisTick: {
+            show: false
+          },
+          splitArea: {
+            show: false
+          },
+          splitLine: {
+            lineStyle: {
+              color: 'rgba(77,86,107,0.5)'
+            }
+          }
+        },
+        series: [{
+            type: 'line',
+            symbol: echartData.sensorDetailsId == 7 ? 'circle' : 'none',
+            symbolSize: 14,
+            smooth: false,
+            itemStyle: {
+              color: '#1a9f97'
+            },
+            areaStyle: {
+              color: 'rgba(10,92,104,0.8)'
+            },
+            data: echartData.dataList
+          },
+          //上下限值
+          {
+            data: null,
+            type: 'line',
+            animation: false,
+            markLine: {
+              //数值为0的Y轴样式
+              silent: true,
+              symbol: 'none',
+              data: [{
+                  yAxis: echartData.firstWarningUpper,
+                  name: '一级预警上限',
+                  label: {
+                    position: 'end'
+                  },
+                  lineStyle: {
+                    type: 'solid',
+                    color: '#EB5757',
+                    width: 1
+                  }
+                },
+                {
+                  yAxis: echartData.firstWarningLower,
+                  name: '一级预警下限',
+                  label: {
+                    position: 'end'
+                  },
+                  lineStyle: {
+                    type: 'solid',
+                    color: '#EB5757',
+                    width: 1
+                  }
+                },
+                {
+                  yAxis: echartData.secondWarningUpper,
+                  name: '二级预警上限',
+                  label: {
+                    position: 'end'
+                  },
+                  lineStyle: {
+                    type: 'solid',
+                    color: '#F2C94C',
+                    width: 1
+                  }
+                },
+                {
+                  yAxis: echartData.secondWarningLower,
+                  name: '二级预警下限',
+                  label: {
+                    position: 'end'
+                  },
+                  lineStyle: {
+                    type: 'solid',
+                    color: '#F2C94C',
+                    width: 1
+                  }
+                },
+                {
+                  yAxis: echartData.thirdWarningUpper,
+                  name: '三级预警上限',
+                  label: {
+                    position: 'end'
+                  },
+                  lineStyle: {
+                    type: 'solid',
+                    color: '#419aff',
+                    width: 1
+                  }
+                },
+                {
+                  yAxis: echartData.thirdWarningLower,
+                  name: '三级预警下限',
+                  label: {
+                    position: 'end'
+                  },
+                  lineStyle: {
+                    type: 'solid',
+                    color: '#419aff',
+                    width: 1
+                  }
+                },
+              ],
+              label: {
+                show: true,
+                position: 'insideStartTop',
+                fontSize: 12,
+                // color: "rgba(255, 255, 255, 0.85)",
+                fontWeight: 'blod',
+                formatter: function (parmas) {
+                  // if (parmas.data.name == "uper") {
+                  //   return "拉应力：" + _this.echartData.maxValue;
+                  // }
+                  return parmas.name + '(' + parmas.value + ')';
+                }
+              }
+            }
+          }
+        ]
+      };
+      oGraph.setOption(option, true);
+      window.onresize = () => oGraph.resize();
+    }
+
+    function timeEcahrt(data, date) {
+      oGraph.setOption({
+          tooltip: {
+            show: true,
+            trigger: 'item'
+          },
+          grid: {
+            top: '5%', //与上面的距离
+            left: '3%', //与左边的距离
+            right: '3%', //与右边的距离
+            bottom: '0%', //与下面的距离
+            containLabel: true
+          },
+          xAxis: {
+            type: 'category',
+            data: date,
+            axisLine: {
+              show: false
+            },
+            axisLabel: {
+              margin: 12,
+              color: '#fff',
+              fontSize: 10
+            },
+            axisTick: {
+              show: false
+            },
+            splitArea: {
+              show: false
+            }
+          },
+          yAxis: {
+            type: 'value',
+            axisLine: {
+              show: false
+            },
+            axisLabel: {
+              margin: 8,
+              color: '#fff',
+              fontSize: 10
+            },
+            axisTick: {
+              show: false
+            },
+            splitArea: {
+              show: false
+            },
+            splitLine: {
+              lineStyle: {
+                color: 'rgba(77,86,107,0.5)'
+              }
+            }
+          },
+          series: [{
+            type: 'line',
+            symbol: 'none',
+            smooth: false,
+            itemStyle: {
+              color: '#1a9f97'
+            },
+            areaStyle: {
+              color: 'rgba(10,92,104,0.8)'
+            },
+            data: data
+          }]
+        },
+        true
+      );
+    }
+
+    //随机生成echarts数据
+    function randomData(dataArry, dateArry) {
+      let newDataArry = dataArry.concat();
+      let newDateArry = dateArry.concat();
+      // let maxNum = Math.max(...dataArry);
+      // let minNum = Math.max(...dataArry);
+      echartTimer = setInterval(() => {
+        let date = Dateformat(new Date());
+        let num = Number((Math.random() * 10 - 5).toFixed(2));
+        newDataArry.push(num);
+        newDateArry.push(date);
+        timeEcahrt(newDataArry, newDateArry);
+      }, 1000);
+    }
+
+    //时间格式化
+    function Dateformat(data) {
+      Date.prototype.Format = function (fmt) {
+        var o = {
+          'M+': this.getMonth() + 1, //月份
+          'd+': this.getDate(), //日
+          'h+': this.getHours(), //小时
+          'm+': this.getMinutes(), //分
+          's+': this.getSeconds() //秒
+        };
+        if (/(y+)/.test(fmt)) {
+          //根据y的长度来截取年
+          fmt = fmt.replace(
+            RegExp.$1,
+            (this.getFullYear() + '').substr(4 - RegExp.$1.length)
+          );
+        }
+        for (var k in o) {
+          if (new RegExp('(' + k + ')').test(fmt))
+            fmt = fmt.replace(
+              RegExp.$1,
+              RegExp.$1.length == 1 ?
+              o[k] :
+              ('00' + o[k]).substr(('' + o[k]).length)
+            );
+        }
+        return fmt;
+      };
+      return data.Format('hh:mm:ss');
+    }
+
+    function modelClick() {
+      // 将旋转标志位置为false，模型停止选择
+      rotationKey = false;
+
+      //模型监听事件
+      //通过鼠标点击的位置计算出raycaster所需要的点的位置，以屏幕中心为原点，值的范围为-1到1.
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      var raycaster = new THREE.Raycaster();
+      // 通过鼠标点的位置和当前相机的矩阵计算出raycaster
+      raycaster.setFromCamera(mouse, camera);
+      // 获取raycaster直线和所有模型相交的数组集合
+      var intersects = raycaster.intersectObjects(scene.children, true);
+      for (let j = 0; j < senSorList.length; j++) {
+        const sorl = senSorList[j];
+        sorl.material.opacity = sensorOpacity;
+      }
+      for (let i = 0; i < intersects.length; i++) {
+        const element = intersects[i].object;
+        if (i == 0) {
+          for (let j = 0; j < senSorList.length; j++) {
+            const sorl = senSorList[j];
+            if (element.uuid == sorl.uuid) {
+              currentElement = element;
+              //获取后端传感器数据信息。
+              var timeList = [];
+              var dataEchartList = [];
+              // $.ajax({//不知道之前的人写来干嘛的
+              //     type: "POST",
+              //     dataType: "json",
+              //     async:false,//同步请求
+              //     url: "http://"+window.location.host+"/bridge/particularsService/SensorTendencyAjax",
+              //     data: {
+              //         "sensorId": element.sensorId
+              //     },
+              //     success: function (res) {
+              //         //数据处理
+              //         for (let i = 0; i < res.sensorTen.length; i++) {
+              //             const element = res.sensorTen[i];
+              //             timeList.push(formatDate(new Date(element.sampling_time)))
+              //             dataEchartList.push(element.actual);
+              //         }
+              //         showDiv(element,timeList,dataEchartList);
+
+              //     },
+              //     error: function (msg) {
+              //         console.log("视频请求失败。请联系管理员");
+              //     }
+              // })
+              // showDiv(element, null, null);
+            }
+          }
+        }
+      }
+      // render();
+    }
+
+    function showDiv(element) {
+      asynIndex = 0;
+      let halfWidth = window.innerWidth / 2;
+      let halfHeight = window.innerHeight / 2;
+      let point = new THREE.Vector3(
+        Number(element.xAxis),
+        Number(element.yAxis),
+        Number(element.zAxis)
+      );
+      if (element.type == 1) {
+        // 逆转相机求出二维坐标
+        let vector = point.clone().project(camera);
+        // 显示模型信息
+        // console.log(element);
+        let html = `<select id="sensorDetail" class="selectSensor" onChange="sensorDetailChange()">`
+        for (let i = 0; i < element.sensorVOList.length; i++) {
+          html +=
+            `<option class="optionSensor" value="${element.sensorVOList[i].id}">${element.sensorVOList[i].name}</option>`
+        }
+        html += `</select>`
+        $('#contentTitle').html(element.sensorCode);
+        $('#contentText1').html(element.structureName);
+        $('#contentText2').html(element.partName);
+        $('#contentText3').html(element.componentName);
+        $('#contentText4').html(html);
+        // let html = '';
+        // for (let i = 0; i < element.list1.length; i++) {
+        //   html += "<div class='secItem'>";
+        //   html +=
+        //     "<span class='textGraGreen'>" + element.list1[i] + '</span>';
+        //   html += '<span>' + element.list2[i] + '</span>';
+        //   html += '</div>';
+        // }
+        // $('#contentItem').html(html);  //后期可能要用到
+        $('#contentBox').css({
+          left: vector.x * halfWidth + halfWidth - 224.5,
+          top: -vector.y * halfHeight + halfHeight - 402,
+          // display: 'flex'
+        });
+        echartData.firstWarningUpper = element.sensorVOList[0].firstWarningUpper;
+        echartData.secondWarningUpper = element.sensorVOList[0].secondWarningUpper;
+        echartData.thirdWarningUpper = element.sensorVOList[0].thirdWarningUpper;
+        echartData.firstWarningLower = element.sensorVOList[0].firstWarningLower;
+        echartData.secondWarningLower = element.sensorVOList[0].secondWarningLower;
+        echartData.thirdWarningLower = element.sensorVOList[0].thirdWarningLower;
+        echartData.sensorDetailsId = element.sensorVOList[0].sensorDetailsId
+        echartData.unit = element.sensorVOList[0].unit
+        getNewestWarning(element.id, element.sensorVOList[0].id);
+      }
+      if (element.type == 2) {
+        // 逆转相机求出二维坐标
+        let vector = point.clone().project(camera);
+        // 显示模型信息
+        $('#videoBox').css({
+          left: ((vector.x * halfWidth +
+                halfWidth +
+                55 * (window.innerWidth / 1920)) *
+              100) /
+            window.innerWidth -
+            1.5 +
+            'vw',
+          top: ((-vector.y * halfHeight +
+                halfHeight -
+                205 * (window.innerWidth / 1920)) *
+              100) /
+            window.innerWidth -
+            0.2 +
+            2.6 +
+            'vw',
+          // display: 'flex'
+        });
+        getYingshiyunAccessToken(element);
+      }
+      if (element.type == 3) {
+        let vector = point.clone().project(camera);
+        // 显示模型信息
+        $('#dieaseBox').css({
+          left: vector.x * halfWidth + halfWidth - 224.5,
+          top: -vector.y * halfHeight + halfHeight - 402,
+          // left:
+          //   ((vector.x * halfWidth +
+          //     halfWidth -
+          //     221 * (window.innerWidth / 1920)) *
+          //     100) /
+          //     window.innerWidth -
+          //   1.5 +
+          //   "vw",
+          // top:
+          //   ((-vector.y * halfHeight +
+          //     halfHeight -
+          //     355 * (window.innerWidth / 1920)) *
+          //     100) /
+          //     window.innerWidth -
+          //   0.2 +
+          //   2.6 +
+          //   "vw",
+          // display: 'flex'
+        });
+      }
+      // camera.lookAt(element.x, element.y, element.z);
+      render();
+    }
+
+    //更改弹框中的细项
+    function sensorDetailChange() {
+      let id = $('#sensorDetail').val()
+      let meansPointId
+      sensorVOList.map(item => {
+        if (id == item.id) {
+          meansPointId = item.meansPointId
+          echartData.firstWarningUpper = item.firstWarningUpper;
+          echartData.secondWarningUpper = item.secondWarningUpper;
+          echartData.thirdWarningUpper = item.thirdWarningUpper;
+          echartData.firstWarningLower = item.firstWarningLower;
+          echartData.secondWarningLower = item.secondWarningLower;
+          echartData.thirdWarningLower = item.thirdWarningLower;
+          echartData.sensorDetailsId = element.sensorVOList[0].sensorDetailsId
+          echartData.unit = element.sensorVOList[0].unit
+        }
+      })
+      getSensorData(meansPointId, id)
+    }
+
+    // 更新div的位置
+    function renderDiv(element) {
+      let halfWidth = window.innerWidth / 2;
+      let halfHeight = window.innerHeight / 2;
+      let point = new THREE.Vector3(
+        Number(element.xAxis),
+        Number(element.yAxis),
+        Number(element.zAxis)
+      );
+      // 逆转相机求出二维坐标
+      let vector = point.clone().project(camera);
+      // 显示模型信息
+      if (element.type == 1) {
+        $('#contentBox').css({
+          left: vector.x * halfWidth + halfWidth - 224.5,
+          top: -vector.y * halfHeight + halfHeight - 402,
+          // display:'flex'
+          // left:
+          //   ((vector.x * halfWidth +
+          //     halfWidth -
+          //     196 * (window.innerWidth / 1920)) *
+          //     100) /
+          //     window.innerWidth -
+          //   1.5 +
+          //   "vw",
+          // top:
+          //   ((-vector.y * halfHeight +
+          //     halfHeight -
+          //     435 * (window.innerWidth / 1920)) *
+          //     100) /
+          //     window.innerWidth -
+          //   0.2 +
+          //   2.6 +
+          //   "vw"
+        });
+      }
+      if (element.type == 2) {
+        $('#videoBox').css({
+          // left: vector.x * halfWidth + halfWidth - 221,
+          // top: -vector.y * halfHeight + halfHeight - 355,
+          left: ((vector.x * halfWidth +
+                halfWidth +
+                55 * (window.innerWidth / 1920)) *
+              100) /
+            window.innerWidth -
+            1.5 +
+            'vw',
+          top: ((-vector.y * halfHeight +
+                halfHeight -
+                205 * (window.innerWidth / 1920)) *
+              100) /
+            window.innerWidth -
+            0.2 +
+            2.6 +
+            'vw',
+          // display:'flex'
+        });
+      }
+      if (element.type == 3) {
+        $('#dieaseBox').css({
+          left: vector.x * halfWidth + halfWidth - 224.5,
+          top: -vector.y * halfHeight + halfHeight - 402,
+          // display:'flex'
+          // left:
+          //   ((vector.x * halfWidth +
+          //     halfWidth -
+          //     196 * (window.innerWidth / 1920)) *
+          //     100) /
+          //     window.innerWidth -
+          //   1.5 +
+          //   "vw",
+          // top:
+          //   ((-vector.y * halfHeight +
+          //     halfHeight -
+          //     435 * (window.innerWidth / 1920)) *
+          //     100) /
+          //     window.innerWidth -
+          //   0.2 +
+          //   2.6 +
+          //   "vw"
+        });
+      }
+    }
+
+    //隐藏div
+    function displayDiv() {
+      $('#contentBox').hide();
+      $('#videoBox').hide();
+      $('#dieaseBox').hide();
+      // clearInterval(echartTimer);
+    }
+
+    //双击事件
+    function modeldbClick() {
+      rotationKey = false;
+      showType = 0;
+      if (player != null) {
+        player.stop();
+        player = null;
+      }
+      displayDiv();
+      currentElement = null;
+    }
+
+    function getPoint() {}
+
+    /****** 场景漫游 ******/
+    // 相机起点变量
+    var camerastartPoint = {
+      lower: {
+        x: 12,
+        y: 113,
+        z: 410
+      },
+      upper: {
+        x: 13,
+        y: 115,
+        z: 411
+      }
+    };
+    // 焦点
+    var focusPoint = {
+      x: 5.75,
+      y: 12.63,
+      z: 10.86
+    };
+    // 圆周运动半径
+    var R = 400;
+
+    function moveToStartPoint() {
+      // 相机目光的向量对象
+      let tmpX = parseInt(camera.position.x);
+      let tmpY = parseInt(camera.position.y);
+      let tmpZ = parseInt(camera.position.z);
+      if (
+        false ||
+        (tmpX >= camerastartPoint.lower.x &&
+          tmpX <= camerastartPoint.upper.x &&
+          tmpY >= camerastartPoint.lower.y &&
+          tmpY <= camerastartPoint.upper.y &&
+          tmpZ >= camerastartPoint.lower.z &&
+          tmpZ <= camerastartPoint.upper.z)
+      ) {
+        degree = 0;
+        circularMotion(0);
+        return;
+      }
+      if (tmpX < camerastartPoint.lower.x) {
+        camera.position.x++;
+      } else if (tmpX > camerastartPoint.upper.x) {
+        camera.position.x--;
+      }
+      if (tmpY < camerastartPoint.lower.y) {
+        camera.position.y++;
+      } else if (tmpY > camerastartPoint.upper.y) {
+        camera.position.y--;
+      }
+      if (tmpZ < camerastartPoint.lower.z) {
+        camera.position.z++;
+      } else if (tmpZ > camerastartPoint.upper.z) {
+        camera.position.z--;
+      }
+      var vector = {
+        x: camera.position.x - focusPoint.x,
+        y: camera.position.y - focusPoint.y,
+        z: camera.position.z - focusPoint.z
+      };
+      render();
+      camera.lookAt(
+        new THREE.Vector3(focusPoint.x, focusPoint.y, focusPoint.z)
+      );
+      requestAnimationFrame(moveToStartPoint);
+    }
+
+    function tmpClick() {
+      if (!currentElement) {
+        displayDevice(focusPoint, 370, 200, 0.5);
+      } else {
+        let localFocusPoint = currentElement.position;
+        displayDevice(localFocusPoint, 160, 170, 0.5);
+      }
+    }
+
+    // 环绕显示设备
+    function displayDevice(focus, R, height, angularVelocity) {
+      rotationKey = true;
+
+      // 相机初始位置变量
+      // 通过函数计算得来
+      var startPoint = {};
+
+      // 已旋转角度
+      var degree = 0;
+
+      // 此变量用于保存圆周运动时下一个点的位置
+      var displacementPoint = {};
+
+      function speedFormatToDegree(r) {
+        r = Number(r);
+        var radiusSpeed = (speed / r).toFixed(2);
+        var d = ((radiusSpeed * 30) / Math.PI).toFixed(2);
+        return d;
+      }
+
+      // 执行淡出方法
+      // fadeOut();
+
+      // 设置黑屏时间，对应画布父div渐变时间间隔
+      var BlackScreenTime = 500;
+
+      // 趁屏幕黑屏的时候重新设置相机位置
+      setTimeout(() => {
+        startPoint = getStartPoint();
+        camera.position.x = startPoint.x;
+        camera.position.y = startPoint.y;
+        camera.position.z = startPoint.z;
+        camera.lookAt(focus);
+        render(); // 渲染出起点
+      }, BlackScreenTime + 50);
+
+      // 相机跳转到起点后淡入
+      // setTimeout(() => {
+      //   fadeIn();
+      // }, BlackScreenTime + 100);
+
+      setTimeout(() => {
+        circularMotion();
+      }, BlackScreenTime + 5);
+
+      // 淡出方法
+      function fadeOut() {
+        document.getElementsByClassName(
+          'threeContainer'
+        )[0].style.opacity = 0;
+        // var markerPoints=document.getElementsByClassName("markerPoints");
+        // for (let i=0;i<markerPoints.length;i++){
+        // 	markerPoints[i].style.opacity=0;
+        // }
+      }
+
+      // 淡入方法
+      function fadeIn() {
+        document.getElementsByClassName(
+          'threeContainer'
+        )[0].style.opacity = 1;
+        // var markerPoints=document.getElementsByClassName("markerPoints");
+        // for (let i=0;i<markerPoints.length;i++){
+        // 	markerPoints[i].style.opacity=1;
+        // }
+      }
+
+      // 获取相机初始位置之方法
+      function getStartPoint() {
+        let x = Math.sin(0) * R;
+        let z = Math.cos(0) * R;
+        let tmpStartPoint = {};
+        tmpStartPoint.x = focus.x + x;
+        tmpStartPoint.y = height;
+        tmpStartPoint.z = focus.z + z;
+        return tmpStartPoint;
+      }
+
+      // 圆周运动方法
+      function circularMotion() {
+        if (rotationKey) {
+          if (degree > 360) {
+            degree = 0;
+          }
+          degree += angularVelocity;
+          let rad = (Math.PI / 180) * degree;
+          //计算大圆上每一个A的x,y
+          let x = Math.sin(rad) * R;
+          let z = Math.cos(rad) * R;
+          displacementPoint.x = focus.x + x;
+          displacementPoint.z = focus.z + z;
+
+          camera.position.x = displacementPoint.x;
+          camera.position.z = displacementPoint.z;
+          camera.lookAt(new THREE.Vector3(focus.x, focus.y, focus.z));
+
+          // 以下代码可以画出运动轨迹
+          // var geom = new THREE.Geometry();
+          // var material = new THREE.ParticleBasicMaterial({
+          //   color: 0x00FFFF,
+          //   size: 1
+          // });
+          // var color1 = new THREE.Color( 0x0000ff );
+          // var p1 = new THREE.Vector3( displacementPoint.x, camerastartPoint.upper.y, displacementPoint.z );
+          // // 将粒子加入粒子geometry
+          // geom.vertices.push(p1);
+          // geom.colors.push(color1);
+          // // 创建粒子系统
+          // var system =  new THREE.ParticleSystem(geom, material);
+          // // 将粒子系统加入场景
+          // scene.add(system);
+          render(); // 渲染
+          requestAnimationFrame(circularMotion);
+        }
+      }
+    }
+
+    /******** 渲染传感器标记点 ********/
+
+    // 根据传感器类型返回传感器图片地址的方法
+    function getMarkerPointImage(name) {
+      for (let i = 0; i < markerPointsStaticInformation.length; i++) {
+        if (markerPointsStaticInformation[i].name === name) {
+          return markerPointsStaticInformation[i].url;
+        }
+      }
+    }
+
+    function getMarkerPointClassName(name) {
+      for (let i = 0; i < markerPointsStaticInformation.length; i++) {
+        if (markerPointsStaticInformation[i].name === name) {
+          return markerPointsStaticInformation[i].className;
+        }
+      }
+    }
+
+    // 需要延后200ms加载，否则相机对象还没被创建好
+    // setTimeout(() => {
+    //   addAllMarkerPoints();
+    // }, 200);
+
+    // 将所有点添加到模型中
+    function addAllMarkerPoints() {
+      for (let i = 0; i < iconList.length; i++) {
+        addMarkerPoint(iconList[i], i);
+      }
+      // for (let i = 0; i < videoList.length; i++) {
+      //   addMarkerPoint(videoList[i], i);
+      // }
+    }
+
+    // 添加单个标记点之方法
+    function addMarkerPoint(element, i) {
+      // 获取窗口高宽
+      let halfWidth = window.innerWidth / 2;
+      let halfHeight = window.innerHeight / 2;
+
+      // 获取监测器点位信息
+      let point = new THREE.Vector3(
+        Number(element.xAxis),
+        Number(element.yAxis),
+        Number(element.zAxis)
+      );
+
+      // 逆转相机求出二维坐标
+      let vector = point.clone().project(camera);
+      let info = JSON.stringify(element);
+      var pointBox = document.createElement('div');
+      pointBox.classList.add('pointBox');
+      var id = 'markerPoint' + i;
+      pointBox.setAttribute('id', id);
+      pointBox.setAttribute('data-info', info);
+      pointBox.setAttribute('onClick', 'iconClick(this)');
+
+      document.body.appendChild(pointBox);
+
+      id = '#' + id;
+
+      // 显示模型信息
+      $(id).css({
+        left: ((vector.x * halfWidth +
+              halfWidth -
+              25 * (window.innerWidth / 1920)) *
+            100) /
+          window.innerWidth +
+          0.2 +
+          'vw',
+        top: ((-vector.y * halfHeight +
+              halfHeight -
+              75 * (window.innerWidth / 1920)) *
+            100) /
+          window.innerWidth +
+          1.4 +
+          'vw',
+        display: 'flex'
+      });
+
+      let url = 'url(./image/bridgeModel/' + element.imgUrl;
+
+      $(id).css('background-image', url);
+      //生成Html界面
+      $(id).show();
+      render();
+
+      // if (element.type == 1) {
+      //   currentElement = element;
+      // } else {
+      //   currentElement2 = element;
+      // }
+      // pointBox.onclick = function () {
+      //   let info = JSON.parse($(id).attr("data-info"));
+      //   showDiv(info, null, null);
+      //   // alert("点我干嘛");
+      // };
+    }
+    //点击图标
+    function iconClick(el) {
+      displayDiv();
+      let info = JSON.parse($(el).attr('data-info'));
+      showType = info.type;
+      if (info.type == 1) {
+        currentElement = info;
+      } else if (info.type == 2) {
+        currentElement2 = info;
+      } else {
+        currentElement3 = info;
+      }
+      camera.lookAt(info.xAxis, info.yAxis, info.zAxis);
+      // if (echartTimer != null) {
+      //   clearInterval(echartTimer);
+      // }
+      sensorVOList = info.sensorVOList
+      showDiv(info);
+    }
+
+    // 重新渲染标记点之方法
+    function renderAllMarkerPoints() {
+      for (let i = 0; i < iconList.length; i++) {
+        renderMarkerPoint(iconList[i], i);
+      }
+      // for (let i = 0; i < videoList.length; i++) {
+      //   renderMarkerPoint(videoList[i], i);
+      // }
+    }
+
+    // 添加单个标记点之方法
+    function renderMarkerPoint(element, i) {
+      // 获取窗口高宽
+      let halfWidth = window.innerWidth / 2;
+      let halfHeight = window.innerHeight / 2;
+
+      // 获取监测器点位信息
+      let point = new THREE.Vector3(
+        Number(element.xAxis),
+        Number(element.yAxis),
+        Number(element.zAxis)
+      );
+
+      // 逆转相机求出二维坐标
+      let vector = point.clone().project(camera);
+
+      var id = '#markerPoint' + i;
+
+      // 显示模型信息
+      $(id).css({
+        left: ((vector.x * halfWidth +
+              halfWidth -
+              25 * (window.innerWidth / 1920)) *
+            100) /
+          window.innerWidth +
+          0.2 +
+          'vw',
+        top: ((-vector.y * halfHeight +
+              halfHeight -
+              75 * (window.innerWidth / 1920)) *
+            100) /
+          window.innerWidth +
+          1.4 +
+          'vw'
+        // display: 'flex'
+      });
+
+      //生成Html界面
+      // $(id).show();
+    }
+    // window.onbeforeunload = function () {
+    //   if (echartTimer !== null) {
+    //     clearInterval(echartTimer);
+    //   }
+    // };
+  </script>
+</body>
+
+</html>

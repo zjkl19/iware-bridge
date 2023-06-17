@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.online.SensorRecordDao">
+
+    <resultMap type="com.iware.bridge.model.entity.online.SensorRecord" id="sensorLogMap">
+        <result property="id" column="id"/>
+        <result property="meansPointId" column="means_point_id"/>
+        <result property="operateTime" column="operate_time"/>
+        <result property="type" column="type"/>
+        <result property="reason" column="reason"/>
+        <result property="content" column="content"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       means_point_id,
+       operate_time,
+       type,
+       reason,
+       content,
+       status,
+       create_time,
+       modify_time
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.online.SensorRecord">
+        insert into tb_sensor_record
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                means_point_id,
+                operate_time,
+                type,
+                reason,
+                content,
+                status,
+            </trim>
+        )
+        values
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{meansPointId},
+                #{operateTime},
+                #{type},
+                #{reason},
+                #{content},
+                #{status},
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询SensorLog -->
+    <select id="findById" parameterType="Integer" resultMap="sensorLogMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_sensor_record
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.online.SensorRecord">
+        UPDATE
+            tb_sensor_record
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="meansPointId != null">
+                    means_point_id = #{meansPointId},
+                </if>
+                <if test="operateTime != null">
+                    operate_time = #{operateTime},
+                </if>
+                <if test="type != null and type != ''">
+                    type = #{type},
+                </if>
+                <if test="reason != null and reason != ''">
+                    reason = #{reason},
+                </if>
+                <if test="content != null and content != ''">
+                    content = #{content},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_sensor_record
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_sensor_record
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                means_point_id,
+                operate_time,
+                type,
+                reason,
+                content,
+                status,
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.meansPointId},
+                #{it.operateTime},
+                #{it.type},
+                #{it.reason},
+                #{it.content},
+                #{it.status},
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_sensor_record
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="sensorLogMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_sensor_record
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询SensorLog -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.online.SensorRecord" resultMap="sensorLogMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_sensor_record
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="meansPointId != null">
+                AND means_point_id = #{meansPointId}
+            </if>
+            <if test="operateTime != null">
+                AND operate_time = #{operateTime}
+            </if>
+            <if test="type != null and type != ''">
+                AND type = #{type}
+            </if>
+            <if test="reason != null and reason != ''">
+                AND reason = #{reason}
+            </if>
+            <if test="content != null and content != ''">
+                AND content = #{content}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询SensorLog -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.online.SensorRecord" resultMap="sensorLogMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_sensor_record
+        <where>
+            <if test="meansPointId != null">
+                AND means_point_id = #{meansPointId}
+            </if>
+            <if test="operateTime != null">
+                AND operate_time LIKE CONCAT ('%', #{operateTime}, '%')
+            </if>
+            <if test="type != null and type != ''">
+                AND type LIKE CONCAT ('%', #{type}, '%')
+            </if>
+            <if test="reason != null and reason != ''">
+                AND reason LIKE CONCAT ('%', #{reason}, '%')
+            </if>
+            <if test="content != null and content != ''">
+                AND content LIKE CONCAT ('%', #{content}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

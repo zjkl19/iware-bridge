@@ -1,0 +1,37 @@
+// 变量定义
+$color-primary: #3873ec; //按钮蓝,表单focus
+$color-primary-fade: RGBA(56, 115, 236, 0.2); //淡按钮蓝
+
+$color-error: #f56c6c; //element自带就这样式
+
+$text-1: #fafafb; //文字
+$text-2: #cccccc;
+$text-3: #7d8696;
+$text-4: #464f60;
+$text-5: #333333;
+
+$color-form-hover: #808a96; //表单hover时边框显白
+
+$bg-0: #141e30;
+$bg-0-fade: RGBA(20, 30, 48, 0.4);
+
+$color-border: #1a263d; //表格或块等的边框暗蓝
+$border-0: solid 1px #1a263d;
+
+@mixin daily__dialog-mixin($header-class) {
+  background-color: #27364d;
+  border: 0;
+
+  #{$header-class} {
+    // 标题
+    span {
+      //color: #d3dce5;
+      font-size: 16px;
+    }
+    // 关闭图标
+    i {
+      font-size: 18px;
+      color: #7d8696;
+    }
+  }
+}

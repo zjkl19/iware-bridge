@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.online.dao.SensorDataDao">
+
+    <!--保存传感器数据-->
+    <insert id="addSensorData">
+      	INSERT INTO tb_sensor_converge(
+            sensor_coding,
+            sensor_details_id,
+            sampling_time,
+            value
+		) VALUES (
+            #{sensorCoding},
+            (SELECT sensor_details_id FROM
+            tb_sensor where sensor_coding =#{sensorCodeing}),
+            to_timestamp(round('${samplingTime}'/1000::numeric ,3)),
+            #{value}
+		)
+    </insert>
+
+    <!--1小时-->
+    <insert id="addSensorDay">
+		INSERT INTO tb_sensor_day
+		SELECT
+		    MAX(value) AS max_value,
+		    MIN(value) AS min_value,
+		    AVG(value) AS avg_value,
+		    sensor_coding,
+		    time_bucket('1 hour', sampling_time) AS time,
+            sensor_details_id
+		FROM
+		    tb_sensor_converge
+		WHERE
+		value &lt;> '0'
+		AND sampling_time > (SELECT now() - INTERVAL '1 day')
+		GROUP BY
+		    time,
+		    sensor_coding,
+		    sensor_details_id
+		ORDER BY time
+    </insert>
+
+    <!--10分钟-->
+    <insert id="addSensorHour">
+		INSERT INTO tb_sensor_hour
+		SELECT
+		    MAX(value) AS max_value,
+		    MIN(value) AS min_value,
+		    AVG(value) AS avg_value,
+		    sensor_coding,
+		    time_bucket('10 minutes', sampling_time) AS time,
+            sensor_details_id
+		FROM
+		    tb_sensor_converge
+		WHERE
+		value &lt;> '0'
+		AND sampling_time > (SELECT now() - INTERVAL '1 hour')
+		GROUP BY
+		    time,
+		    sensor_coding,
+		    sensor_details_id
+		ORDER BY time
+    </insert>
+
+    <!--1分钟-->
+    <insert id="addSensorMinute">
+		INSERT INTO tb_sensor_minute
+		SELECT
+		    MAX(value) AS max_value,
+		    MIN(value) AS min_value,
+		    AVG(value) AS avg_value,
+		    sensor_coding,
+		    time_bucket('1 minutes', sampling_time) AS time,
+            sensor_details_id
+		FROM
+		    tb_sensor_converge
+		WHERE
+		value &lt;> '0'
+		AND sampling_time > (SELECT now() - INTERVAL '1 hour')
+		GROUP BY
+		    time,
+		    sensor_coding,
+		    sensor_details_id
+		ORDER BY time
+    </insert>
+
+    <!--3秒-->
+    <insert id="addSensorSecond">
+		INSERT INTO tb_sensor_second
+		SELECT
+		    MAX(value) AS max_value,
+		    MIN(value) AS min_value,
+		    AVG(value) AS avg_value,
+		    sensor_coding,
+		    time_bucket('3 second', sampling_time) AS time,
+            sensor_details_id
+		FROM
+		    tb_sensor_converge
+		WHERE
+		value &lt;> '0'
+		AND sampling_time > (SELECT now() - INTERVAL '2 minutes')
+		GROUP BY
+		    time,
+		    sensor_coding,
+		    sensor_details_id
+		ORDER BY time
+    </insert>
+
+    <!--1秒-->
+    <insert id="addSensorSecondOne">
+		INSERT INTO tb_sensor_second_one
+		SELECT
+		    MAX(value) AS max_value,
+		    MIN(value) AS min_value,
+		    AVG(value) AS avg_value,
+		    sensor_coding,
+		    time_bucket('1 second', sampling_time) AS time,
+            sensor_details_id
+		FROM
+		    tb_sensor_converge
+		WHERE
+		value &lt;> '0'
+		AND sampling_time > (SELECT now() - INTERVAL '2 minutes')
+		GROUP BY
+		    time,
+		    sensor_coding,
+		    sensor_details_id
+		ORDER BY time
+    </insert>
+
+	<!--获取称重传感器最新10条-->
+	<select id="getLastTen" resultType="com.iware.bridge.online.dto.SensorHistoryDto">
+		SELECT
+			tsw.sampling_time,
+			CAST(tsw.total_weight/1000::numeric AS DECIMAL(10,2)) AS value,
+			tsw.sensor_coding,
+			tsw.license_plate,
+			atmr.name AS model_name,
+			tsw.single_shaft_nuber
+		FROM tb_sensor_weight tsw
+		LEFT JOIN tb_axle_type_model_rel atmr ON atmr.model_id = tsw.models
+		WHERE tsw.sensor_coding = #{coding}
+		ORDER BY sampling_time ASC limit 10
+	</select>
+
+	<!--获取称重传感器历史数据-->
+	<select id="historyDataByWeight" resultType="com.iware.bridge.online.dto.SensorHistoryDto">
+		SELECT
+		tsw.sampling_time,
+		CAST(tsw.total_weight/1000::numeric AS DECIMAL(10,2)) AS value,
+		tsw.sensor_coding,
+		tsw.license_plate,
+		atmr.name AS model_name,
+		tsw.single_shaft_nuber
+		FROM
+		tb_sensor_weight tsw
+		LEFT JOIN tb_axle_type_model_rel atmr ON atmr.model_id = tsw.models
+		WHERE
+			tsw.sensor_coding = #{coding}
+			AND tsw.sampling_time >= #{startDate}
+			AND tsw.sampling_time &lt; #{endDate}
+		ORDER BY
+		tsw.sampling_time ASC
+	</select>
+
+	<!--获取基康传感器历史数据-->
+	<select id="historyDataByJK" resultType="com.iware.bridge.online.dto.SensorHistoryDto">
+		SELECT
+		collecttime AS sampling_time,
+		paravalue AS value,
+		paraid as sensor_coding
+		FROM
+		composedata
+		WHERE
+			paraid = #{coding}
+			AND collecttime >= #{startDate}
+			AND collecttime &lt; #{endDate}
+		ORDER BY
+		collecttime ASC
+	</select>
+
+	<!--获取东华传感器历史数据-->
+	<select id="historyDataByDH" resultType="com.iware.bridge.online.dto.SensorHistoryDto">
+		SELECT
+		<if test="type != 0">
+			time AS sampling_time,
+			avg_value AS value,
+			min_value,
+			max_value,
+		</if>
+		<if test="type == 0">
+			sampling_time,
+			value,
+			value AS min_value,
+			value AS max_value,
+		</if>
+		sensor_coding
+		FROM
+		<if test="type == 0">tb_sensor_converge</if>
+		<if test="type == 1">tb_sensor_second_one</if>
+		<if test="type == 2">tb_sensor_second</if>
+		<if test="type == 3">tb_sensor_minute</if>
+		<if test="type == 4">tb_sensor_hour</if>
+		<if test="type == 5">tb_sensor_day</if>
+		<where>
+			sensor_coding = #{coding}
+			<if test="type != 0">
+				AND time >= #{startDate} AND time &lt; #{endDate}
+			</if>
+			<if test="type == 0">
+				AND sampling_time >= #{startDate} AND sampling_time &lt; #{endDate}
+			</if>
+		</where>
+		ORDER BY
+		<if test="type != 0">
+			time ASC
+		</if>
+		<if test="type == 0">
+			sampling_time ASC
+		</if>
+	</select>
+
+	<!--获取基康传感器箱线图数据-->
+	<select id="boxDiagramByJK" resultType="java.lang.Float">
+        SELECT
+            paravalue
+        FROM
+            composedata
+        WHERE
+            collecttime >= #{startDate}
+            AND collecttime &lt;= #{endDate}
+            AND paraid = #{coding}
+    </select>
+
+	<!--获取东华传感器箱线图数据-->
+	<select id="boxDiagramByDH" resultType="java.lang.Float">
+        SELECT
+            value
+        FROM
+            tb_sensor_converge
+        WHERE
+            sampling_time > now() - INTERVAL '5 minutes'
+            AND sensor_coding = #{sensorCoding}
+            AND sensor_details_id = #{sensorDetailsId}
+    </select>
+
+	<!--传感器历史数据-->
+	<select id="sensorHistoryData" resultType="com.iware.bridge.online.dto.SensorHistoryDto">
+		SELECT * FROM(
+			<if test="weightSensor != null and weightSensor.size() > 0">
+				SELECT
+					tsw.sampling_time,
+					tsw.total_weight AS value,
+					tsw.sensor_coding,
+					tsw.license_plate,
+					tsw.single_shaft_nuber,
+					atmr.name AS model_name
+				FROM
+					tb_sensor_weight tsw
+				LEFT JOIN tb_axle_type_model_rel atmr ON atmr.model_id = tsw.models
+				WHERE
+					tsw.sampling_time >= #{startDate}
+					AND tsw.sampling_time &lt; #{endDate}
+					AND tsw.sensor_coding IN
+					<foreach collection="weightSensor" item="coding" open="(" separator="," close=")">
+						#{coding}
+					</foreach>
+				ORDER BY sampling_time DESC
+				LIMIT 10000
+			</if>
+			<if test="jkSensor != null and jkSensor.size() > 0">
+				<if test="weightSensor != null and weightSensor.size() > 0">
+					UNION ALL
+				</if>
+				SELECT
+					collecttime AS sampling_time,
+					paravalue AS value,
+					paraid as sensor_coding
+				FROM
+					composedata
+				WHERE
+					collecttime >= #{startDate}
+					AND collecttime &lt; #{endDate}
+					AND paraid IN
+					<foreach collection="jkSensor" item="coding" open="(" separator="," close=")">
+						#{coding}
+					</foreach>
+				ORDER BY collecttime DESC
+				LIMIT 10000
+			</if>
+			<if test="dhSensor != null and dhSensor.size() > 0">
+				<if test="(jkSensor != null and jkSensor.size() > 0) or (weightSensor != null and weightSensor.size() > 0)">
+					UNION ALL
+				</if>
+				SELECT
+					sampling_time,
+					value,
+					sensor_coding
+				FROM
+					tb_sensor_converge
+				WHERE
+					sampling_time >= #{startDate}
+					AND sampling_time &lt; #{endDate}
+					AND sensor_coding IN
+					<foreach collection="dhSensor" item="coding" open="("  separator="," close=")">
+						#{coding}
+					</foreach>
+				ORDER BY sampling_time DESC
+				LIMIT 10000
+			</if>
+		) AS rs
+		ORDER BY
+			sampling_time DESC
+		LIMIT 10000
+	</select>
+</mapper>

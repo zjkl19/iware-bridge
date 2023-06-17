@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.user.RolePowerRelDao">
+
+    <resultMap type="com.iware.bridge.model.entity.user.RolePowerRel" id="rolePowerRelMap">
+        <result property="id" column="id"/>
+        <result property="roleId" column="role_id"/>
+        <result property="powerId" column="power_id"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       role_id,
+       power_id
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.user.RolePowerRel">
+        insert into tb_role_power_rel
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                role_id,
+                power_id
+            </trim>
+        )
+        values
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{roleId},
+                #{powerId}
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询RolePowerRel -->
+    <select id="findById" parameterType="Integer" resultMap="rolePowerRelMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_role_power_rel
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.user.RolePowerRel">
+        UPDATE
+            tb_role_power_rel
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                <if test="roleId != null">
+                    role_id = #{roleId},
+                </if>
+                <if test="powerId != null">
+                    power_id = #{powerId}
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_role_power_rel
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_role_power_rel
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                role_id,
+                power_id
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.roleId},
+                #{it.powerId}
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_role_power_rel
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="rolePowerRelMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_role_power_rel
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询RolePowerRel -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.user.RolePowerRel" resultMap="rolePowerRelMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_role_power_rel
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="roleId != null">
+                AND role_id = #{roleId}
+            </if>
+            <if test="powerId != null">
+                AND power_id = #{powerId}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询RolePowerRel -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.user.RolePowerRel" resultMap="rolePowerRelMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_role_power_rel
+        <where>
+            <if test="roleId != null">
+                AND role_id = #{roleId}
+            </if>
+            <if test="powerId != null">
+                AND power_id = #{powerId}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.iware.bridge.evaluation.dao.MonitorPlanExpDao">
+    <update id="updateStateByRoadId">
+        UPDATE tb_monitor_plan set status = 3 WHERE id = (
+        SELECT plan.id FROM tb_bridge_road as road
+        join tb_monitor_plan_structure_rel as structure on structure.id =road.monitor_plan_structure_rel_id
+        join tb_monitor_plan as plan on plan.id = structure.monitor_plan_id
+        WHERE road.id = #{roadId}
+        )
+    </update>
+
+    <select id="selectPlanList" resultType="com.iware.bridge.evaluation.vo.MonitorPlanListVO">
+        SELECT distinct plan.id,
+        project.name as project_name,
+        plan.type,
+        to_char(plan.start_time, 'yyyy-mm-dd') as start_time,
+        to_char(plan.end_time,'yyyy-mm-dd') as end_time,
+        plan.project_info_id,
+        plan.status,
+        case plan.type
+        when '1' then '定期检测'
+        when '2' then '特殊检测'
+        when '3' then '静载实验'
+        else '' end as typeName
+        FROM tb_monitor_plan as plan
+        INNER JOIN tb_project as project ON plan.project_info_id = project.id
+        <if test="roleId == 1 or roleId == 0">
+            INNER JOIN tb_project_appoint upr ON upr.project_id = project.id
+        </if>
+        <where>
+            <if test="roleId != 3">
+                <if test="roleId == 2">
+                    AND project.unit_id = #{unitId}
+                </if>
+                <if test="roleId == 1 or roleId == 0">
+                    AND upr.receive_unit_id = #{unitId}
+                    AND plan.create_time > upr.start_time
+                    AND plan.create_time &lt; upr.end_time
+                </if>
+            </if>
+            <if test="filter.structureId != null ">and plan.id in (SELECT monitor_plan_id FROM tb_monitor_plan_structure_rel WHERE
+                structure_info_id = #{filter.structureId})
+            </if>
+            <if test="filter.projectId != null">and plan.project_info_id = #{filter.projectId}</if>
+            <if test="filter.startTime != null">and plan.start_time &gt;= #{filter.startTime}</if>
+            <if test="filter.endTime != null">and plan.end_time &lt;= #{filter.endTime}</if>
+            <if test="list != null and list.size > 0">
+                AND plan.project_info_id IN
+                <foreach collection="list" item="item" separator="," open="(" close=")">
+                    #{item.id}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY start_time DESC
+    </select>
+    <select id="selectStructureTimeByStructureId"
+            resultType="java.lang.String">
+
+        SELECT  DISTINCT to_char(plan.start_time,'yyyy') as start_time FROM tb_monitor_plan as plan
+        <if test="roleId == 1 or roleId == 0">
+            JOIN tb_project_appoint as appoint ON appoint.project_id = plan.project_info_id
+        </if>
+
+        WHERE plan.id in (
+        SELECT rel.monitor_plan_id FROM tb_monitor_plan_structure_rel as rel
+        join tb_monitor_plan as plan on rel.monitor_plan_id = plan.id
+        WHERE rel.structure_info_id = #{id} and plan.project_info_id = #{project}
+        )
+        <if test="roleId == 1 or roleId == 0">
+            AND appoint.receive_unit_id = #{unitId}
+            AND plan.create_time > appoint.start_time
+            AND plan.create_time &lt; appoint.end_time
+        </if>
+         ORDER BY to_char(plan.start_time,'yyyy') DESC
+    </select>
+    <select id="getItemCount" resultType="java.lang.Integer">
+        SELECT
+        COUNT(DISTINCT project_info_id)
+        FROM
+        tb_monitor_plan
+        <if test="list != null and list.size > 0">
+            WHERE project_info_id IN
+            <foreach collection="list" item="item" separator="," open="(" close=")">
+                #{item.id}
+            </foreach>
+        </if>
+        <if test="list == null or list.size &lt; 1">
+            WHERE project_info_id = -1
+        </if>
+    </select>
+    <select id="getStructureCount" resultType="java.lang.Integer">
+        SELECT
+        COUNT(DISTINCT structure_info_id)
+        FROM
+        tb_monitor_plan_structure_rel
+        <if test="list != null and list.size > 0">
+            WHERE structure_info_id IN
+            <foreach collection="list" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="list == null or list.size &lt; 1">
+            WHERE structure_info_id = -1
+        </if>
+    </select>
+</mapper>

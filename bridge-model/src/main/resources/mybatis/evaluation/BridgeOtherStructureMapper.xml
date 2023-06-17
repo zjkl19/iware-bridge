@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.model.dao.evaluation.BridgeOtherStructureDao">
+
+    <resultMap type="com.iware.bridge.model.entity.evaluation.BridgeOtherStructure" id="bridgeOtherStructureMap">
+        <result property="id" column="id"/>
+        <result property="bridgeSpanId" column="bridge_span_id"/>
+        <result property="descript" column="descript"/>
+        <result property="creator" column="creator"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       id,
+       bridge_span_id,
+       descript,
+       creator,
+       create_time,
+       modify_time,
+       status
+    </sql>
+
+    <!--保存 -->
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.iware.bridge.model.entity.evaluation.BridgeOtherStructure">
+        insert into tb_bridge_other_structure
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                bridge_span_id,
+                descript,
+                creator,
+                status
+            </trim>
+        )
+        values
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{bridgeSpanId},
+                #{descript},
+                #{creator},
+                #{status}
+            </trim>
+        )
+    </insert>
+
+    <!-- 根据ID查询BridgeOtherStructure -->
+    <select id="findById" parameterType="Integer" resultMap="bridgeOtherStructureMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_other_structure
+        WHERE id = #{id}
+    </select>
+
+    <!--修改 -->
+    <update id="update" parameterType="com.iware.bridge.model.entity.evaluation.BridgeOtherStructure">
+        UPDATE
+            tb_bridge_other_structure
+        <set>
+            <trim prefix="" suffix="" suffixOverrides=",">
+                modify_time = now(),
+                <if test="bridgeSpanId != null">
+                    bridge_span_id = #{bridgeSpanId},
+                </if>
+                <if test="descript != null and descript != ''">
+                    descript = #{descript},
+                </if>
+                <if test="creator != null and creator != ''">
+                    creator = #{creator},
+                </if>
+                <if test="status != null">
+                    status = #{status}
+                </if>
+            </trim>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <select id="deleteById" parameterType="Integer">
+        DELETE
+        FROM
+            tb_bridge_other_structure
+        WHERE id = #{id}
+    </select>
+
+    <!--批量保存 -->
+    <insert id="batchSave" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="java.util.List">
+        insert into tb_bridge_other_structure
+        (
+            create_time,
+            modify_time,
+            <trim prefix="" suffix="" suffixOverrides=",">
+                bridge_span_id,
+                descript,
+                creator,
+                status
+            </trim>
+        ) values
+        <foreach collection="list" item="it" separator=",">
+        (
+            now(),
+            now(),
+            <trim prefix="" suffix="" suffixOverrides=",">
+                #{it.bridgeSpanId},
+                #{it.descript},
+                #{it.creator},
+                #{it.status}
+            </trim>
+        )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE
+        FROM
+            tb_bridge_other_structure
+        WHERE id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据所有 -->
+    <select id="findAll" resultMap="bridgeOtherStructureMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_other_structure
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件查询BridgeOtherStructure -->
+    <select id="query" parameterType="com.iware.bridge.model.entity.evaluation.BridgeOtherStructure" resultMap="bridgeOtherStructureMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_other_structure
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="bridgeSpanId != null">
+                AND bridge_span_id = #{bridgeSpanId}
+            </if>
+            <if test="descript != null and descript != ''">
+                AND descript = #{descript}
+            </if>
+            <if test="creator != null and creator != ''">
+                AND creator = #{creator}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime}
+            </if>
+            <if test="modifyTime != null">
+                AND modify_time = #{modifyTime}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+
+    <!-- 根据条件模糊查询BridgeOtherStructure -->
+    <select id="queryByLike" parameterType="com.iware.bridge.model.entity.evaluation.BridgeOtherStructure" resultMap="bridgeOtherStructureMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+            tb_bridge_other_structure
+        <where>
+            <if test="bridgeSpanId != null">
+                AND bridge_span_id = #{bridgeSpanId}
+            </if>
+            <if test="descript != null and descript != ''">
+                AND descript LIKE CONCAT ('%', #{descript}, '%')
+            </if>
+            <if test="creator != null and creator != ''">
+                AND creator LIKE CONCAT ('%', #{creator}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+            id DESC
+    </select>
+</mapper>

@@ -1,0 +1,125 @@
+//表格里的表单的样式
+//input是没有边框的
+@import "./default.scss";
+.daily__in-table-form-item {
+  //lock-position用于锁定高度，否则高度会一直撑开单元格，
+  //在高度撑开单元格的情况下，格子位置会由于垂直对齐而偏移，不适合编辑模式
+  &.lock-position {
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    bottom: -1px;
+    z-index: 1;
+  }
+
+  margin: 0;
+  padding: 0;
+
+  div {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  .el-form-item {
+    margin-bottom: 0;
+  }
+
+  .el-input__inner,
+  .el-textarea__inner {
+    border-radius: 0;
+    text-align: center;
+    transition: border 0.25s;
+    height: 100%;
+  }
+
+  //////////////////// HOVER背景色 /////////////////////
+
+  .el-input,
+  .el-textarea,
+  .el-select {
+    .el-input__inner,
+    .el-textarea__inner {
+      background: transparent;
+      &:hover,
+      &:focus {
+        z-index: 2;
+        background: $color-primary-fade;
+      }
+    }
+  }
+  .is-focus .el-input__inner {
+    z-index: 2;
+    background: $color-primary-fade;
+  }
+
+  ////////////////////边框/////////////////////
+  //没被el-form-item校验出错的
+  //（出错了是红色边框不要消失）
+  //（focus是蓝色边框也不要消失）
+  & > :not(.is-error) :not(.is-focus) {
+    & > .el-input__inner:not(:focus),
+    & > .el-textarea__inner:not(:focus) {
+      border-color: transparent;
+    }
+  }
+
+  .el-form-item.is-error {
+    .el-input,
+    .el-textarea .el-select {
+      .el-input__inner,
+      .el-textarea__inner {
+        border-color: $color-error;
+      }
+    }
+  }
+
+  ////////////////////验证失败/////////////////////
+
+  .el-form-item__error {
+    position: absolute;
+    transform: translateY(-5px) translateY(-100%);
+    height: 1em;
+    bottom: 0;
+    left: 5px;
+    text-align: left;
+    font-size: 11px;
+    animation: slideInUp 0.5s;
+  }
+
+  @keyframes slideInUp {
+    from {
+      transform: translateY(-5px) translateY(-100%) translate3d(0, 100%, 0);
+    }
+
+    to {
+      transform: translateY(-5px) translateY(-100%) translate3d(0, 0, 0);
+    }
+  }
+  ////////////////////字符计数////////////////////
+
+  //textarea的字符计数放在count里
+  //input的字符计数放在count__inner里
+  .el-input__count {
+    background: transparent;
+  }
+  .el-textarea {
+    .el-input__count {
+      background: transparent;
+    }
+  }
+  .el-input {
+    .el-input__count {
+      vertical-align: middle;
+      .el-input__count-inner {
+        background: transparent;
+        position: absolute;
+        width: 50px;
+        bottom: 5px;
+        right: 0px;
+        text-align: right;
+      }
+    }
+  }
+}

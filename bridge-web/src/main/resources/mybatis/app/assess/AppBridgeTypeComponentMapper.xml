@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iware.bridge.app.assess.dao.AppBridgeTypeComponentDao">
+	<select id="getBirdgeTypeCompList" resultType="com.iware.bridge.model.entity.evaluation.BridgeTypeComponentRel" parameterType="com.iware.bridge.app.assess.vo.weight.BridgeTypeComponentFilterVo">
+		select 
+			id,
+			component_id,
+			initial_weight,
+			pier_abutment,
+			bridge_type_id,
+			part_type
+		from tb_bridge_type_component_rel
+		where 1=1
+		<if test="bridgeTypeId != null">
+			and bridge_type_id=#{bridgeTypeId}
+		</if>
+		<if test="partType != null">
+			and part_type=#{partType}
+		</if>
+		<if test="componentIds != null">
+			and component_id in
+				<foreach collection="componentIds" item="item" open="(" separator=","  close=")">
+					#{item}
+				</foreach>
+		</if>
+		<if test="pierAbutment != null">
+			and pier_abutment =#{pierAbutment}
+		</if>
+	</select>
+</mapper>

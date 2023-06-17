@@ -1,0 +1,12 @@
+@import "./default.scss";
+
+/* el-select 自定义类名 的 自定义样式*/
+
+//亮色字体的select
+.daily-select-light {
+  .el-input {
+    .el-input__inner {
+      // color: $YY_SPAN_DIVTITLE;
+    }
+  }
+}

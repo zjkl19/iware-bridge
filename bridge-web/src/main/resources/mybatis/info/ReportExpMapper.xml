@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.info.dao.ReportExpDao">
+
+    <!--获取报告列表-->
+    <select id="listByPage" resultType="com.iware.bridge.info.vo.ReportVO">
+        SELECT
+        tr.*,
+        tp.name AS project_name,
+        tu.real_name AS username
+        FROM tb_report tr
+        LEFT JOIN tb_project tp ON tr.project_id = tp.id
+        LEFT JOIN tb_user tu ON tr.user_id = tu.id
+        <if test="roleId == 0 or roleId == 1">
+            LEFT JOIN tb_unit u ON u.id = tu.unit_id
+        </if>
+        <where>
+            <if test="roleId == 2">
+                AND tp.unit_id = #{unitId}
+            </if>
+            <if test="roleId == 0 ">
+                AND u.id = #{unitId}
+            </if>
+            <if test="roleId == 1">
+                AND (u.id = #{unitId} OR u.parent_id = #{unitId})
+            </if>
+            <if test="model.projectId != null">
+                AND tr.project_id = #{model.projectId}
+            </if>
+            <if test="model.name != null and model.name != ''">
+                AND tr.name LIKE CONCAT ('%', #{model.name}, '%')
+            </if>
+            <if test="model.type != null">
+                AND tr.type = #{model.type}
+            </if>
+            <if test="model.specific != null">
+                AND tr.specific = #{model.specific}
+            </if>
+        </where>
+        ORDER BY
+        tr.create_time DESC
+    </select>
+
+</mapper>

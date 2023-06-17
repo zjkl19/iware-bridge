@@ -1,0 +1,539 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iware.bridge.evaluation.dao.RecordDetailInfoDao">
+    <insert id="saveAcrossDTOScore" parameterType="com.iware.bridge.evaluation.vo.BridgeScoreDTO"
+            useGeneratedKeys="true"
+            keyProperty="id" keyColumn="id">
+        <if test="list.size() > 0">
+            INSERT INTO tb_bridge_score ( target_id, "type", bridge_condition_index, bridge_structure_index,
+            evaluator_id, rating_level, evaluation_unit, evaluation_time)
+            VALUES
+            <foreach collection="list" item="item" separator="," close=";">
+                (#{item.targetId}, #{item.type}, #{item.bridgeConditionIndex}, #{item.bridgeStructureIndex},
+                #{item.evaluatorId}, #{item.ratingLevel}, #{item.evaluationUnit}, #{item.evaluationTime})
+            </foreach>
+        </if>
+    </insert>
+
+    <insert id="saveRodeBCI">
+        insert into tb_bridge_score (target_id, "type", bridge_condition_index, bridge_structure_index, evaluator_id, rating_level, evaluation_unit, evaluation_time)
+        values
+        (#{targetId}, #{type}, #{bridgeConditionIndex}, #{bridgeStructureIndex}, #{evaluatorId}, #{ratingLevel}, #{evaluationUnit}, #{evaluationTime})
+    </insert>
+
+    <insert id="saveMonitorStructure">
+        insert into tb_bridge_score (target_id, "type", evaluator_id, rating_level, evaluation_unit, evaluation_time, score)
+        values
+        (#{targetId}, #{type}, #{evaluatorId}, #{ratingLevel}, #{evaluationUnit}, #{evaluationTime}, #{score})
+    </insert>
+
+    <update id="updateAcrossDTOScore">
+        <if test="list.size() > 0">
+            <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+                update tb_bridge_score
+                <set>
+                    <if test="item.bridgeConditionIndex != null">
+                        bridge_condition_index = #{item.bridgeConditionIndex},
+                    </if>
+                    <if test="item.bridgeStructureIndex != null">
+                        bridge_structure_index = #{item.bridgeStructureIndex},
+                    </if>
+                    <if test="item.evaluatorId != null">
+                        evaluator_id = #{item.evaluatorId},
+                    </if>
+                    <if test="item.ratingLevel != null">
+                        rating_level = #{item.ratingLevel},
+                    </if>
+                    <if test="item.evaluationUnit != null">
+                        evaluation_unit = #{item.evaluationUnit},
+                    </if>
+                    <if test="item.evaluationTime != null">
+                        evaluation_time = #{item.evaluationTime},
+                    </if>
+                </set>
+                where id = #{item.id}
+            </foreach>
+        </if>
+    </update>
+
+    <update id="updateUpperArtifactsDTO">
+        <if test="list.size() > 0">
+            <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+                <if test="item.actualWeight != null">
+                    update ${tableName}
+                    <set>
+                        <if test="item.deduct != null">
+                            deduct = #{item.deduct},
+                        </if>
+                        actual_weight = #{item.actualWeight}
+                    </set>
+                    where "id" = #{item.artifactsId}
+                </if>
+            </foreach>
+        </if>
+    </update>
+
+    <update id="updateRodeBCI">
+        <if test="id != null">
+            update tb_bridge_score
+            <set>
+                <if test="bridgeConditionIndex != null">
+                    bridge_condition_index = #{bridgeConditionIndex},
+                </if>
+                <if test="bridgeStructureIndex != null">
+                    bridge_structure_index = #{bridgeStructureIndex},
+                </if>
+                <if test="evaluatorId != null">
+                    evaluator_id = #{evaluatorId},
+                </if>
+                <if test="ratingLevel != null">
+                    rating_level = #{ratingLevel},
+                </if>
+                <if test="evaluationUnit != null">
+                    evaluation_unit = #{evaluationUnit},
+                </if>
+                <if test="evaluationTime != null">
+                    evaluation_time = #{evaluationTime},
+                </if>
+                <if test="score != null">
+                    score = #{score},
+                </if>
+            </set>
+            where id = #{id}
+        </if>
+    </update>
+    <update id="updateDKSUBSUPBCI">
+        update tb_bridge_score
+        <set>
+            <if test="bridgeConditionIndex != null">
+                bridge_condition_index = #{bridgeConditionIndex},
+            </if>
+            <if test="bridgeStructureIndex != null">
+                bridge_structure_index = #{bridgeStructureIndex},
+            </if>
+            <if test="evaluationUnit != null">
+                evaluation_unit = #{evaluationUnit},
+            </if>
+            <if test="evaluationTime != null">
+                evaluation_time = #{evaluationTime},
+            </if>
+        </set>
+        where target_id = #{targetId} and type = #{type}
+    </update>
+
+    <select id="selBCIScore" resultType="com.iware.bridge.evaluation.vo.BCIEvaluationDetailDTO">
+        SELECT
+            ts.bridge_condition_index AS BCIScore,
+            ts.score
+        FROM
+            tb_bridge_road tr
+            LEFT JOIN tb_bridge_score ts ON tr."id" = ts.target_id
+            AND ts."type" = 2
+        WHERE
+            ts."type" = 2
+            AND tr."id" = #{roadId}
+    </select>
+    <!--    tu.real_name AS evaluationUnit,-->
+    <!--     LEFT JOIN tb_project_appoint pr ON pi."id" = pr.project_id and tb.evaluation_time between pr.start_time and pr.end_time-->
+    <!--     LEFT JOIN tb_user tu ON pr.receive_user_id = tu."id"-->
+    <select id="selBCIEvaluationResultDTO"
+            resultType="com.iware.bridge.evaluation.vo.BCIEvaluationResultDTO">
+        SELECT
+        pi.name as project_name,
+        u.name AS owner_unit,
+        to_char( tmp.start_time, 'yyyy-mm-dd' ) AS testing_time,
+        tr.bridge_type_id,
+        tb.evaluation_time,
+        tr.span_number,
+        tb.evaluation_unit AS evaluationUnit,
+        tbu.real_name AS evaluator,
+        tb."id" AS road_score_id,
+        tb.score AS road_score,
+        tr."name" AS road_name,
+        tb.rating_level
+        FROM
+        tb_bridge_road tr
+        LEFT JOIN tb_bridge_score tb ON tr."id" = tb.target_id
+        AND tb."type" = 2
+        LEFT JOIN tb_user tbu ON tb.evaluator_id = tbu."id"
+        LEFT JOIN tb_monitor_plan_structure_rel sr ON tr.monitor_plan_structure_rel_id = sr."id"
+        LEFT JOIN tb_monitor_plan tmp ON sr.monitor_plan_id = tmp."id"
+        LEFT JOIN tb_structure si ON sr.structure_info_id = si."id"
+        LEFT JOIN tb_project pi ON tmp.project_info_id = pi."id"
+        LEFT JOIN tb_unit u ON si.unit_id = u.id
+        WHERE
+        1 = 1
+        <if test="roadId != null and roadId != ''">
+            AND tr."id" = #{roadId}
+        </if>
+
+    </select>
+
+    <resultMap id="selDiseaseInstanceDTOMap" type="com.iware.bridge.evaluation.vo.DiseaseInstanceDTO">
+        <result column="diesase_name" property="diseaseName"></result>
+        <result column="diesase_code" property="diseaseCode"></result>
+        <result column="disease_id" property="diseaseId"></result>
+        <result column="length" property="length"></result>
+        <result column="width" property="width"></result>
+        <result column="depth" property="depth"></result>
+        <result column="seam_length" property="seamLength"></result>
+        <result column="seam_width" property="seamWidth"></result>
+        <result column="number" property="number"></result>
+        <result column="degree" property="degree"></result>
+    </resultMap>
+    <select id="selDiseaseInstanceDTO" parameterType="java.util.Map" resultMap="selDiseaseInstanceDTOMap">
+        SELECT
+            tdi.target_id AS artifacts_id,
+            tbd."name" AS diesase_name,
+            tbd.code AS diesase_code,
+            tdi."id" AS disease_id,
+            tdi."length",
+            tdi.width,
+            tdi."depth",
+            tdi.seam_length,
+            tdi.seam_width,
+            tdi."number",
+            tdi.deduct,
+            tdi."degree"
+        FROM
+            tb_disease_instance tdi
+            LEFT JOIN tb_bridge_disease tbd ON tdi.disease_id = tbd."id"
+        WHERE
+            tdi.part_type = #{type}
+            AND tdi.target_id = #{artifactsId}
+    </select>
+
+    <!-- ####################桥面系开始######################## -->
+    <resultMap id="selArtifactsDTOList" type="com.iware.bridge.evaluation.vo.ArtifactsDTO">
+        <result column="artifacts_id" property="artifactsId"></result>
+        <result column="artifacts_name" property="artifactsName"></result>
+        <result column="initial_weight" property="initialWeight"></result>
+        <result column="actual_weight" property="actualWeight"></result>
+        <result column="deduct" property="deduct"></result>
+        <result column="score" property="score"></result>
+        <result column="bridge_type_id" property="bridgeTypeId"></result>
+        <result column="serious" property="serious"></result>
+        <collection property="instanceDTOList" column="{artifactsId=artifacts_id,type=type}" javaType="java.util.List"
+                    ofType="com.iware.bridge.evaluation.vo.DiseaseInstanceDTO" select="selDiseaseInstanceDTO">
+        </collection>
+    </resultMap>
+
+    <!--<select id="selArtifactsDTOByDeck" parameterType="java.lang.String" resultMap="selArtifactsDTOList">-->
+    <!--SELECT-->
+    <!--tc."name" artifacts_name,-->
+    <!--tb.initial_weight,-->
+    <!--tb.actual_weight,-->
+    <!--tb.deduct,-->
+    <!--ts.Score-->
+    <!--FROM-->
+    <!--tb_bridge_deck_component tb-->
+    <!--LEFT JOIN tb_component tc ON tb.component_id = tc."id"-->
+    <!--LEFT JOIN tb_bridge_score ts ON tc."id" = ts.target_id-->
+    <!--AND ts."type" = 7-->
+    <!--WHERE-->
+    <!--ts."type" = 7-->
+    <!--and tb.bridge_deck_system_id = 2-->
+    <!--</select>-->
+    <select id="selArtifactsDTO" resultMap="selArtifactsDTOList">
+        SELECT
+            case when dc."id" is not null then 1 else null end as "type",
+            tc."id" as component_id,
+            tc."name" AS artifacts_name,
+            dc."id" AS artifacts_id,
+            round( CAST ( dc.initial_weight AS NUMERIC ), 2 ) AS initial_weight,
+			round( CAST ( dc.actual_weight AS NUMERIC ), 2 ) AS actual_weight,
+            dc.deduct,
+            ts.score,
+            br.bridge_type_id,
+            dc.serious
+        FROM
+            tb_bridge_deck_system tb
+            LEFT JOIN tb_bridge_span span ON tb.bridge_span_id = span."id"
+            LEFT JOIN tb_bridge_road br ON span.bridge_road_id = br."id"
+            LEFT JOIN tb_bridge_deck_component dc ON dc.bridge_deck_system_id = tb."id"
+            LEFT JOIN tb_component tc ON dc.component_id = tc."id"
+            LEFT JOIN tb_bridge_score ts ON tb."id" = ts.target_id
+            AND ts."type" = 7
+        WHERE
+            span.bridge_road_id = #{roadId} and 	dc.status = 1
+    </select>
+    <!-- ####################桥面系结束######################## -->
+
+    <!-- ####################上部结构开始######################## -->
+    <resultMap id="selAcrossDTOByUpperMap" type="com.iware.bridge.evaluation.vo.AcrossDTO">
+        <result column="score_id" property="scoreId"></result>
+        <result column="id" property="spanId"></result>
+        <result column="BCIsi" property="BCIsi"></result>
+        <result column="span_code" property="spanCode"></result>
+        <collection property="artifactsDTOList" javaType="java.util.List"
+                    ofType="com.iware.bridge.evaluation.vo.ArtifactsDTO" select="selArtifactsDTOBySpan"
+                    column="id">
+        </collection>
+    </resultMap>
+
+    <select id="selAcrossDTOByUpper" resultMap="selAcrossDTOByUpperMap">
+        SELECT
+        tb."id" as score_id,
+        span."id" AS "id",
+        br.bridge_type_id,
+        tb.bridge_condition_index AS BCIsi,
+        case when span.span_code is not null then concat(span.span_code,'#跨') else null end as span_code
+        FROM
+        tb_bridge_span span
+        LEFT JOIN tb_bridge_road br ON span.bridge_road_id = br."id"
+        LEFT JOIN tb_bridge_score tb ON tb.target_id = span."id"
+        AND tb."type" = 8
+        LEFT JOIN tb_bridge_supstructure ts ON span."id" = ts.bridge_span_id
+        WHERE
+        <!--ts."id" in-->
+        <!--<foreach collection="ids" item="item" separator="," open="(" close=")">-->
+        <!--cast(#{item} as INTEGER)-->
+        <!--</foreach>-->
+        span.bridge_road_id = #{roadId} and ts.status = 1
+        ORDER BY span.span_code
+    </select>
+    <select id="selArtifactsDTOBySpan" parameterType="java.lang.Long" resultMap="selArtifactsDTOList">
+        SELECT
+            *
+        FROM
+            (
+            SELECT
+            CASE
+
+                WHEN
+                    ( ent."id" ) IS NOT NULL THEN
+                        2 ELSE NULL
+                        END AS "type",
+                    ( ent."id" ) AS artifacts_id,
+                    tc."name" AS artifacts_name,
+                    round( CAST ( ent.initial_weight AS NUMERIC ), 2 ) AS initial_weight,
+                    round( CAST ( ent.actual_weight AS NUMERIC ), 2 ) AS actual_weight,
+                    round( CAST ( ent.deduct AS NUMERIC ), 2 ) AS deduct,
+                     round( CAST ( sco.score AS NUMERIC ), 2 ) AS score,
+                     ent.serious,
+                    ROW_NUMBER ( ) OVER ( PARTITION BY tc."name" ORDER BY ent.actual_weight DESC, ent.deduct DESC ) AS ROW_ID
+                FROM
+                    tb_bridge_span ts
+                    LEFT JOIN tb_bridge_supstructure tbs ON ts."id" = tbs.bridge_span_id
+                    RIGHT JOIN tb_bridge_supcomponent ent ON tbs."id" = ent.supstructure_id
+                    LEFT JOIN tb_component tc ON ent.component_id = tc."id"
+                    LEFT JOIN tb_bridge_score sco ON ts."id" = sco.target_id
+                    AND sco."type" = 7
+                WHERE
+                    ts.ID = #{id} and ent.status = 1
+                ) AS T
+        WHERE
+            T.ROW_ID = 1
+    </select>
+
+    <!-- ####################上部结构结束######################## -->
+
+    <!-- ####################下部结构开始######################## -->
+    <resultMap id="selAcrossDTOByLowerMap" type="com.iware.bridge.evaluation.vo.AcrossDTO">
+        <result column="BCIxj" property="BCIxj"></result>
+        <result column="score_id" property="scoreId"></result>
+        <result column="id" property="spanId"></result>
+        <result column="span_code" property="spanCode"></result>
+        <collection property="artifactsDTOList" javaType="java.util.List"
+                    ofType="com.iware.bridge.evaluation.vo.ArtifactsDTO" select="selArtifactsDTOByPier"
+                    column="id">
+        </collection>
+    </resultMap>
+    <select id="selAcrossDTOByLower" resultMap="selAcrossDTOByLowerMap">
+        SELECT
+            ta."id" AS "id",
+            ts."id" AS score_id,
+            br.bridge_type_id,
+        CASE
+
+		WHEN ta.code IS NOT NULL THEN
+		concat (
+			span.span_code,
+			'#跨-',
+			ta.code,
+			(
+			CASE
+
+					WHEN (
+					SELECT
+						bs.component_id
+					FROM
+						tb_pier_abutment pa
+						LEFT JOIN tb_bridge_subcomponent bs ON pa."id" = bs.pier_abutment_id
+						LEFT JOIN tb_component C ON bs.component_id = C."id"
+					WHERE
+						pa."id" = ta."id"
+						AND C."id" = 27 limit 1
+						) = 27 THEN
+						'#台' ELSE'#墩'
+					END
+					)
+				) ELSE NULL
+			END AS span_code,
+
+			CASE
+				WHEN (
+					SELECT
+						bs.component_id
+					FROM
+						tb_pier_abutment pa
+						LEFT JOIN tb_bridge_subcomponent bs ON pa."id" = bs.pier_abutment_id
+						LEFT JOIN tb_component C ON bs.component_id = C."id"
+					WHERE
+						pa."id" = ta."id"
+						AND C."id" = 27 limit 1
+						) = 27 THEN
+						2 ELSE 1
+			END as is_code,
+
+
+			ts.bridge_condition_index AS BCIxj
+		FROM
+			tb_bridge_substructure sub
+			RIGHT JOIN tb_pier_abutment ta ON sub."id" = ta.bridge_substructure_id
+			LEFT JOIN tb_bridge_score ts ON ta."id" = ts.target_id
+			AND ts."type" = 6
+			LEFT JOIN tb_bridge_span span ON sub.bridge_span_id = span."id"
+			LEFT JOIN tb_bridge_road br ON span.bridge_road_id = br."id"
+		WHERE
+			span.bridge_road_id = #{roadId}
+			AND sub.status = 1
+		ORDER BY
+		span.span_code,
+        ta.code
+    </select>
+    <select id="selArtifactsDTOByPier" resultMap="selArtifactsDTOList">
+        select * from
+        (
+            SELECT
+            case when sub."id" is not null then 3 else null end as "type",
+            sub."id" as artifacts_id,
+            tc."name" AS artifacts_name,
+            round( CAST ( sub.initial_weight AS NUMERIC ), 2 ) AS initial_weight,
+			round( CAST ( sub.actual_weight AS NUMERIC ), 2 ) AS actual_weight,
+            round( CAST ( sub.deduct AS NUMERIC ), 2 ) AS deduct,
+              round( CAST ( ts.score AS NUMERIC ), 2 ) AS score,
+              sub.serious,
+            ROW_NUMBER ( ) OVER ( PARTITION BY tc."name" ORDER BY sub.actual_weight DESC, sub.deduct DESC ) AS ROW_ID
+            FROM
+                tb_pier_abutment ta
+                right JOIN tb_bridge_subcomponent sub ON ta."id" = sub.pier_abutment_id
+                LEFT JOIN tb_component tc ON sub.component_id = tc."id"
+                LEFT JOIN tb_bridge_score ts ON tc."id" = ts.target_id
+                AND ts."type" = 1
+            WHERE
+                ta."id" = #{id} and sub.status = 1
+        ) as T where T.ROW_ID = 1
+    </select>
+    <!-- ####################下部结构结束######################## -->
+
+    <resultMap id="selArtifactsDTOListMap" type="com.iware.bridge.evaluation.vo.ArtifactsDTO">
+        <result column="artifacts_id" property="artifactsId"></result>
+        <collection property="instanceDTOList" javaType="java.util.List"
+                    ofType="com.iware.bridge.evaluation.vo.DiseaseInstanceDTO">
+            <result column="diesase_name" property="diseaseName"></result>
+            <result column="diesase_code" property="diseaseCode"></result>
+            <result column="disease_id" property="diseaseId"></result>
+            <result column="length" property="length"></result>
+            <result column="width" property="width"></result>
+            <result column="depth" property="depth"></result>
+            <result column="seam_length" property="seamLength"></result>
+            <result column="seam_width" property="seamWidth"></result>
+            <result column="number" property="number"></result>
+            <result column="degree" property="degree"></result>
+        </collection>
+    </resultMap>
+    <select id="selArtifactsDTOList" resultMap="selArtifactsDTOListMap">
+        SELECT
+        tdi.target_id AS artifacts_id,
+        tbd."name" AS diesase_name,
+        tbd.code AS diesase_code,
+        tdi."id" AS disease_id,
+        tdi."length",
+        tdi.width,
+        tdi."depth",
+        tdi.seam_length,
+        tdi.seam_width,
+        tdi."number",
+        tdi."degree"
+        FROM
+        tb_disease_instance tdi
+        LEFT JOIN tb_bridge_disease tbd ON tdi.disease_id = tbd."id"
+        <where>
+            <if test="type != null">
+                tdi.part_type = #{type}
+            </if>
+            <if test="list.size() > 0">
+                and tdi.target_id IN
+                <foreach collection="list" item="item" separator="," open="(" close=")">
+                    #{item.artifactsId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="selMonitorStructureDTOByRoadId"
+            resultType="com.iware.bridge.evaluation.vo.MonitorStructureDTO">
+        SELECT
+        bs.rating_level,
+        bs.score,
+        mpsr."id",
+        tbs."id" as road_id,
+        bs."id" as score_id
+        FROM
+        tb_monitor_plan_structure_rel mpsr
+        LEFT JOIN tb_bridge_score bs ON mpsr."id" = bs.target_id
+        AND bs."type" = 1
+        RIGHT JOIN tb_bridge_road tbs ON mpsr."id" = tbs.monitor_plan_structure_rel_id
+        <where>
+            <if test="roadId != null">
+                tbs."id" = #{roadId}
+            </if>
+        </where>
+    </select>
+
+    <select id="sleRoadScoreDTOList" resultType="com.iware.bridge.evaluation.vo.RoadScoreDTO">
+        SELECT
+            r."id",
+            bs.bridge_condition_index
+        FROM
+            tb_bridge_road r
+            LEFT JOIN tb_bridge_score bs ON r."id" = bs.target_id
+            AND bs."type" = 2
+        WHERE
+            r.monitor_plan_structure_rel_id = (
+              SELECT br.monitor_plan_structure_rel_id
+              FROM tb_bridge_road br
+              RIGHT JOIN tb_monitor_plan_structure_rel mp ON br.monitor_plan_structure_rel_id = mp."id"
+              WHERE br."id" = #{roadId} )
+              ORDER BY bs.bridge_condition_index limit 1
+    </select>
+    <select id="selectUnit" resultType="java.lang.String">
+               SELECT tu.name FROM tb_bridge_road as road
+        join tb_monitor_plan_structure_rel as rel on rel.id = road.monitor_plan_structure_rel_id
+        join tb_monitor_plan as plan on rel.monitor_plan_id = plan.id
+        join tb_structure  as structure on rel.structure_info_id = structure.id
+        join tb_project as project on project.id = plan.project_info_id
+        join tb_project_appoint as appoint on appoint.project_id = project.id
+        join tb_unit as tu on tu.id = appoint.receive_unit_id
+        WHERE road.id = #{roadId} and now() BETWEEN appoint.start_time and appoint.end_time
+        limit 1
+    </select>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iware.bridge.app.assess.dao.AppMonitorPlanDao">
+	<select id="getMonitorPlanList"  parameterType="com.iware.bridge.app.assess.vo.monitor.AppMonitorPlanFilterVo" resultType="com.iware.bridge.app.assess.vo.monitor.AppMontitorPlanDetailVo">
+		select
+		distinct on(tmp.start_time,tmp.id) tmp.id,
+		tpi.name as projectName,
+		tpi.id as projectId,
+		tmp.create_user_id,
+		tpi.unit_Id as pUserId,
+		(select tu.name from tb_unit tu where tpi.unit_id=tu.id) as pUserName,
+		tup.appoint_unit_id as parentId,
+		tpi.create_user_id as pCreateUserId,
+		tmp.start_time,
+		tmp.end_time
+		from tb_monitor_plan tmp
+		left join (select tmp.id, count(mpsr.id) as count, count(mpor.id) as origin from tb_monitor_plan tmp
+		left join tb_monitor_plan_structure_rel mpsr on mpsr.monitor_plan_id = tmp.id
+		left join tb_monitor_plan_original_record mpor on mpor.monitor_plan_structure_rel_id = mpsr.id
+		group by tmp.id) as r on r.id = tmp.id
+		left outer join tb_project tpi ON tpi.id=tmp.project_info_id
+		left outer join tb_project_appoint as tup ON tup.project_id=tpi.id
+		where r.count != r.origin
+		and tup.receive_unit_id=#{unitId}
+		<if test="betweenTims !=null">
+			and tmp.start_time between
+			<foreach item="item" index="index" collection="betweenTims"
+					 open="" separator="and" close="">
+				#{item}
+			</foreach>
+		</if>
+		<if test="ownerId !=null">
+			and (tpi.create_user_id =#{ownerId} OR tup.appoint_unit_id =#{ownerId})
+		</if>
+		<if test="projectName !=null">
+			and tpi.name like #{projectName}
+		</if>
+	</select>
+	<select id="getMonitorPlanCount" parameterType="com.iware.bridge.app.assess.vo.monitor.AppMonitorPlanFilterVo" resultType="java.lang.Integer">
+		select 
+			count(distinct tmp.id)
+		from tb_monitor_plan tmp
+		left outer join tb_project tpi ON tpi.id=tmp.project_info_id
+		left outer join tb_project_appoint as tup ON tup.project_id=tpi.id
+		where 1=1
+		and tup.receive_unit_id=#{unitId}
+		<if test="betweenTims !=null">
+			and tmp.start_time between
+				<foreach item="item" index="index" collection="betweenTims"
+				    open="" separator="and" close="">
+				        #{item}
+				</foreach>
+		</if>
+		<if test="ownerId !=null">
+			and (tpi.create_user_id =#{ownerId} OR tup.appoint_unit_id =#{ownerId})
+				
+		</if>
+		<if test="projectName !=null">
+			and tpi.name like #{projectName}
+		</if>
+
+	</select>
+</mapper>

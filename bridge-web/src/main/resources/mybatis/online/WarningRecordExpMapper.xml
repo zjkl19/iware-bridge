@@ -1,0 +1,803 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.online.dao.WarningRecordExpDao">
+
+    <!--获取预警统计-->
+    <select id="getWarningStatistics"
+            resultType="com.iware.bridge.online.vo.WarningRatio">
+        SELECT
+        CASE
+        rs.LEVEL
+        WHEN 1 THEN '一级预警'
+        WHEN 2 THEN '二级预警'
+        WHEN 3 THEN '三级预警'
+        END AS warning_level,
+        CASE
+        rs.status
+        WHEN 0 THEN '未处理'
+        WHEN 1 THEN '已处理'
+        END AS status,
+        count(*)
+        FROM
+        (
+            SELECT DISTINCT ON (twr.id)
+                twr.level, twr.status
+            FROM
+                tb_warning_record twr
+            <if test="filter.roleId != 3 or filter.structureId != null">
+                LEFT JOIN tb_structure AS ts ON twr.structure_id = ts.id
+                INNER JOIN tb_project_structure_rel AS psr ON psr.structure_id = ts.id
+            </if>
+            <if test="filter.roleId == 1 or filter.roleId == 0">
+                LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = psr.project_id
+                LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+            </if>
+            <where>
+                <if test="filter.roleId == 1 or filter.roleId == 0">
+                    AND tpa.receive_unit_id = #{filter.unitId}
+                    AND twr.warning_time BETWEEN tpa.start_time AND tpa.end_time
+                    AND papr.power_id = #{powerId}
+                </if>
+                <if test="filter.startTime != null">
+                    AND twr.warning_time > #{filter.startTime}
+                </if>
+                <if test="filter.endTime != null">
+                    AND twr.warning_time &lt; #{filter.endTime}
+                </if>
+                <if test="filter.roleId == 2">
+                    AND ts.unit_id = #{filter.unitId}
+                </if>
+                <if test="filter.structureId != null">
+                    AND ts.id = #{filter.structureId}
+                </if>
+            </where>
+        ) AS rs
+        GROUP BY
+        rs.status,
+        rs.level
+    </select>
+
+    <!--查询当日预警数-->
+    <select id="selectTodayWarningCount" resultType="java.lang.Integer">
+        SELECT
+            COUNT(DISTINCT twr.id)
+        FROM
+            tb_warning_record AS twr
+        <if test="roleId != 3">
+            LEFT JOIN tb_structure AS ts ON ts.id = twr.structure_id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+            LEFT JOIN tb_project_appoint AS appoint ON appoint.project_id = psr.project_id
+            LEFT JOIN tb_project_appoint_power_rel AS power ON power.project_appoint_id = appoint.id
+        </if>
+        <where>
+            to_char(now(),'yyyy-mm-dd') = to_char(twr.warning_time,'yyyy-mm-dd')
+            <if test="roleId == 1 or roleId == 0">
+                AND appoint.receive_unit_id = #{unitId}
+                AND power.power_id = #{powerId}
+                AND twr.warning_time BETWEEN appoint.start_time AND appoint.end_time
+            </if>
+            <if test="roleId == 2">
+                AND ts.unit_id = #{unitId}
+            </if>
+            <if test="structureId != null">
+                AND twr.structure_id = #{structureId}
+            </if>
+            <if test="status != null">
+                AND twr.status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!--查询昨日预警数-->
+    <select id="selectYesterdayWarningCount" resultType="java.lang.Integer">
+        SELECT
+            COUNT(DISTINCT twr.id)
+        FROM
+            tb_warning_record AS twr
+        <if test="roleId != 3">
+            LEFT JOIN tb_structure AS ts ON ts.id = twr.structure_id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+            LEFT JOIN tb_project_appoint AS appoint ON appoint.project_id = psr.project_id
+            LEFT JOIN tb_project_appoint_power_rel AS power ON power.project_appoint_id = appoint.id
+        </if>
+        <where>
+            to_char(now() - interval '1 D' ,'yyyy-mm-dd') = to_char(twr.warning_time,'yyyy-mm-dd')
+            <if test="structureId != null">
+                AND twr.structure_id = #{structureId}
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                AND appoint.receive_unit_id = #{unitId}
+                AND power.power_id = #{powerId}
+                AND twr.warning_time BETWEEN appoint.start_time AND appoint.end_time
+            </if>
+            <if test="roleId == 2">
+                AND ts.unit_id = #{unitId}
+            </if>
+        </where>
+    </select>
+
+    <!--测点预警排行-->
+    <select id="selectWarningRank" resultType="com.iware.bridge.info.vo.EchartMap">
+        SELECT
+            tmp.NAME,
+            CASE twr.LEVEL
+                WHEN 1 THEN '1'
+                WHEN 2 THEN '2'
+                WHEN 3 THEN '3'
+            END AS status,
+            COUNT ( * )
+        FROM
+            tb_warning_record twr
+        INNER JOIN tb_sensor ts ON ts.sensor_coding = twr.sensor_coding
+        INNER JOIN tb_means_point tmp ON tmp.id = ts.means_point_id
+        <if test="structureId != null">
+            AND tmp.structure_id = #{structureId}
+        </if>
+        <if test="roleId != 3">
+            INNER JOIN tb_structure s ON s.id = tmp.structure_id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            INNER JOIN tb_project_structure_rel psr ON psr.structure_id = s.id
+            INNER JOIN tb_project_appoint tpa ON tpa.project_id = psr.project_id
+            INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.id
+        </if>
+        <where>
+            <if test="roleId == 1 or roleId == 0">
+                AND tpa.receive_unit_id = #{unitId}
+                AND papr.power_id = #{powerId}
+                AND twr.warning_time BETWEEN tpa.start_time AND tpa.end_time
+            </if>
+            <if test="startTime != null">
+                AND twr.warning_time > #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND twr.warning_time &lt; #{endTime}
+            </if>
+        </where>
+        GROUP BY
+            tmp.NAME,
+            twr.LEVEL
+        ORDER BY
+            (SELECT
+                COUNT ( * )
+                FROM
+                tb_warning_record twr1
+                INNER JOIN tb_sensor ts1 ON ts1.sensor_coding = twr1.sensor_coding
+                INNER JOIN tb_means_point tmp1 ON tmp1.id = ts1.means_point_id
+                <if test="structureId != null">
+                    AND tmp1.structure_id = #{structureId}
+                </if>
+                <if test="roleId != 3">
+                    INNER JOIN tb_structure s1 ON s1.id = tmp1.structure_id
+                </if>
+                <if test="roleId == 1 or roleId == 0">
+                    INNER JOIN tb_project_structure_rel psr1 ON psr1.structure_id = s1.id
+                    INNER JOIN tb_project_appoint tpa1 ON tpa1.project_id = psr1.project_id
+                    INNER JOIN tb_project_appoint_power_rel papr1 ON papr1.project_appoint_id = tpa1.id
+                </if>
+                <where>
+                    tmp1.name = tmp.name
+                    <if test="roleId == 1 or roleId == 0">
+                        AND tpa1.receive_unit_id = #{unitId}
+                        AND papr1.power_id = #{powerId}
+                        AND twr1.warning_time BETWEEN tpa1.start_time AND tpa1.end_time
+                    </if>
+                    <if test="startTime != null">
+                        AND twr1.warning_time > #{startTime}
+                    </if>
+                    <if test="endTime != null">
+                        AND twr1.warning_time &lt; #{endTime}
+                    </if>
+                </where>) DESC
+    </select>
+
+    <!--查询预警时间的预警数（今日）-->
+    <select id="selectWarningTimeDay" resultType="com.iware.bridge.online.dto.WarningTimeDto">
+        SELECT
+            to_char(to_timestamp(time.time,'yyyy-mm-dd hh24:mi:ss'),'hh24') AS sensorTime,
+            COUNT(DISTINCT warning.id) AS warningLevelOne,
+            COUNT(DISTINCT warning2.id) AS warningLevelTwo,
+            COUNT(DISTINCT warning3.id) AS warningLevelThree
+        FROM
+        (
+            SELECT
+                to_char ( b, 'YYYY-MM-DD hh24:mi:ss' ) AS time
+            FROM
+                generate_series (
+                    to_timestamp ( to_char ( now( ), 'yyyy-mm-dd 00:00:00' ), 'YYYY-MM-DD hh24' ),
+                    to_timestamp ( to_char ( now( ), 'yyyy-mm-dd 23:59:59' ), 'YYYY-MM-DD hh24' ),
+                    '1 hour'
+                ) AS b
+            GROUP BY
+                time
+            ORDER BY
+                time ASC
+        ) AS time
+        LEFT JOIN (
+            SELECT
+                a.id,
+                to_char(a.warning_time,'yyyy-mm-dd hh24:00:00') AS time
+            FROM
+                tb_warning_record AS a
+            <if test="roleId != 3">
+                LEFT JOIN tb_structure AS structure ON structure.id = a.structure_id
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                LEFT JOIN tb_project_structure_rel AS psr ON psr.structure_id = structure.id
+                LEFT JOIN tb_project_appoint AS appoint ON appoint.project_id = psr.project_id
+                LEFT JOIN tb_project_appoint_power_rel AS power ON power.project_appoint_id = appoint.id
+            </if>
+            <where>
+                a.level = 1 AND a.structure_id = #{structureId}
+                <if test="roleId == 1 or roleId == 0">
+                    AND appoint.receive_unit_id = #{unitId}
+                    AND power.power_id = #{powerId}
+                    AND a.warning_time BETWEEN appoint.start_time AND appoint.end_time
+                </if>
+                <if test="roleId == 2">
+                    AND structure.unit_id = #{unitId}
+                </if>
+            </where>
+        ) AS warning ON warning.time = time.time
+        LEFT JOIN (
+            SELECT
+                a.id,
+                to_char(a.warning_time,'yyyy-mm-dd hh24:00:00') AS time
+            FROM
+                tb_warning_record AS a
+            <if test="roleId != 3">
+                LEFT JOIN tb_structure AS structure ON structure.id = a.structure_id
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                LEFT JOIN tb_project_structure_rel AS psr ON psr.structure_id = structure.id
+                LEFT JOIN tb_project_appoint AS appoint ON appoint.project_id = psr.project_id
+                LEFT JOIN tb_project_appoint_power_rel AS power ON power.project_appoint_id = appoint.id
+            </if>
+            <where>
+                a.level = 2 AND a.structure_id = #{structureId}
+                <if test="roleId == 1 or roleId == 0">
+                    AND appoint.receive_unit_id = #{unitId}
+                    AND power.power_id = #{powerId}
+                    AND a.warning_time BETWEEN appoint.start_time AND appoint.end_time
+                </if>
+                <if test="roleId == 2">
+                    AND structure.unit_id = #{unitId}
+                </if>
+            </where>
+        ) AS warning2 ON warning2.time = time.time
+        LEFT JOIN (
+            SELECT a.id,
+            to_char(a.warning_time,'yyyy-mm-dd hh24:00:00') AS time
+        FROM tb_warning_record AS a
+        <if test="roleId != 3">
+            LEFT JOIN tb_structure AS structure ON structure.id = a.structure_id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_structure_rel AS psr ON psr.structure_id = structure.id
+            LEFT JOIN tb_project_appoint AS appoint ON appoint.project_id = psr.project_id
+            LEFT JOIN tb_project_appoint_power_rel AS power ON power.project_appoint_id = appoint.id
+        </if>
+        <where>
+            a.level = 3 AND a.structure_id = #{structureId}
+            <if test="roleId == 1 or roleId == 0">
+                AND appoint.receive_unit_id = #{unitId}
+                AND power.power_id = #{powerId}
+                AND a.warning_time BETWEEN appoint.start_time AND appoint.end_time
+            </if>
+            <if test="roleId == 2">
+                AND structure.unit_id = #{unitId}
+            </if>
+        </where>
+        ) AS warning3 ON warning3.time = time.time
+        GROUP BY
+            time.time
+        ORDER BY
+            time.time
+    </select>
+
+    <!--查询预警时间的预警数（本月）-->
+    <select id="selectWarningTimeMonth" resultType="com.iware.bridge.online.dto.WarningTimeDto">
+        SELECT
+            to_char ( to_timestamp ( time.time, 'yyyy-mm-dd hh24:mi:ss' ), 'dd' ) AS sensorTime,
+            count( DISTINCT warning.id ) AS warningLevelOne,
+            count( DISTINCT warning2.id ) AS warningLevelTwo,
+            count( DISTINCT warning3.id ) AS warningLevelThree
+        FROM
+        (
+            SELECT
+                to_char ( b, 'YYYY-MM-DD hh24:mi:ss' ) AS time
+            FROM
+                generate_series (
+                to_timestamp ( to_char ( now( ), 'yyyy-mm' ), 'YYYY-MM' ),
+                (date_trunc('month', now()) + interval '1 month' - interval '1 day')::date,
+                '1 day'
+                ) AS b
+            GROUP BY
+                time
+            ORDER BY
+                time ASC
+        ) AS time
+        LEFT JOIN (
+            SELECT
+                a.id,
+                to_char ( a.warning_time, 'yyyy-mm-dd 00:00:00' ) AS time
+            FROM
+                tb_warning_record AS a
+            <if test="roleId != 3">
+                LEFT JOIN tb_structure AS structure ON structure.id = a.structure_id
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                LEFT JOIN tb_project_structure_rel AS psr ON psr.structure_id = structure.id
+                LEFT JOIN tb_project_appoint AS appoint ON appoint.project_id = psr.project_id
+                LEFT JOIN tb_project_appoint_power_rel AS power ON power.project_appoint_id = appoint.id
+            </if>
+            <where>
+                a.LEVEL = 1 AND a.structure_id = #{structureId}
+                <if test="roleId == 1 or roleId == 0">
+                    AND appoint.receive_unit_id = #{unitId}
+                    AND power.power_id = #{powerId}
+                    AND a.warning_time BETWEEN appoint.start_time AND appoint.end_time
+                </if>
+                <if test="roleId == 2">
+                    AND structure.unit_id = #{unitId}
+                </if>
+            </where>
+        ) AS warning ON warning.time = time.time
+        LEFT JOIN (
+            SELECT
+                a.id,
+                to_char ( a.warning_time, 'yyyy-mm-dd 00:00:00' ) AS time
+            FROM
+                tb_warning_record AS a
+            <if test="roleId != 3">
+                LEFT JOIN tb_structure AS structure ON structure.id = a.structure_id
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                LEFT JOIN tb_project_structure_rel AS psr ON psr.structure_id = structure.id
+                LEFT JOIN tb_project_appoint AS appoint ON appoint.project_id = psr.project_id
+                LEFT JOIN tb_project_appoint_power_rel AS power ON power.project_appoint_id = appoint.id
+            </if>
+            <where>
+                a.LEVEL = 2 AND a.structure_id = #{structureId}
+                <if test="roleId == 1 or roleId == 0">
+                    AND appoint.receive_unit_id = #{unitId}
+                    AND power.power_id = #{powerId}
+                    AND a.warning_time BETWEEN appoint.start_time AND appoint.end_time
+                </if>
+                <if test="roleId == 2">
+                    AND structure.unit_id = #{unitId}
+                </if>
+            </where>
+        ) AS warning2 ON warning2.time = time.time
+        LEFT JOIN (
+            SELECT
+                a.id,
+                to_char ( a.warning_time, 'yyyy-mm-dd 00:00:00' ) AS time
+            FROM
+                tb_warning_record AS a
+            <if test="roleId != 3">
+                LEFT JOIN tb_structure AS structure ON structure.id = a.structure_id
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                LEFT JOIN tb_project_structure_rel AS psr ON psr.structure_id = structure.id
+                LEFT JOIN tb_project_appoint AS appoint ON appoint.project_id = psr.project_id
+                LEFT JOIN tb_project_appoint_power_rel AS power ON power.project_appoint_id = appoint.id
+            </if>
+            <where>
+                a.LEVEL = 3 AND a.structure_id = #{structureId}
+                <if test="roleId == 1 or roleId == 0">
+                    AND appoint.receive_unit_id = #{unitId}
+                    AND power.power_id = #{powerId}
+                    AND a.warning_time BETWEEN appoint.start_time AND appoint.end_time
+                </if>
+                <if test="roleId == 2">
+                    AND structure.unit_id = #{unitId}
+                </if>
+            </where>
+        ) AS warning3 ON warning3.time = time.time
+        GROUP BY
+            time.time
+        ORDER BY
+            time.time
+    </select>
+
+    <!--查询预警时间的预警数（今年）-->
+    <select id="selectWarningTimeYear" resultType="com.iware.bridge.online.dto.WarningTimeDto">
+        SELECT
+            to_char ( to_timestamp ( time.time, 'yyyy-mm-dd hh24:mi:ss' ), 'mm' ) AS sensorTime,
+            count( DISTINCT warning.id ) AS warningLevelOne,
+            count( DISTINCT warning2.id ) AS warningLevelTwo,
+            count( DISTINCT warning3.id ) AS warningLevelThree
+        FROM
+            (
+                SELECT
+                to_char ( b, 'YYYY-MM-DD hh24:mi:ss' ) AS time
+                FROM
+                generate_series (
+                to_timestamp ( to_char ( now( ), 'yyyy' ), 'YYYY' ),
+                (date_trunc('year', now()) + interval '1 year' - interval '1 Month')::date,
+                '1 month'
+            ) AS b
+            GROUP BY
+                time
+            ORDER BY
+                time ASC
+        ) AS time
+        LEFT JOIN (
+            SELECT
+                a.id,
+                to_char ( a.warning_time, 'yyyy-mm-01 00:00:00' ) AS time
+            FROM
+                tb_warning_record AS a
+            <if test="roleId != 3">
+                LEFT JOIN tb_structure AS structure ON structure.id = a.structure_id
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                LEFT JOIN tb_project_structure_rel AS psr ON psr.structure_id = structure.id
+                LEFT JOIN tb_project_appoint AS appoint ON appoint.project_id = psr.project_id
+                LEFT JOIN tb_project_appoint_power_rel AS power ON power.project_appoint_id = appoint.id
+            </if>
+            <where>
+                a.LEVEL = 1 AND a.structure_id = #{structureId}
+                <if test="roleId == 1 or roleId == 0">
+                    AND appoint.receive_unit_id = #{unitId}
+                    AND power.power_id = #{powerId}
+                    AND a.warning_time BETWEEN appoint.start_time AND appoint.end_time
+                </if>
+                <if test="roleId == 2">
+                    AND structure.unit_id = #{unitId}
+                </if>
+            </where>
+        ) AS warning ON warning.time = time.time
+        LEFT JOIN (
+            SELECT
+                a.id,
+                to_char ( a.warning_time, 'yyyy-mm-01 00:00:00' ) AS time
+            FROM
+                tb_warning_record AS a
+            <if test="roleId != 3">
+                LEFT JOIN tb_structure AS structure ON structure.id = a.structure_id
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                LEFT JOIN tb_project_structure_rel AS psr ON psr.structure_id = structure.id
+                LEFT JOIN tb_project_appoint AS appoint ON appoint.project_id = psr.project_id
+                LEFT JOIN tb_project_appoint_power_rel AS power ON power.project_appoint_id = appoint.id
+            </if>
+            <where>
+                a.LEVEL = 2 AND a.structure_id = #{structureId}
+                <if test="roleId == 1 or roleId == 0">
+                    AND appoint.receive_unit_id = #{unitId}
+                    AND power.power_id = #{powerId}
+                    AND a.warning_time BETWEEN appoint.start_time AND appoint.end_time
+                </if>
+                <if test="roleId == 2">
+                    AND structure.unit_id = #{unitId}
+                </if>
+            </where>
+        ) AS warning2 ON warning2.time = time.time
+        LEFT JOIN (
+            SELECT
+                a.id,
+                to_char ( a.warning_time, 'yyyy-mm-01 00:00:00' ) AS time
+            FROM
+                tb_warning_record AS a
+            <if test="roleId != 3">
+                LEFT JOIN tb_structure AS structure ON structure.id = a.structure_id
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                LEFT JOIN tb_project_structure_rel AS psr ON psr.structure_id = structure.id
+                LEFT JOIN tb_project_appoint AS appoint ON appoint.project_id = psr.project_id
+                LEFT JOIN tb_project_appoint_power_rel AS power ON power.project_appoint_id = appoint.id
+            </if>
+            <where>
+                a.LEVEL = 3 AND a.structure_id = #{structureId}
+                <if test="roleId == 1 or roleId == 0">
+                    AND appoint.receive_unit_id = #{unitId}
+                    AND power.power_id = #{powerId}
+                    AND a.warning_time BETWEEN appoint.start_time AND appoint.end_time
+                </if>
+                <if test="roleId == 2">
+                    AND structure.unit_id = #{unitId}
+                </if>
+            </where>
+        ) AS warning3 ON warning3.time = time.time
+        GROUP BY
+            time.time
+        ORDER BY
+            time.time
+    </select>
+
+    <!--查询预警时间的预警数（所有）-->
+    <select id="selectWarningTimeAll" resultType="com.iware.bridge.online.dto.WarningTimeDto">
+        SELECT
+            warning.warning_time AS sensorTime,
+            COUNT(DISTINCT a.id) AS warningLevelOne,
+            COUNT(DISTINCT b.id) AS warningLevelTwo,
+            COUNT(DISTINCT c.id) AS warningLevelThree
+        FROM
+            tb_warning_record AS warning
+        LEFT JOIN
+        (
+            SELECT
+                warning.id,
+                warning.warning_time
+            FROM
+                tb_warning_record AS warning
+            <if test="roleId != 3">
+                LEFT JOIN tb_structure AS structure ON structure.id = warning.structure_id
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                LEFT JOIN tb_project_structure_rel AS psr ON psr.structure_id = structure.id
+                LEFT JOIN tb_project_appoint AS appoint ON appoint.project_id = psr.project_id
+                LEFT JOIN tb_project_appoint_power_rel AS power ON power.project_appoint_id = appoint.id
+            </if>
+            <where>
+                warning.structure_id = #{structureId} AND warning.level = 1
+                <if test="roleId == 1 or roleId == 0">
+                    AND appoint.receive_unit_id = #{unitId}
+                    AND power.power_id = #{powerId}
+                    AND warning.warning_time BETWEEN appoint.start_time AND appoint.end_time
+                </if>
+                <if test="roleId == 2">
+                    AND structure.unit_id = #{unitId}
+                </if>
+            </where>
+        ) AS a ON a.warning_time = warning.warning_time
+        LEFT join
+        (
+            SELECT
+                warning.id,
+                warning.warning_time
+            FROM
+                tb_warning_record AS warning
+            <if test="roleId != 3">
+                LEFT JOIN tb_structure AS structure ON structure.id = warning.structure_id
+            </if>
+            <if test="roleId == 1 or roleId == 0">
+                LEFT JOIN tb_project_structure_rel AS psr ON psr.structure_id = structure.id
+                LEFT JOIN tb_project_appoint AS appoint ON appoint.project_id = psr.project_id
+                LEFT JOIN tb_project_appoint_power_rel AS power ON power.project_appoint_id = appoint.id
+            </if>
+            <where>
+                warning.structure_id = #{structureId} AND warning.level = 2
+                <if test="roleId == 1 or roleId == 0">
+                    AND appoint.receive_unit_id = #{unitId}
+                    AND power.power_id = #{powerId}
+                    AND warning.warning_time BETWEEN appoint.start_time AND appoint.end_time
+                </if>
+                <if test="roleId == 2">
+                    AND structure.unit_id = #{unitId}
+                </if>
+            </where>
+        )AS b ON b.warning_time = warning.warning_time
+        LEFT JOIN
+        (
+        SELECT warning.id,warning.warning_time FROM tb_warning_record AS warning
+        <if test="roleId != 3">
+            LEFT JOIN tb_structure AS structure ON structure.id = warning.structure_id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_structure_rel AS psr ON psr.structure_id = structure.id
+            LEFT JOIN tb_project_appoint AS appoint ON appoint.project_id = psr.project_id
+            LEFT JOIN tb_project_appoint_power_rel AS power ON power.project_appoint_id = appoint.id
+        </if>
+        <where>
+            warning.structure_id = #{structureId} AND warning.level = 3
+            <if test="roleId == 1 or roleId == 0">
+                AND appoint.receive_unit_id = #{unitId}
+                AND power.power_id = #{powerId}
+                AND warning.warning_time BETWEEN appoint.start_time AND appoint.end_time
+            </if>
+            <if test="roleId == 2">
+                AND structure.unit_id = #{unitId}
+            </if>
+        </where>
+        ) AS c ON c.warning_time = warning.warning_time
+        WHERE
+            warning.structure_id = #{structureId}
+        GROUP BY
+            warning.warning_time
+        ORDER BY
+            warning.warning_time
+    </select>
+
+    <!--查询预警信息列表-->
+    <select id="selectWarning" resultType="com.iware.bridge.online.vo.WarningRecordVO">
+        SELECT
+            structure.NAME AS structure_name,
+            tmp.NAME AS sensor_name,
+            tmp.structure_id,
+            warning.id,
+            warning.warning_time,
+            warning.level,
+            warning.status,
+            (SELECT name FROM tb_sensor_type AS tst WHERE tst.id = tmp.sensor_type_id) AS sensor_type_name,
+            (SELECT name FROM tb_component_info AS tci WHERE tci.id = tmp.component_id) AS component_name,
+            sensor.unit,
+            sensor.first_warning_upper,
+            sensor.first_warning_lower,
+            sensor.second_warning_upper,
+            sensor.second_warning_lower,
+            sensor.third_warning_upper,
+            sensor.third_warning_lower,
+            warning.value,
+            sensor.warning_interval,
+            sensor.sensor_details_id,
+            "user".real_name AS username,
+            warning.handler_time,
+            warning.measures,
+            sensor.sensor_coding,
+            sensor.id AS sensor_id
+        FROM
+            tb_warning_record AS warning
+            LEFT JOIN tb_sensor AS sensor ON sensor.sensor_coding = warning.sensor_coding
+            LEFT JOIN tb_means_point AS tmp ON tmp.id = sensor.means_point_id
+            LEFT JOIN tb_structure AS structure ON structure.id = tmp.structure_id
+            LEFT JOIN tb_user AS "user" ON warning.handler_user_id = "user".id
+            <if test="roleId == 1 or roleId == 0">
+                LEFT JOIN tb_project_structure_rel AS psr ON psr.structure_id = structure.id
+                LEFT JOIN tb_project_appoint AS appoint ON appoint.project_id = psr.project_id
+                LEFT JOIN tb_project_appoint_power_rel AS power ON power.project_appoint_id = appoint.id
+            </if>
+        <where>
+            <if test="roleId == 1 or roleId == 0">
+                AND appoint.receive_unit_id = #{unitId}
+                AND power.power_id = #{powerId}
+                AND warning.warning_time BETWEEN appoint.start_time AND appoint.end_time
+            </if>
+            <if test="roleId == 2">
+                AND structure.unit_id = #{unitId}
+            </if>
+            <if test="structureId != null">
+                AND structure.id = #{structureId}
+            </if>
+            <if test="sensorName != null and sensorName != ''">
+                AND tmp.name LIKE CONCAT('%', #{sensorName}, '%')
+            </if>
+            <if test="level != null">
+                AND warning.level = #{level}
+            </if>
+            <if test=" startTime != null">
+                AND warning.warning_time &gt;= #{startTime}
+            </if>
+            <if test=" endTime != null">
+                AND warning.warning_time &lt;= #{endTime}
+            </if>
+            <if test="status != null">
+                AND warning.status = #{status}
+            </if>
+        </where>
+        ORDER BY warning_time DESC
+    </select>
+
+    <!--修改/批量修改预警处理状态-->
+    <update id="updateWarningStatus">
+        UPDATE
+            tb_warning_record
+        SET
+            status = 1,
+            measures = #{measures},
+            handler_user_id = #{handlerUserId},
+            handler_time = now()
+        <where>
+            status = 0
+            <if test="warningRecordId != null">
+                AND id = #{warningRecordId}
+            </if>
+            <if test="structureId != null">
+                AND structure_id = #{structureId}
+                <if test="levelList.size() > 0">
+                    AND level IN
+                    <foreach collection="levelList" item="level" separator="," open="(" close=")">
+                        #{level}
+                    </foreach>
+                </if>
+            </if>
+        </where>
+    </update>
+
+    <!--获取传感器预警点附近数据-->
+    <select id="selectDataNearWarning" resultType="java.util.HashMap">
+        SELECT
+        array_to_string( ARRAY ( SELECT UNNEST ( ARRAY_AGG ( rs.sampling_time ORDER BY rs.sampling_time ) ) ), ',' ) AS times,
+        array_to_string( ARRAY ( SELECT UNNEST ( ARRAY_AGG ( CAST ( rs.value AS DECIMAL ( 18, 2 ) ) ORDER BY rs.sampling_time ) ) ), ',') AS datas
+        FROM
+        (
+        <if test="type == 1">
+            SELECT
+                sensor_coding,
+                sampling_time,
+                total_weight/1000::NUMERIC AS value
+            FROM
+                tb_sensor_weight
+            <where>
+                sensor_coding = #{sensorCoding}
+                AND sampling_time >= #{startTime}::timestamp
+                AND sampling_time &lt;= #{endTime}::timestamp
+            </where>
+        </if>
+        <if test="type == 2">
+            SELECT
+                paraid AS sensor_coding,
+                collecttime AS sampling_time,
+                CAST (paravalue AS DECIMAL(18, 2)) AS value
+            FROM
+                composedata
+            <where>
+                paraid = #{sensorCoding}
+                AND collecttime >= #{startTime}::timestamp
+                AND collecttime &lt;= #{endTime}::timestamp
+            </where>
+        </if>
+        <if test="type == 3">
+            SELECT
+                sensor_coding,
+                sampling_time,
+                CAST (value AS DECIMAL(18, 2)) AS value
+            FROM
+                tb_sensor_converge value
+            <where>
+                sensor_coding = #{sensorCoding}
+                AND sampling_time >= #{startTime}::timestamp
+                AND sampling_time &lt;= #{endTime}::timestamp
+            </where>
+        </if>
+        ) AS rs GROUP BY rs.sensor_coding
+    </select>
+
+    <!--获取传感器最后一条预警信息-->
+    <select id="getNewestWarning" resultType="com.iware.bridge.model.entity.online.WarningRecord">
+        SELECT
+            twr.*
+        FROM
+            tb_sensor ts
+        INNER JOIN tb_means_point tmp ON tmp.id = ts.means_point_id
+        INNER JOIN tb_warning_record twr ON twr.sensor_coding = ts.sensor_coding AND ts.id = #{meansPointId}
+        INNER JOIN tb_structure s ON s.id = tmp.structure_id
+        <if test="roleId == 0 or roleId == 1">
+            INNER JOIN tb_project_structure_rel psr ON psr.structure_id = s.id
+            INNER JOIN tb_project_appoint tpa ON tpa.project_id = psr.project_id
+            WHERE
+                tpa.receive_unit_id = #{unitId}
+                AND twr.warning_time > tpa.start_time AND twr.warning_time &lt; tpa.end_time
+        </if>
+        ORDER BY
+            twr.warning_time DESC
+        LIMIT 1
+    </select>
+
+    <!--获取预警未处理/已处理/总数量-->
+    <select id="getWarningCount" resultType="java.lang.Integer">
+        SELECT
+            COUNT(DISTINCT twr.id)
+        FROM
+            tb_warning_record twr
+        <if test="roleId != 3">
+            LEFT JOIN tb_structure AS ts ON twr.structure_id = ts.id
+        </if>
+        <if test="roleId == 1 or roleId == 0">
+            LEFT JOIN tb_project_structure_rel psr ON psr.structure_id = ts.id
+            LEFT JOIN tb_project_appoint AS tpa ON tpa.project_id = psr.project_id
+            LEFT JOIN tb_project_appoint_power_rel AS papr ON papr.project_appoint_id = tpa.id
+        </if>
+        <where>
+            <if test="roleId == 1 or roleId == 0">
+                AND tpa.receive_unit_id = #{unitId}
+                AND twr.warning_time BETWEEN tpa.start_time AND tpa.end_time
+                AND papr.power_id = #{powerId}
+            </if>
+
+            <if test="roleId == 2">
+                AND ts.unit_id = #{unitId}
+            </if>
+            <if test="status != null">
+                AND twr.status = #{status}
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.info.dao.PowerExpDao">
+
+    <resultMap id="userPowerListMap" type="com.iware.bridge.info.vo.PowerVO">
+        <result column="id" property="id"></result>
+        <result column="name" property="name"></result>
+        <collection property="children" javaType="java.util.List" ofType="com.iware.bridge.info.vo.PowerVO" select="getPowerList" column="id">
+        </collection>
+    </resultMap>
+
+    <!--获取所有权限-->
+    <select id="getPowerList" resultMap="userPowerListMap">
+        SELECT
+            id,
+            name,
+            parent_id
+        FROM
+            tb_power
+        WHERE
+            parent_id = #{id}
+        ORDER BY priority ASC
+    </select>
+
+    <!--获取用户权限列表-->
+    <select id="getPowerByUser" parameterType="java.lang.Integer" resultType="com.iware.bridge.model.entity.user.Power">
+        SELECT
+            tp.id,
+            tp.name,
+            tp.remarks,
+            tp.router_url,
+            tp.parent_id,
+            tp.is_active as active,
+            tp.priority,
+            tp.business,
+            tp.type
+        FROM
+        <if test="roleId != 3">
+            tb_user tr
+            INNER JOIN tb_unit tu ON tr.unit_id = tu.id
+            INNER JOIN tb_unit_power_rel upr ON upr.unit_id = tu.id
+            INNER JOIN tb_power tp ON tp."id" = upr.power_id
+            WHERE
+            tr.id = #{userId}
+        </if>
+        <if test="roleId == 3">
+            tb_role_power_rel trpr
+            INNER JOIN tb_power tp ON tp.id = trpr.power_id AND trpr.role_id = 3
+        </if>
+        ORDER BY
+            tp.parent_id ASC, tp.priority ASC
+    </select>
+
+    <!--获取单位权限列表-->
+    <select id="getPowerByUnit" parameterType="java.lang.Integer" resultType="com.iware.bridge.model.entity.user.Power">
+        SELECT
+            tp.id,
+            tp.name,
+            tp.remarks,
+            tp.router_url,
+            tp.parent_id,
+            tp.is_active as active,
+            tp.priority,
+            tp.business,
+            tp.type
+        FROM
+            tb_unit tu
+            INNER JOIN tb_unit_power_rel upr ON upr.unit_id = tu.id
+            INNER JOIN tb_power tp ON tp."id" = upr.power_id
+            WHERE
+                tu.id = #{unitId}
+            ORDER BY
+                tp.parent_id ASC, tp.priority ASC
+    </select>
+
+    <!--获取角色默认权限-->
+    <select id="getRoleDefaultPower" resultType="java.lang.Integer">
+        SELECT  power_id
+        FROM tb_role_power_rel
+        WHERE role_id = #{roleId}
+        ORDER BY power_id ASC
+    </select>
+
+    <!--删除用户权限-->
+    <delete id="delPowerByUnitId">
+        DELETE FROM tb_unit_power_rel WHERE unit_id = #{unitId}
+    </delete>
+
+    <select id="getAppointTime" resultType="com.iware.bridge.inspection.vo.ReceiveTime">
+    SELECT
+        appoint.start_time as begin_time,
+        appoint.end_time as end_time
+    FROM
+        tb_project_appoint AS appoint
+        JOIN tb_project_appoint_power_rel AS power ON power.project_appoint_id = appoint.id
+    WHERE
+        appoint.project_id = #{projectId}
+        AND appoint.receive_unit_id = #{unitId}
+        AND power.power_id = #{powerId}
+        AND appoint.end_time > now()
+        ORDER BY
+            appoint.start_time DESC
+    </select>
+</mapper>

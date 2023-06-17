@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.permission.dao.PermissionDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.iware.bridge.model.entity.user.Power" id="powerMap">
+        <result property="id" column="id"/>
+        <result property="powerName" column="power_name"/>
+        <result property="remarks" column="remarks"/>
+        <result property="routerUrl" column="router_url"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="active" column="is_active"/>
+        <result property="priority" column="priority"/>
+        <result property="business" column="business"/>
+        <result property="englishName" column="english_name"/>
+    </resultMap>
+
+    <!-- 根据条件查询BridgeType -->
+    <select id="getByUserIdAndUrl" parameterType="com.iware.bridge.model.entity.user.Power" resultMap="powerMap">
+
+        <if test="roleId != 3">
+            SELECT
+            pi.*
+            FROM
+            tb_unit_power_rel upr
+            LEFT JOIN tb_power pi ON pi."id" = upr.power_id
+            WHERE
+            upr.unit_id = #{unitId}
+            AND pi.name = #{powerName}
+            AND pi.router_url = #{routerUrl}
+        </if>
+        <if test="roleId == 3">
+            SELECT
+            pi.*
+            FROM
+            tb_power pi
+            INNER JOIN tb_role_power_rel trpr ON pi.id = trpr.power_id
+            WHERE
+            trpr.role_id = 3
+            AND pi.name = #{powerName}
+            AND pi.router_url = #{routerUrl}
+        </if>
+
+    </select>
+</mapper>

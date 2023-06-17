@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iware.bridge.info.dao.ProjectAppointExpDao">
+
+    <!--查询指派信息-->
+    <select id="getAppointList" resultType="com.iware.bridge.info.vo.ProjectAppointVO">
+        SELECT
+            tp.name AS project_name,
+            tpa.*,
+            array_to_string( ARRAY (
+                SELECT pr.name
+                FROM tb_power pr
+                INNER JOIN tb_project_appoint_power_rel papr ON pr."id" = papr.power_id
+		        WHERE papr.project_appoint_id = tpa.ID), ',' ) AS business_names,
+            ( SELECT u1.name FROM tb_unit u1 WHERE u1.ID = tpa.appoint_unit_id ) AS appoint_unit_name,
+            ( SELECT u2.name FROM tb_unit u2 WHERE u2.ID = tpa.receive_unit_id ) AS receive_unit_name
+        FROM
+            tb_project tp
+            INNER JOIN tb_project_appoint tpa ON tpa.project_id = tp.ID
+            <if test="roleId == 3">
+                INNER JOIN tb_unit tu ON tu.id = tp.unit_id
+            </if>
+        WHERE
+            tp.ID = #{projectId}
+            <if test="roleId == 2 || roleId == 1">
+                AND tpa.appoint_unit_id = #{unitId}
+            </if>
+            <if test="roleId == 3">
+                AND tu.role_id = 2
+            </if>
+        ORDER BY tpa.start_time DESC
+    </select>
+
+    <!--判断业务指派时间是否存在重复-->
+    <select id="getDupTimeCount" parameterType="com.iware.bridge.info.vo.ProjectAppointVO" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM tb_project_appoint tpa
+        LEFT JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.ID
+        WHERE tpa.appoint_unit_id = #{appointUnitId}
+        AND tpa.project_id = #{projectId}
+        AND (
+        ( tpa.start_time &lt; #{endTime} AND tpa.end_time > #{startTime} )
+        OR ( tpa.start_time &lt; #{endTime} AND tpa.end_time > #{startTime} )
+        )
+        AND papr.power_id IN
+        <foreach collection="business" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <!--判断业务指派时间是否存在重复-->
+    <select id="getDumpStructureInTimeCount" parameterType="com.iware.bridge.info.vo.ProjectAppointVO" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM
+        (
+            SELECT
+                tpsr.project_id
+            FROM
+                tb_project tp
+            INNER JOIN tb_project_structure_rel psr ON psr.project_id = tp.id
+            INNER JOIN tb_structure ts ON ts.ID = psr.structure_id
+            INNER JOIN tb_project_structure_rel tpsr ON tpsr.structure_id = ts.ID
+            WHERE
+                tp.ID = #{projectId}
+                AND tpsr.project_id != #{projectId}
+        ) as rs
+        LEFT JOIN tb_project_appoint tpa ON rs.project_id = tpa.project_id
+        LEFT JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.ID
+        WHERE tpa.appoint_unit_id = #{appointUnitId}
+        AND (
+        ( tpa.start_time &lt; #{endTime} AND tpa.end_time > #{startTime} )
+        OR ( tpa.start_time &lt; #{endTime} AND tpa.end_time > #{startTime} )
+        )
+        AND papr.power_id IN
+        <foreach collection="business" item="id" separator="," open="(" close=")">
+            #{id}
+
+        </foreach>
+    </select>
+
+    <!--承接单位住用户查看选择时间是否在自身受指派时间-->
+    <select id="getInLimitTime" resultType="com.iware.bridge.model.entity.global.ProjectAppoint">
+        SELECT tpa.*
+        FROM tb_project_appoint tpa
+        INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.id
+        WHERE tpa.receive_user_id = #{appointUserId}
+        AND tpa.project_id = #{projectId}
+        AND (
+            tpa.start_time &lt;= #{startTime} AND tpa.end_time >= #{endTime}
+        ) AND papr.power_id IN
+        <foreach collection="business" item="powerId" separator="," open="(" close=")">
+            #{powerId}
+        </foreach>
+    </select>
+
+    <!--业主删除指派，主用户同步删除该指派的指派-->
+    <delete id="delMainUserAppoint" parameterType="com.iware.bridge.model.entity.global.ProjectAppoint">
+        DELETE FROM tb_project_appoint
+        <where>
+            <if test="projectId != null">
+                AND project_id = #{projectId}
+            </if>
+            <if test="receiveUnitId != null">
+                AND appoint_unit_id = #{receiveUnitId}
+            </if>
+            <if test="startTime != null">
+                AND start_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND end_time &lt;= #{endTime}
+            </if>
+        </where>
+    </delete>
+
+    <!--业主删除指派，主用户同步删除该指派的指派业务关联-->
+    <delete id="delMainUserAppointRel" parameterType="com.iware.bridge.model.entity.global.ProjectAppoint">
+        DELETE FROM tb_project_appoint_power_rel
+        <where>
+            project_appoint_id IN
+            (
+                SELECT id FROM tb_project_appoint
+                <where>
+                    <if test="projectId != null">
+                        AND project_id = #{projectId}
+                    </if>
+                    <if test="receiveUnitId != null">
+                        AND appoint_unit_id = #{receiveUnitId}
+                    </if>
+                    <if test="startTime != null">
+                        AND start_time >= #{startTime}
+                    </if>
+                    <if test="startTime != null">
+                        AND end_time &lt;= #{endTime}
+                    </if>
+                </where>
+            )
+
+        </where>
+    </delete>
+
+    <!--删除指派记录业务关联-->
+    <delete id="deletePowerRel" parameterType="java.lang.Integer">
+        DELETE FROM tb_project_appoint_power_rel WHERE project_appoint_id = #{appointId}
+    </delete>
+
+    <!--获取业务-->
+    <select id="getBusinessByUnit" resultType="com.iware.bridge.model.entity.user.Power">
+        SELECT DISTINCT
+            tp.id,
+            name
+        FROM
+            tb_power tp
+        <if test="roleId == 1">
+            INNER JOIN tb_project_appoint_power_rel papr ON tp.id = papr.power_id
+            INNER JOIN tb_project_appoint tpa ON tpa.id = papr.project_appoint_id
+            WHERE tpa.receive_unit_id = #{unitId}
+            AND project_id = #{projectId}
+            AND tpa.end_time > now()
+        </if>
+        <if test="roleId == 2">
+            WHERE business = 1
+        </if>
+    </select>
+
+    <resultMap id="appointBusinessMap" type="com.iware.bridge.info.vo.ProjectAppointVO">
+        <id column="id" property="id"/>
+        <result column="receive_unit_id" property="receiveUnitId"/>
+        <result column="appoint_unit_id" property="appointUnitId"/>
+        <result column="end_time" property="endTime"/>
+        <result column="start_time" property="startTime"/>
+        <result column="end_time" property="endTime"/>
+        <collection property="business" ofType="java.lang.Integer">
+            <result column="power_id"/>
+        </collection>
+    </resultMap>
+
+    <!--获取承接单位对业务最后一次指派-->
+    <select id="getMainLastAppoint" resultMap="appointBusinessMap">
+        SELECT
+        rs.*
+        FROM
+	    (
+	        SELECT
+	            ROW_NUMBER ( ) OVER ( PARTITION BY r.power_id ORDER BY r.end_time DESC ) AS row_id,
+	            r.*
+	        FROM
+		    (
+		        SELECT
+                    tpa.ID,
+                    tpa.project_id,
+                    tpa.appoint_unit_id,
+                    tpa.receive_unit_id,
+                    tpa.start_time,
+                    tpa.end_time,
+                    papr.power_id
+		        FROM
+			        tb_project_appoint tpa
+			    INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.ID
+		        WHERE
+                    tpa.appoint_unit_id = #{unitId}
+                    AND project_id = #{projectId}
+                    AND papr.power_id IN
+                    <foreach collection="list" item="id" separator="," open="(" close=")">
+                        #{id}
+                    </foreach>
+                ) AS r
+            ) AS rs
+        WHERE
+	        row_id = 1
+    </select>
+
+    <!--承接单位主用户查询未被指派过的记录-->
+    <select id="getUnAppointByBusiness" resultMap="appointBusinessMap">
+        SELECT A.*
+        FROM
+        (
+            SELECT
+                tpa.id,
+                tpa.project_id,
+                tpa.appoint_unit_id,
+                tpa.receive_unit_id,
+                tpa.start_time,
+                tpa.end_time,
+                papr.power_id
+            FROM
+                tb_project_appoint tpa
+            INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.ID
+            WHERE
+                tpa.receive_unit_id = #{unitId}
+                AND project_id = #{projectId}
+                AND tpa.end_time > now()
+                AND papr.power_id IN
+                <foreach collection="list" item="id" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+        ) AS A LEFT JOIN (
+            SELECT
+                tpa.ID,
+                tpa.project_id,
+                tpa.appoint_unit_id,
+                tpa.receive_unit_id,
+                tpa.start_time,
+                tpa.end_time,
+                papr.power_id
+            FROM
+                tb_project_appoint tpa
+            INNER JOIN tb_project_appoint_power_rel papr ON papr.project_appoint_id = tpa.ID
+                WHERE
+                tpa.appoint_unit_id = #{unitId}
+                AND project_id = #{projectId}
+                AND papr.power_id IN
+                <foreach collection="list" item="id" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            ) AS b ON A.start_time = b.start_time
+            AND A.end_time = b.end_time
+            AND A.power_id = b.power_id
+        WHERE
+            b.ID IS NULL
+    </select>
+
+    <!--查询当前承接单位指派记录-->
+    <select id="getBeAppointedByUnit" resultType="com.iware.bridge.model.entity.global.ProjectAppoint">
+        SELECT * FROM tb_project_appoint WHERE receive_unit_id = #{unitId}
+    </select>
+
+</mapper>
